@@ -1,0 +1,1797 @@
+script.Disabled = true
+if _G.IsVr == true then
+	return
+end
+
+_G.IsVr = true
+local AlternativeSpawn = task.spawn
+
+--ok
+local fenv = getfenv()
+local shp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidden_prop or fenv.sethiddenprop
+local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_sim_radius or fenv.setsimradius or fenv.set_simulation_rad or fenv.setsimulationrad
+--ok
+
+local User = game:GetService('Players').LocalPlayer
+local Camera = workspace.CurrentCamera
+local Debounces = {}
+local Typing = false
+local ExtraVariables = {
+	BaseOffsetCamera = Vector3.new(0,-4,0),
+	VrFinalized = false,
+	ChatOpen = false,
+}
+
+local Services = {
+	VR = game:GetService("VRService"),
+	UIS = game:GetService("UserInputService"),
+	Players = game:GetService("Players"),
+	ReplicatedStorage = game:GetService("ReplicatedStorage"),
+	TweenService = game:GetService("TweenService"),
+}
+
+local VrTracker = {}
+
+if game:GetService("RunService"):IsStudio() == false and Services.VR.VREnabled == false then return end
+
+local Create = function(Class,Parent,Properties)
+	local A = Instance.new(Class)
+	for i,v in pairs(Properties)do
+		A[i]=v
+	end
+	A.Parent = Parent
+	return A
+end
+local FrameYield = function(Seconds)
+	local Start = os.clock()
+	repeat game:GetService("RunService").RenderStepped:Wait() until os.clock()-Start >= Seconds
+	return os.clock()-Start
+end
+local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
+	local Type = game:GetService("RunService")[Type]
+	local Start = os.clock()
+	if not Seconds then return warn("Please put a length in argument 2.") end
+	local X = nil
+	X = Type:Connect(function()
+		if os.clock()-Start >= Seconds then
+			X:Disconnect()
+			return
+		else
+			func()
+		end
+	end)
+end
+local SpawnAlternative = function(func)
+	task.spawn(func)
+end
+local CharacterLimbs = {
+	LeftArm = nil,
+	RightArm = nil,
+	Head = nil,
+	Hats = {},
+}
+local Parts = {
+	FollowPart = Create("Part",workspace.CurrentCamera,{
+		Size = Vector3.new(1,1,1),
+		Anchored = true,
+		CanCollide = false,
+		Material = Enum.Material.Neon,
+		Transparency = 0.25,
+	}),
+	LeftArm = Create("Part",workspace.CurrentCamera,{
+		Size = Vector3.new(1,2,1),
+		Anchored = true,
+		CanCollide = false,
+		Material = Enum.Material.Neon,
+		Transparency = 1
+	}),
+	RightArm = Create("Part",workspace.CurrentCamera,{
+		Size = Vector3.new(1,2,1),
+		Anchored = true,
+		CanCollide = false,
+		Material = Enum.Material.Neon,
+		Transparency = 1
+	}),
+	Head = Create("Part",workspace.CurrentCamera,{
+		Size = Vector3.new(1,1,1),
+		Anchored = true,
+		CanCollide = false,
+		Material = Enum.Material.Neon,
+		Transparency = 1
+	}),
+	FakeLarm = Create("Part",workspace.CurrentCamera,{
+		Anchored = true,
+		CanCollide = false,
+		Transparency = 0,
+		Size = Vector3.new(1,2,1)
+	}),
+	FakeRarm = Create("Part",workspace.CurrentCamera,{
+		Anchored = true,
+		CanCollide = false,
+		Transparency = 0,
+		Size = Vector3.new(1,2,1)
+	}),
+}
+RVr=Create("SpecialMesh",Parts.FakeLarm,{
+	Scale = Vector3.new(0.01/2, 0.01/2, 0.01/2),
+	MeshType = Enum.MeshType.FileMesh,
+	MeshId = "rbxassetid://1532314169"
+})
+LVr=Create("SpecialMesh",Parts.FakeRarm,{
+	Scale = Vector3.new(0.01/2, 0.01/2, 0.01/2),
+	MeshType = Enum.MeshType.FileMesh,
+	MeshId = "rbxassetid://1532314169"
+})
+LHl = Create("Highlight",Parts.FakeLarm,{
+	Adornee = Parts.FakeLarm,
+	OutlineColor = Color3.new(1,1,1),
+	FillTransparency = 0.5,
+	FillColor = Color3.new(0.2,0.5,1)
+})
+RHl = Create("Highlight",Parts.FakeRarm,{
+	Adornee = Parts.FakeRarm,
+	OutlineColor = Color3.new(1,1,1),
+	FillTransparency = 0.5,
+	FillColor = Color3.new(0.2,0.5,1)
+})
+Create("SelectionBox",Parts.LeftArm,{
+	Adornee = Parts.LeftArm,
+	Color3 = Color3.new(1,0.25,0.5),
+	SurfaceTransparency = 1,
+	LineThickness = 0.025
+})
+Create("SelectionBox",Parts.RightArm,{
+	Adornee = Parts.RightArm,
+	Color3 = Color3.new(1,0.25,0.5),
+	SurfaceTransparency = 1,
+	LineThickness = 0.025
+})
+function GetPlayersInVr() --Only for this one
+	local Plrs = {}
+	for i,v in pairs(game:GetService("Players"):GetPlayers())do
+		if v.Character and (v.Character:FindFirstChild("Left Leg") or v.Character:FindFirstChild("LeftLowerLeg")) == nil then --Not 100% accurate but you know. What're the chances?
+			table.insert(Plrs,v)
+		end
+	end
+	return Plrs
+end
+function Destroy(Obj,Delay_)
+	if Delay_ then
+		task.delay(Delay_,function()
+			pcall(function()
+				Obj:Destroy()
+			end)
+		end)
+	else
+		pcall(function()
+			Obj:Destroy()
+		end)
+	end
+end
+local LastMessageInstances = {}
+function PromptMessage(Message,lasts,BackgroundTransparency)
+	for _,x in pairs(LastMessageInstances)do
+		Destroy(x,-1)
+	end
+	local Init_Message = Create("TextLabel",nil,{
+		Text = Message,
+		TextSize = 30,
+		Font = Enum.Font.SourceSansBold,
+		TextColor3 = Color3.new(1,1,1),
+		BackgroundTransparency=1,
+		Size = UDim2.new(1,0,1,0),
+	})
+	local Splash = Create("Part",workspace.CurrentCamera,{
+		Size = Vector3.new(0,0,0),
+		Anchored = true,
+		CanCollide = false,
+	})
+	local BillboardGui = Create("BillboardGui",Splash,{
+		Size = UDim2.new(20,0,20,0),
+		AlwaysOnTop = true
+	})
+	local Darken = Create("ColorCorrectionEffect",game:GetService("Lighting"),{
+		Brightness = -(1-BackgroundTransparency),
+	})
+	LastMessageInstances = {
+		Init_Message,Splash,BillboardGui,Darken
+	}
+	Init_Message.Parent = BillboardGui
+	CreateTemporaryLoopWithRunServiceType("RenderStepped",lasts,function()
+		Splash.CFrame = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-10)
+	end)
+	task.wait(lasts)
+	Services.TweenService:Create(Init_Message,TweenInfo.new(0.5),{
+		Transparency=1,
+		TextTransparency=1,
+		TextStrokeTransparency=1,
+	}):Play()
+	Services.TweenService:Create(Darken,TweenInfo.new(0.5),{
+		Brightness = 0,
+	}):Play()
+	Destroy(Init_Message,0.5)
+	Destroy(BillboardGui,0.5)
+	Destroy(Splash,0.5)
+	Destroy(Darken,0.5)
+end
+function GetHatsAsUsefulTable(CharArg)
+	if true then return end
+	local X = {}
+	for i,v in pairs(CharArg:GetChildren())do
+		if v:IsA("Accessory") then
+			if v:FindFirstChild("Handle") and v:FindFirstChild("Handle"):FindFirstChild("AccessoryWeld") then
+				local AW = v.Handle.AccessoryWeld
+				if AW.Part1 ~= nil and AW.Part1.Name == 'Head' then --It's a HEAD weld
+					local TABLE = {v,v.Handle.CFrame:ToObjectSpace(AW.Part1.CFrame):Inverse()}
+					pcall(function()
+						v.Handle.Mesh.Scale = Vector3.new(0,0,0)
+					end)
+					table.insert(X,TABLE)
+				end
+			end
+		end
+	end
+	return X
+end
+function ScanForWeld(Name)
+	for i,v in pairs(game:GetService("Players").LocalPlayer.Character:GetDescendants())do
+		if v:IsA("JointInstance") then
+			if v.Name:lower() == Name:lower() then
+				return v
+			end
+		end
+	end
+	return nil
+end
+function GetRigType()
+	local Character = game:GetService("Players").LocalPlayer.Character
+	if Character then
+		if Character:FindFirstChild("Torso") then
+			return "R6"
+		elseif Character:FindFirstChild("UpperTorso") then
+			return "R15"
+		end
+	end
+	return "Unknown RigType"
+end
+function IsParentLocked(Obj)
+	local success = pcall(function()
+		Obj.Parent = Obj.Parent
+	end)
+	return not success
+end
+for i,v in pairs(User.Character:GetChildren())do
+	if v:IsA("BasePart") then
+		local p = Instance.new('PointLight')
+		p.Brightness = 1
+		p.Range = 7
+		p.Color = Color3.new(0.8,0.8,0.8)
+		p.Parent = v
+	end
+end
+function Maintain(Obj)
+	if not Obj then return end
+	local AngCount = 0
+	for _,ANG in pairs(Obj:GetChildren())do
+		if ANG:IsA("BodyAngularVelocity") then
+			AngCount = AngCount + 1
+		end
+	end
+	if Obj:FindFirstChild("Flinging") and AngCount < 10 then
+		local Rota = Create("BodyAngularVelocity",Obj,{
+			Name = "FlingingJohnny",
+			MaxTorque = Vector3.new(9e8,9e8,9e8),
+			P = 12500,
+			AngularVelocity = Vector3.new(9e6,-9e6,9e6)
+		})
+	end
+	if Obj:FindFirstChild("NoFlinging") then
+		for _,ANG in pairs(Obj:GetChildren())do
+			if ANG:IsA("BodyAngularVelocity") then
+				ANG.AngularVelocity = Vector3.new(0,0,0)
+				Destroy(ANG,0)
+			end
+		end
+		Obj.Velocity = Vector3.new(0,30,0)
+		Obj.AssemblyAngularVelocity = Vector3.new(0,0,0)
+		Obj.RotVelocity = Vector3.new(0,0,0)
+		Obj.AssemblyLinearVelocity = Vector3.new(0,5,0)
+		task.defer(function()
+			Obj.Velocity = Vector3.new(0,30,0)
+			Obj.RotVelocity = Vector3.new(0,0,0)
+			Obj.AssemblyAngularVelocity = Vector3.new(0,0,0)
+			Obj.AssemblyLinearVelocity = Vector3.new(0,5,0)
+		end)
+		if Obj:FindFirstChild("NoFlinging") then
+			Obj.NoFlinging:Destroy()
+		end
+	end
+	if Obj:FindFirstChild("Maintained") then return end
+	local Something_I_Guess = Instance.new("BodyVelocity")
+	Something_I_Guess.Parent = Obj
+	Something_I_Guess.Velocity = Vector3.new(-32,-7.5,0)
+	Something_I_Guess.P = 1200
+	Create("StringValue",Obj,{
+		Value = "Maintained",
+		Name = "Maintained",
+	})
+	local event1 = nil
+	event1 = game:GetService("RunService").Heartbeat:Connect(function()
+		if IsParentLocked(Obj) then
+			Something_I_Guess.Velocity = Vector3.new(-32,-7.5,0)
+			Obj.AssemblyLinearVelocity = Vector3.new(-30,7.5,0)
+			task.defer(function()
+				Something_I_Guess.Velocity = Vector3.new(32,7.5,0)
+				Obj.AssemblyLinearVelocity = Vector3.new(30,7.5,0)
+			end)
+		else
+			event1:Disconnect()
+		end
+	end)
+end
+Debounces.ToggleDanger = os.clock()
+function MakePartDangerous(OBJ,toggle)
+	if OBJ:FindFirstChild("Maintained") then
+		if toggle == true then
+			if OBJ:FindFirstChild("Flinging") then
+				OBJ:FindFirstChild("NoFlinging"):Destroy()
+			end
+			Create("StringValue",OBJ,{
+				Name = "Flinging"
+			})
+		elseif toggle == false then
+			if OBJ:FindFirstChild("Flinging") then
+				OBJ:FindFirstChild("Flinging"):Destroy()
+			end
+			Create("StringValue",OBJ,{
+				Name = "NoFlinging"
+			})
+		end
+	else
+		warn("Part danger is at 0%, please 'Maintain' the part before using this function.")
+	end
+end
+
+local Character = game:GetService('Players').LocalPlayer.Character or game:GetService("Players").LocalPlayer.Character:Wait()
+Character:WaitForChild("Humanoid",100)
+
+SpawnAlternative(function()
+	PromptMessage("Initializing...\nBrew VR script by Amokah.\n(Try not to tab out, won't hurt, but try not to)",7,0.3)
+end)
+
+FrameYield(1)
+
+local SpawnInCFrame = Character.PrimaryPart.CFrame
+
+local Angle = CFrame.Angles(0,0,0)
+
+User.CharacterAdded:Connect(function(char)
+	for i = 1,8 do
+		pcall(function()
+			char.PrimaryPart.CFrame = SpawnInCFrame
+		end)
+		game:GetService("RunService").RenderStepped:Wait()
+	end
+	CharacterLimbs.Hats = GetHatsAsUsefulTable(char)
+end)
+
+function OddNetworkOwner(PartTable)
+	local ThisChar = Character
+	pcall(function()
+		for _,x in pairs(ThisChar:GetChildren())do
+			if x.Name:find("Leg") then
+				x.Parent = nil
+			end
+		end
+	end)
+	local event1 = nil
+	Maintain(ThisChar:WaitForChild("HumanoidRootPart"))
+	local PartSelected = 1
+	event1 = game:GetService("RunService").Heartbeat:Connect(function()
+		for _,x in pairs(ThisChar:FindFirstChild("HumanoidRootPart"):GetChildren())do
+			if x:IsA("JointInstance") then
+				--[x:Destroy()
+			end
+		end
+		if IsParentLocked(Character) then
+			event1:Disconnect()
+			return
+		end
+		ThisChar:FindFirstChild("HumanoidRootPart").CFrame = Parts.Head.CFrame
+	end)
+end
+
+Services.UIS.InputBegan:Connect(function(k)
+	if Services.VR.VREnabled == true then
+		workspace.test.RemoteEvent:FireServer(tostring(k.KeyCode))
+	end
+end)
+
+CharacterLimbs.Hats = GetHatsAsUsefulTable(Character)
+
+local VulnChar = nil
+
+function MoveAt(Part,CFrame_)
+	local BP = nil
+	local GY = nil
+	if Part:FindFirstChildWhichIsA("BodyPosition") then
+		BP = Part:FindFirstChildWhichIsA("BodyPosition")
+	else
+		BP = Instance.new("BodyPosition")
+	end
+	if Part:FindFirstChildWhichIsA("BodyGyro") then
+		GY = Part:FindFirstChildWhichIsA("BodyGyro")
+	else
+		GY = Instance.new("BodyGyro")
+	end
+	BP.Parent = Part
+	GY.Parent = Part
+	BP.P = 1240
+	BP.MaxForce = Vector3.new(100,100,100)
+	BP.Position = CFrame_.Position
+	GY.MaxTorque = Vector3.new(100,100,100)
+	GY.P = 1240
+	GY.CFrame = CFrame_
+end
+
+function SetUpUndead()
+	local Humanoid=Character:FindFirstChildWhichIsA("Humanoid")
+	Humanoid.PlatformStand = true
+	Debounces.SetUp = os.clock()
+	local RootPart=Humanoid.RootPart
+	local StartTime=0
+	User.Character=nil
+	User.Character=Character
+	RootPart.Anchored=true
+	Humanoid.BreakJointsOnDeath=false
+	Humanoid.PlatformStand = true
+	StartTime=os.clock()
+	ExtraVariables.VrFinalized = false
+	repeat task.wait(.015) until os.clock()-StartTime>=(5.6)
+	ExtraVariables.VrFinalized = true
+	RootPart.Anchored=false
+	Humanoid.PlatformStand = true
+	Humanoid.Health = 0
+	task.wait(1)
+	Humanoid.MaxHealth = -0.1
+end
+
+function RePositionHeadParts()
+	local HeadCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+	if GetRigType() == 'R6' then
+		Maintain(Character.Head)
+		CharacterLimbs.Head.CFrame = HeadCFrame
+		Maintain(Character.Torso)
+		Character.Torso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+		Maintain(Character.HumanoidRootPart)
+		Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+	elseif GetRigType()=='R15' then
+		Maintain(Character.Head)
+		CharacterLimbs.Head.CFrame = HeadCFrame
+		Maintain(Character.UpperTorso)
+		Character.UpperTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+		if Character:FindFirstChild("LowerTorso") then
+			Maintain(Character.LowerTorso)
+			Character.LowerTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+		end
+		Maintain(Character.HumanoidRootPart)
+		Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+	end
+end
+
+local CameraAngle = CFrame.Angles(0,0,0)
+
+Parts.FollowPart.Position = Character.PrimaryPart.Position
+Debounces.SetUp = os.clock()
+Debounces.PromptChat = os.clock()
+local HoldingDirection = false
+local PredictingPosition = false
+Services.UIS.InputBegan:Connect(function(key)
+	if key.KeyCode == Enum.KeyCode.ButtonL2 then
+		HoldingDirection = true
+	elseif key.KeyCode == Enum.KeyCode.ButtonR2 then
+		pcall(function()
+			MakePartDangerous(CharacterLimbs.RightArm,true)
+		end)
+	elseif key.KeyCode == Enum.KeyCode.ButtonL3 then
+		CameraAngle = CameraAngle * CFrame.Angles(0,math.rad(30),0)
+	elseif key.KeyCode == Enum.KeyCode.ButtonR3 then
+		CameraAngle = CameraAngle * CFrame.Angles(0,math.rad(-30),0)
+	elseif key.KeyCode == Enum.KeyCode.ButtonR1 then
+		PredictingPosition = true
+	end
+end)
+Services.UIS.InputEnded:Connect(function(key)
+	if key.KeyCode == Enum.KeyCode.ButtonL2 then
+		HoldingDirection = false
+	elseif key.KeyCode == Enum.KeyCode.ButtonR2 then
+		pcall(function()
+			MakePartDangerous(CharacterLimbs.RightArm,false)
+		end)
+	elseif key.KeyCode == Enum.KeyCode.ButtonR1 then
+		if (Parts.FollowPart.Position*Vector3.new(1,0,1) - VrTracker.PredictedPosition*Vector3.new(1,0,1)).Magnitude > 1.1 then
+			Parts.FollowPart.Position = VrTracker.PredictedPosition
+			PromptMessage("",0.25,0.3) --Lol this also works as a transition
+			local TpSound = Create("Sound",game:GetService("SoundService"),{
+				Volume = 1,
+				Pitch = 1,
+				Playing = true,
+				SoundId='rbxassetid://8276741979'
+			}):Play()
+			Destroy(TpSound,5)
+		end
+		PredictingPosition = false
+	end
+end)
+Debounces.Moving = os.clock()
+Character.Humanoid.PlatformStand = true
+
+local FlingPart = {
+	Primary = nil,
+}
+
+task.wait((15)  *  0.0105) --Basically 15 frames for your character to go stiff for proper arm/limb positioning
+game:GetService("RunService").Stepped:Connect(function()
+	if Services.VR.VREnabled == not game:GetService("RunService"):IsStudio() then
+		for i,v in pairs(Character:GetDescendants())do
+			if v:IsA("LocalScript") or v:IsA("BallSocketConstraint") or v:IsA("CharacterMesh") or v:IsA("NoCollisionConstraint") then
+				v:Destroy()
+			end
+		end
+		if HoldingDirection == true and os.clock()-Debounces.Moving > 0.0105 then
+			Debounces.Moving = os.clock()
+			local HeadCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+			local LarmCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
+			local RobloxHeadCFrame = Camera.CFrame --Idk, that type of naming makes it easy to remember certain things
+			local From = Parts.FollowPart.CFrame:ToObjectSpace(Camera.CFrame * LarmCFrame):Inverse()
+			Parts.FollowPart.CFrame = CFrame.new((Camera.CFrame * LarmCFrame * CFrame.new(0,0,-0.1*3)*From).Position)
+		end
+		Camera.CameraType = Enum.CameraType.Scriptable
+		Camera.CFrame = Parts.FollowPart.CFrame * CFrame.new(ExtraVariables.BaseOffsetCamera) * CameraAngle
+		if GetRigType() == 'R6' then
+			CharacterLimbs.Hats = {}
+			if VulnChar ~= Character then
+				VulnChar = Character
+				local UnpackedHatHandles = {}
+				for i,v in pairs(CharacterLimbs.Hats)do
+					pcall(function()
+						table.insert(UnpackedHatHandles,v.Handle)
+					end)
+				end
+				Maintain(Character.PrimaryPart)
+				SetUpUndead()
+			end
+			if os.clock() - Debounces.SetUp < 6 then return end
+			--Character movement/mass set up
+			for i,v in pairs(Character:GetDescendants())do
+				pcall(function()
+					v.CanCollide = false
+					v.CanTouch = false
+					v.Massless = false
+				end)
+			end
+			pcall(function()
+				for _,x in pairs(Character:GetChildren())do
+					if x.Name:find("Leg") then
+						x.Parent = nil
+					end
+				end
+			end)
+			for i_,x in pairs(Character:GetChildren())do
+				if x:IsA("CharacterMesh") then
+					x:Destroy()
+				end
+			end
+			---
+			CharacterLimbs.Head = Character.Head
+			CharacterLimbs.LeftArm = Character:FindFirstChild("Left Arm")
+			CharacterLimbs.RightArm = Character:FindFirstChild("Right Arm")
+			if ScanForWeld("Right Shoulder") then
+				ScanForWeld("Right Shoulder"):Destroy()
+			end
+			if ScanForWeld("Left Shoulder") then
+				ScanForWeld("Left Shoulder"):Destroy()
+			end
+			local LHand = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
+			local RHand = Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)
+			local HCframe = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+			--
+			Parts.LeftArm.CFrame = Camera.CFrame * LHand * CFrame.Angles(math.rad(90),0,0)
+
+			if CharacterLimbs.RightArm:FindFirstChild("Flinging") then
+				Parts.RightArm.CFrame = (Camera.CFrame * RHand * CFrame.new(0,0,-4)) * CFrame.Angles(math.rad(90),0,0)
+			else
+				Parts.RightArm.CFrame = Camera.CFrame * RHand * CFrame.Angles(math.rad(90),0,0)
+			end
+
+			Parts.FakeLarm.CFrame = (Parts.LeftArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
+			Parts.FakeRarm.CFrame = (Parts.RightArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
+			Parts.Head.CFrame = Camera.CFrame * HCframe
+			RePositionHeadParts()
+			if GetRigType() == 'R6' and CharacterLimbs.Head ~= nil and IsParentLocked(CharacterLimbs.Head)==false then
+				--Maintain(CharacterLimbs.Head)
+				for _,hatInfo in pairs(CharacterLimbs.Hats)do
+					local Hat = hatInfo[1]
+					local Offset = hatInfo[2]
+					Hat.Handle.CFrame = Parts.Head.CFrame
+					Maintain(Hat.Handle)
+					if Hat.Handle:FindFirstChild('AccessoryWeld') then
+						Hat.Handle.AccessoryWeld:Destroy()
+					end
+				end
+				MoveAt(CharacterLimbs.LeftArm,Parts.LeftArm.CFrame)
+				MoveAt(CharacterLimbs.RightArm,Parts.RightArm.CFrame)
+				MoveAt(CharacterLimbs.Head,Parts.Head.CFrame)
+				RePositionHeadParts()
+				for i,v in pairs(CharacterLimbs)do
+					if type(v)~='table' then
+						Maintain(v)
+					end
+				end
+				for _,hatCheck in pairs(Character:GetChildren())do
+					if hatCheck:IsA("Accessory") then
+						Maintain(hatCheck.Handle)
+						pcall(function()
+							hatCheck.Handle.Transparency = 1
+						end)
+					end
+				end
+			end
+		elseif GetRigType()=='R15' then
+			local KeepConnected = {
+				LeftUpperArm = {
+					"LeftLowerArm",
+					"LeftHand"
+				},
+				RightUpperArm = {
+					"RightLowerArm",
+					"RightHand"
+				},
+				--UpperTorso = {
+				--	"LowerTorso"
+				--}
+			}
+			local Collection = {}
+			local Unimportant_DeleteIt = {
+				"LeftUpperLeg",
+				"LeftLowerLeg",
+				"LeftFoot",
+				"RightUpperLeg",
+				"RightLowerLeg",
+				"RightFoot",
+				"LeftUpperArm",
+				"LeftLowerArm",
+				"RightUpperArm",
+				"RightLowerArm",
+			}
+			CharacterLimbs.Hats = {}
+			if VulnChar ~= Character then
+				VulnChar = Character
+				local ThisData = {}
+				for Limb,TableSearch in pairs({})do --empty table for right now
+					local FoundLimb = Character:FindFirstChild(tostring(Limb))
+					for _,x in pairs(TableSearch)do
+						local TheOtherLimb = Character:FindFirstChild(x)
+						table.insert(ThisData,{
+							FoundLimb,
+							TheOtherLimb,
+							TheOtherLimb.CFrame:ToObjectSpace(FoundLimb.CFrame):Inverse()
+						})
+					end
+				end
+				table.insert(Collection,ThisData)
+				local UnpackedHatHandles = {}
+				for i,v in pairs(CharacterLimbs.Hats)do
+					pcall(function()
+						table.insert(UnpackedHatHandles,v.Handle)
+					end)
+				end
+				Maintain(Character.PrimaryPart)
+				SetUpUndead()
+			end
+			if os.clock() - Debounces.SetUp < 6 then return end
+			--Character movement/mass set up
+			for i,v in pairs(Character:GetDescendants())do
+				if v:IsA("BasePart") and not table.find(Unimportant_DeleteIt,v.Name) then
+					Maintain(v)
+				elseif v:IsA("BasePart") and table.find(Unimportant_DeleteIt,v.Name) then
+					v:Destroy()
+				end
+				pcall(function()
+					v.CanCollide = false
+					v.CanTouch = false
+					v.Massless = false
+				end)
+			end
+			pcall(function()
+				for _,x in pairs(Character:GetChildren())do
+					if x.Name:find("Leg") then
+						x.Parent = nil
+					end
+				end
+			end)
+			for i_,x in pairs(Character:GetChildren())do
+				if x:IsA("CharacterMesh") then
+					x:Destroy()
+				end
+			end
+			---
+			CharacterLimbs.Head = Character.Head
+			CharacterLimbs.LeftArm = Character:FindFirstChild("LeftHand")
+			CharacterLimbs.RightArm = Character:FindFirstChild("RightHand")
+			if ScanForWeld("RightWrist") then
+				ScanForWeld("RightWrist"):Destroy()
+			end
+			if ScanForWeld("LeftWrist") then
+				ScanForWeld("LeftWrist"):Destroy()
+			end
+			local LHand = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
+			local RHand = Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)
+			local HCframe = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+			--
+			Parts.LeftArm.CFrame = Camera.CFrame * LHand * CFrame.Angles(math.rad(90),0,0)
+			if CharacterLimbs.RightArm:FindFirstChild("Flinging") then
+				Parts.RightArm.CFrame = (Camera.CFrame * RHand * CFrame.new(0,0,-4)) * CFrame.Angles(math.rad(90),0,0)
+			else
+				Parts.RightArm.CFrame = Camera.CFrame * RHand * CFrame.Angles(math.rad(90),0,0)
+			end
+			Parts.Head.CFrame = Camera.CFrame * HCframe
+			for _,DataB in pairs(Collection)do
+				local LimbA = DataB[1]
+				local LimbB = DataB[2]
+				local Offset = DataB[3]
+				Maintain(LimbA)
+				Maintain(LimbB)
+				LimbB.CFrame = LimbA.CFrame * Offset
+				MoveAt(LimbB,LimbA.CFrame*Offset)
+				task.defer(function()
+					LimbB.CFrame = LimbA.CFrame * Offset
+					MoveAt(LimbB,LimbA.CFrame*Offset)
+				end)
+			end
+			RePositionHeadParts()
+			if GetRigType() == 'R15' and CharacterLimbs.Head ~= nil and IsParentLocked(CharacterLimbs.Head)==false then
+				--Maintain(CharacterLimbs.Head)
+				for _,hatInfo in pairs(CharacterLimbs.Hats)do
+					local Hat = hatInfo[1]
+					local Offset = hatInfo[2]
+					Hat.Handle.CFrame = Parts.Head.CFrame
+					Maintain(Hat.Handle)
+					if Hat.Handle:FindFirstChild('AccessoryWeld') then
+						Hat.Handle.AccessoryWeld:Destroy()
+					end
+				end
+				MoveAt(CharacterLimbs.LeftArm,Parts.LeftArm.CFrame)
+				MoveAt(CharacterLimbs.RightArm,Parts.RightArm.CFrame)
+				MoveAt(CharacterLimbs.Head,Parts.Head.CFrame)
+				RePositionHeadParts()
+				for i,v in pairs(CharacterLimbs)do
+					if type(v)~='table' then
+						Maintain(v)
+					end
+				end
+				for _,hatCheck in pairs(Character:GetChildren())do
+					if hatCheck:IsA("Accessory") then
+						Maintain(hatCheck.Handle)
+						pcall(function()
+							hatCheck.Handle.Transparency = 1
+						end)
+					end
+				end
+			end
+		end
+		--
+		if PredictingPosition == true then
+			local PositionFromHead = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(1,-1,0)
+			local RightArmCFrame = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)
+			local Ignore_A = {}
+			for i,v in pairs(Parts)do
+				table.insert(Ignore_A,v)
+			end
+			local TrackRay1 = Ray.new(RightArmCFrame.Position,RightArmCFrame.LookVector*200)
+			local TrackHit,TrackPosition = workspace:FindPartOnRayWithIgnoreList(TrackRay1,{Character,unpack(Camera:GetChildren()),unpack(Ignore_A)},true,false)
+			if TrackPosition then
+				VrTracker.PlaceAtAtt.WorldPosition = TrackPosition
+				VrTracker.ParticleFX.WorldPosition = TrackPosition
+				VrTracker.PredictedPosition = TrackPosition + Vector3.new(0,3+0.5,0)
+				VrTracker.AtHand.Parent = Camera
+				VrTracker.AtHand.CFrame = CFrame.new(RightArmCFrame.Position)
+			else
+				VrTracker.AtHand.Parent = nil
+			end
+		else
+			VrTracker.AtHand.Parent = nil
+		end
+	end
+end)
+game:GetService("RunService").RenderStepped:Connect(function()
+	if Services.VR.VREnabled == not game:GetService("RunService"):IsStudio() and CharacterLimbs.Head~=nil then
+		for _,x in pairs(Character:GetChildren())do
+			pcall(function()
+				Maintain(x)
+			end)
+		end
+		CharacterLimbs.RightArm.CFrame = Parts.RightArm.CFrame
+		CharacterLimbs.LeftArm.CFrame = Parts.LeftArm.CFrame
+		RePositionHeadParts()
+		task.defer(function()
+			RePositionHeadParts()
+			CharacterLimbs.RightArm.CFrame = Parts.RightArm.CFrame
+			CharacterLimbs.LeftArm.CFrame = Parts.LeftArm.CFrame
+		end)
+	end
+end)
+---End of VR like movement;
+
+--/// CHAT SCRIPTING
+local NAME_COLORS =
+	{
+		Color3.new(253/255, 41/255, 67/255), -- BrickColor.new("Bright red").Color,
+		Color3.new(1/255, 162/255, 255/255), -- BrickColor.new("Bright blue").Color,
+		Color3.new(2/255, 184/255, 87/255), -- BrickColor.new("Earth green").Color,
+		BrickColor.new("Bright violet").Color,
+		BrickColor.new("Bright orange").Color,
+		BrickColor.new("Bright yellow").Color,
+		BrickColor.new("Light reddish violet").Color,
+		BrickColor.new("Brick yellow").Color,
+	}
+
+local function GetNameValue(pName)
+	local value = 0
+	for index = 1, #pName do
+		local cValue = string.byte(string.sub(pName, index, index))
+		local reverseIndex = #pName - index + 1
+		if #pName%2 == 1 then
+			reverseIndex = reverseIndex - 1
+		end
+		if reverseIndex%4 >= 2 then
+			cValue = -cValue
+		end
+		value = value + cValue
+	end
+	return value
+end
+local color_offset = 0
+local function ComputeNameColor(pName)
+	return NAME_COLORS[((GetNameValue(pName) + color_offset) % #NAME_COLORS) + 1]
+end
+
+--Converted UI ↓
+local Frame = Instance.new("Frame")
+local ChatBarParentFrame = Instance.new("Frame")
+local Frame_2 = Instance.new("Frame")
+local BoxFrame = Instance.new("Frame")
+local Frame_3 = Instance.new("Frame")
+local ChatBar = Instance.new("TextBox")
+local MessageMode = Instance.new("TextButton")
+local TextLabel = Instance.new("TextLabel")
+local ChannelsBarParentFrame = Instance.new("Frame")
+local Frame_4 = Instance.new("Frame")
+local ScrollingBase = Instance.new("Frame")
+local ScrollerSizer = Instance.new("Frame")
+local ScrollerFrame = Instance.new("Frame")
+local Frame_All = Instance.new("Frame")
+local BackgroundFrame = Instance.new("Frame")
+local UnselectedFrame = Instance.new("Frame")
+local TextButton = Instance.new("TextButton")
+local SelectedFrame = Instance.new("Frame")
+local BackgroundImage = Instance.new("ImageLabel")
+local BlueBarLeft = Instance.new("ImageLabel")
+local BlueBarRight = Instance.new("ImageLabel")
+local TextButton_2 = Instance.new("TextButton")
+local TextButton_3 = Instance.new("TextButton")
+local Frame_5 = Instance.new("Frame")
+local ImageLabel = Instance.new("ImageLabel")
+local TextLabel_2 = Instance.new("TextLabel")
+local Frame_System = Instance.new("Frame")
+local BackgroundFrame_2 = Instance.new("Frame")
+local UnselectedFrame_2 = Instance.new("Frame")
+local TextButton_4 = Instance.new("TextButton")
+local SelectedFrame_2 = Instance.new("Frame")
+local BackgroundImage_2 = Instance.new("ImageLabel")
+local BlueBarLeft_2 = Instance.new("ImageLabel")
+local BlueBarRight_2 = Instance.new("ImageLabel")
+local TextButton_5 = Instance.new("TextButton")
+local TextButton_6 = Instance.new("TextButton")
+local Frame_6 = Instance.new("Frame")
+local ImageLabel_2 = Instance.new("ImageLabel")
+local TextLabel_3 = Instance.new("TextLabel")
+local Frame_7 = Instance.new("Frame")
+local LeaveConfirmationFrame = Instance.new("Frame")
+local TextButton_7 = Instance.new("TextButton")
+local TextButton_8 = Instance.new("TextButton")
+local TextButton_9 = Instance.new("TextButton")
+local TextLabel_4 = Instance.new("TextLabel")
+local PageLeftButton = Instance.new("ImageButton")
+local ArrowLabel = Instance.new("ImageLabel")
+local PositionalHelper = Instance.new("Frame")
+local PageRightButton = Instance.new("ImageButton")
+local ArrowLabel_2 = Instance.new("ImageLabel")
+local ChatChannelParentFrame = Instance.new("Frame")
+local Frame_MessageLogDisplay = Instance.new("Frame")
+local Scroller = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+local Frame_8 = Instance.new("Frame")
+local TextLabel_5 = Instance.new("TextLabel")
+local ChatLabel = Instance.new("TextLabel")
+local ImageButton = Instance.new("ImageButton")
+local ImageLabel_3 = Instance.new("ImageLabel")
+
+--Properties:
+
+Frame.BackgroundTransparency = 1.000
+Frame.Size = UDim2.new(1, 0, 1, 0)
+
+ChatBarParentFrame.Name = "ChatBarParentFrame"
+ChatBarParentFrame.Parent = Frame
+ChatBarParentFrame.BackgroundTransparency = 1.000
+ChatBarParentFrame.Position = UDim2.new(0, 0, 1, -42)
+ChatBarParentFrame.Size = UDim2.new(1, 0, 0, 42)
+
+Frame_2.Parent = ChatBarParentFrame
+Frame_2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame_2.BackgroundTransparency = 0.600
+Frame_2.BorderSizePixel = 0
+Frame_2.Size = UDim2.new(1, 0, 1, 0)
+
+BoxFrame.Name = "BoxFrame"
+BoxFrame.Parent = Frame_2
+BoxFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+BoxFrame.BackgroundTransparency = 0.600
+BoxFrame.BorderSizePixel = 0
+BoxFrame.Position = UDim2.new(0, 7, 0, 7)
+BoxFrame.Size = UDim2.new(1, -14, 1, -14)
+
+Frame_3.Parent = BoxFrame
+Frame_3.BackgroundTransparency = 1.000
+Frame_3.Position = UDim2.new(0, 5, 0, 5)
+Frame_3.Size = UDim2.new(1, -10, 1, -10)
+
+ChatBar.Name = "ChatBar"
+ChatBar.Parent = Frame_3
+ChatBar.BackgroundTransparency = 1.000
+ChatBar.Selectable = false
+ChatBar.Size = UDim2.new(1, 0, 1, 0)
+ChatBar.ClearTextOnFocus = false
+ChatBar.Font = Enum.Font.SourceSansBold
+ChatBar.Text = ""
+ChatBar.PlaceholderText = "To chat here, press '" .. "\\" .. "'"
+ChatBar.PlaceholderColor3 = Color3.new(0,0,0)
+ChatBar.TextColor3 = Color3.fromRGB(0, 0, 0)
+ChatBar.TextSize = 18.000
+ChatBar.TextTransparency = 0.400
+ChatBar.TextWrapped = true
+ChatBar.TextXAlignment = Enum.TextXAlignment.Left
+ChatBar.TextYAlignment = Enum.TextYAlignment.Top
+
+MessageMode.Name = "MessageMode"
+MessageMode.Parent = Frame_3
+MessageMode.BackgroundTransparency = 1.000
+MessageMode.Selectable = false
+MessageMode.Font = Enum.Font.SourceSansBold
+MessageMode.Text = ""
+MessageMode.TextColor3 = Color3.fromRGB(35, 76, 142)
+MessageMode.TextSize = 18.000
+MessageMode.TextTransparency = 0.400
+MessageMode.TextWrapped = true
+MessageMode.TextXAlignment = Enum.TextXAlignment.Left
+
+TextLabel.Parent = nil
+TextLabel.BackgroundTransparency = 1.000
+TextLabel.Size = UDim2.new(1, 0, 1, 0)
+TextLabel.Font = Enum.Font.SourceSansBold
+TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.TextSize = 18.000
+TextLabel.TextTransparency = 0.400
+TextLabel.TextWrapped = true
+TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+TextLabel.TextYAlignment = Enum.TextYAlignment.Top
+
+ChannelsBarParentFrame.Name = "ChannelsBarParentFrame"
+ChannelsBarParentFrame.Parent = Frame
+ChannelsBarParentFrame.BackgroundTransparency = 1.000
+ChannelsBarParentFrame.Size = UDim2.new(1, 0, 0, 34)
+ChannelsBarParentFrame.Visible = false
+
+Frame_4.Parent = ChannelsBarParentFrame
+Frame_4.BackgroundTransparency = 1.000
+Frame_4.Size = UDim2.new(1, 0, 1, 0)
+
+ScrollingBase.Name = "ScrollingBase"
+ScrollingBase.Parent = Frame_4
+ScrollingBase.BackgroundTransparency = 1.000
+ScrollingBase.ClipsDescendants = true
+ScrollingBase.Size = UDim2.new(1, 0, 1, 0)
+
+ScrollerSizer.Name = "ScrollerSizer"
+ScrollerSizer.Parent = ScrollingBase
+ScrollerSizer.BackgroundTransparency = 1.000
+ScrollerSizer.Size = UDim2.new(0.5, 0, 1, 0)
+
+ScrollerFrame.Name = "ScrollerFrame"
+ScrollerFrame.Parent = ScrollerSizer
+ScrollerFrame.BackgroundTransparency = 1.000
+ScrollerFrame.Size = UDim2.new(1, 0, 1, 0)
+
+Frame_All.Name = "Frame_All"
+Frame_All.Parent = ScrollerFrame
+Frame_All.BackgroundTransparency = 1.000
+Frame_All.Size = UDim2.new(1, 0, 1, 0)
+
+BackgroundFrame.Name = "BackgroundFrame"
+BackgroundFrame.Parent = Frame_All
+BackgroundFrame.BackgroundTransparency = 1.000
+BackgroundFrame.Position = UDim2.new(0, 1, 0, 1)
+BackgroundFrame.Size = UDim2.new(1, -2, 1, -2)
+
+UnselectedFrame.Name = "UnselectedFrame"
+UnselectedFrame.Parent = BackgroundFrame
+UnselectedFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+UnselectedFrame.BackgroundTransparency = 0.600
+UnselectedFrame.BorderSizePixel = 0
+UnselectedFrame.Size = UDim2.new(1, 0, 1, 0)
+UnselectedFrame.Visible = false
+
+TextButton.Parent = UnselectedFrame
+TextButton.Active = false
+TextButton.BackgroundTransparency = 1.000
+TextButton.Selectable = false
+TextButton.Size = UDim2.new(1, 0, 1, 0)
+TextButton.Font = Enum.Font.SourceSans
+TextButton.Text = "All"
+TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.TextSize = 18.000
+TextButton.TextStrokeTransparency = 0.600
+TextButton.TextTransparency = 0.600
+
+SelectedFrame.Name = "SelectedFrame"
+SelectedFrame.Parent = BackgroundFrame
+SelectedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SelectedFrame.BackgroundTransparency = 1.000
+SelectedFrame.BorderSizePixel = 0
+SelectedFrame.Size = UDim2.new(1, 0, 1, 0)
+
+BackgroundImage.Name = "BackgroundImage"
+BackgroundImage.Parent = SelectedFrame
+BackgroundImage.BackgroundColor3 = Color3.fromRGB(93, 100, 115)
+BackgroundImage.BackgroundTransparency = 0.600
+BackgroundImage.BorderSizePixel = 0
+BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+BackgroundImage.ScaleType = Enum.ScaleType.Slice
+
+BlueBarLeft.Name = "BlueBarLeft"
+BlueBarLeft.Parent = SelectedFrame
+BlueBarLeft.BackgroundTransparency = 1.000
+BlueBarLeft.Position = UDim2.new(0, 2, 1, -4)
+BlueBarLeft.Size = UDim2.new(0.5, -2, 0, 4)
+BlueBarLeft.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarLeft.png"
+BlueBarLeft.ImageTransparency = 0.600
+BlueBarLeft.ScaleType = Enum.ScaleType.Slice
+BlueBarLeft.SliceCenter = Rect.new(3, 3, 32, 21)
+
+BlueBarRight.Name = "BlueBarRight"
+BlueBarRight.Parent = SelectedFrame
+BlueBarRight.BackgroundTransparency = 1.000
+BlueBarRight.Position = UDim2.new(0.5, 0, 1, -4)
+BlueBarRight.Size = UDim2.new(0.5, -2, 0, 4)
+BlueBarRight.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarRight.png"
+BlueBarRight.ImageTransparency = 0.600
+BlueBarRight.ScaleType = Enum.ScaleType.Slice
+BlueBarRight.SliceCenter = Rect.new(3, 3, 32, 21)
+
+TextButton_2.Parent = SelectedFrame
+TextButton_2.Active = false
+TextButton_2.BackgroundTransparency = 1.000
+TextButton_2.Selectable = false
+TextButton_2.Size = UDim2.new(1, 0, 1, 0)
+TextButton_2.Font = Enum.Font.SourceSansBold
+TextButton_2.Text = "All"
+TextButton_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_2.TextSize = 18.000
+TextButton_2.TextStrokeTransparency = 0.750
+
+TextButton_3.Parent = BackgroundFrame
+TextButton_3.BackgroundTransparency = 1.000
+TextButton_3.Selectable = false
+TextButton_3.Size = UDim2.new(1, 0, 1, 0)
+TextButton_3.Font = Enum.Font.SourceSansBold
+TextButton_3.Text = ""
+TextButton_3.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_3.TextSize = 18.000
+TextButton_3.TextStrokeTransparency = 0.750
+
+Frame_5.Parent = BackgroundFrame
+Frame_5.BackgroundTransparency = 1.000
+Frame_5.Position = UDim2.new(0.800000012, -9, 0.5, -9)
+Frame_5.Size = UDim2.new(0, 18, 0, 18)
+
+ImageLabel.Parent = Frame_5
+ImageLabel.BackgroundTransparency = 1.000
+ImageLabel.Size = UDim2.new(1, 0, 1, 0)
+ImageLabel.Visible = false
+ImageLabel.Image = "rbxasset://textures/ui/Chat/MessageCounter.png"
+
+TextLabel_2.Parent = ImageLabel
+TextLabel_2.BackgroundTransparency = 1.000
+TextLabel_2.Position = UDim2.new(0.5, -7, 0.5, -7)
+TextLabel_2.Size = UDim2.new(0, 13, 0, 9)
+TextLabel_2.Font = Enum.Font.SourceSansBold
+TextLabel_2.Text = ""
+TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_2.TextSize = 14.000
+TextLabel_2.TextStrokeTransparency = 0.750
+
+Frame_System.Name = "Frame_System"
+Frame_System.Parent = ScrollerFrame
+Frame_System.BackgroundTransparency = 1.000
+Frame_System.Position = UDim2.new(1, 0, 0, 0)
+Frame_System.Size = UDim2.new(1, 0, 1, 0)
+
+BackgroundFrame_2.Name = "BackgroundFrame"
+BackgroundFrame_2.Parent = Frame_System
+BackgroundFrame_2.BackgroundTransparency = 1.000
+BackgroundFrame_2.Position = UDim2.new(0, 1, 0, 1)
+BackgroundFrame_2.Size = UDim2.new(1, -2, 1, -2)
+
+UnselectedFrame_2.Name = "UnselectedFrame"
+UnselectedFrame_2.Parent = BackgroundFrame_2
+UnselectedFrame_2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+UnselectedFrame_2.BackgroundTransparency = 0.600
+UnselectedFrame_2.BorderSizePixel = 0
+UnselectedFrame_2.Size = UDim2.new(1, 0, 1, 0)
+
+TextButton_4.Parent = UnselectedFrame_2
+TextButton_4.Active = false
+TextButton_4.BackgroundTransparency = 1.000
+TextButton_4.Selectable = false
+TextButton_4.Size = UDim2.new(1, 0, 1, 0)
+TextButton_4.Font = Enum.Font.SourceSans
+TextButton_4.Text = "System"
+TextButton_4.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_4.TextSize = 18.000
+TextButton_4.TextStrokeTransparency = 0.600
+TextButton_4.TextTransparency = 0.600
+
+SelectedFrame_2.Name = "SelectedFrame"
+SelectedFrame_2.Parent = BackgroundFrame_2
+SelectedFrame_2.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SelectedFrame_2.BackgroundTransparency = 1.000
+SelectedFrame_2.BorderSizePixel = 0
+SelectedFrame_2.Size = UDim2.new(1, 0, 1, 0)
+SelectedFrame_2.Visible = false
+
+BackgroundImage_2.Name = "BackgroundImage"
+BackgroundImage_2.Parent = SelectedFrame_2
+BackgroundImage_2.BackgroundColor3 = Color3.fromRGB(93, 100, 115)
+BackgroundImage_2.BackgroundTransparency = 0.600
+BackgroundImage_2.BorderSizePixel = 0
+BackgroundImage_2.Size = UDim2.new(1, 0, 1, 0)
+BackgroundImage_2.ScaleType = Enum.ScaleType.Slice
+
+BlueBarLeft_2.Name = "BlueBarLeft"
+BlueBarLeft_2.Parent = SelectedFrame_2
+BlueBarLeft_2.BackgroundTransparency = 1.000
+BlueBarLeft_2.Position = UDim2.new(0, 2, 1, -4)
+BlueBarLeft_2.Size = UDim2.new(0.5, -2, 0, 4)
+BlueBarLeft_2.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarLeft.png"
+BlueBarLeft_2.ImageTransparency = 0.600
+BlueBarLeft_2.ScaleType = Enum.ScaleType.Slice
+BlueBarLeft_2.SliceCenter = Rect.new(3, 3, 32, 21)
+
+BlueBarRight_2.Name = "BlueBarRight"
+BlueBarRight_2.Parent = SelectedFrame_2
+BlueBarRight_2.BackgroundTransparency = 1.000
+BlueBarRight_2.Position = UDim2.new(0.5, 0, 1, -4)
+BlueBarRight_2.Size = UDim2.new(0.5, -2, 0, 4)
+BlueBarRight_2.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarRight.png"
+BlueBarRight_2.ImageTransparency = 0.600
+BlueBarRight_2.ScaleType = Enum.ScaleType.Slice
+BlueBarRight_2.SliceCenter = Rect.new(3, 3, 32, 21)
+
+TextButton_5.Parent = SelectedFrame_2
+TextButton_5.Active = false
+TextButton_5.BackgroundTransparency = 1.000
+TextButton_5.Selectable = false
+TextButton_5.Size = UDim2.new(1, 0, 1, 0)
+TextButton_5.Font = Enum.Font.SourceSansBold
+TextButton_5.Text = "System"
+TextButton_5.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_5.TextSize = 18.000
+TextButton_5.TextStrokeTransparency = 0.750
+
+TextButton_6.Parent = BackgroundFrame_2
+TextButton_6.BackgroundTransparency = 1.000
+TextButton_6.Selectable = false
+TextButton_6.Size = UDim2.new(1, 0, 1, 0)
+TextButton_6.Font = Enum.Font.SourceSans
+TextButton_6.Text = ""
+TextButton_6.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_6.TextSize = 18.000
+TextButton_6.TextStrokeTransparency = 0.750
+
+Frame_6.Parent = BackgroundFrame_2
+Frame_6.BackgroundTransparency = 1.000
+Frame_6.Position = UDim2.new(0.800000012, -9, 0.5, -9)
+Frame_6.Size = UDim2.new(0, 18, 0, 18)
+
+ImageLabel_2.Parent = Frame_6
+ImageLabel_2.BackgroundTransparency = 1.000
+ImageLabel_2.Size = UDim2.new(1, 0, 1, 0)
+ImageLabel_2.Visible = false
+ImageLabel_2.Image = "rbxasset://textures/ui/Chat/MessageCounter.png"
+
+TextLabel_3.Parent = ImageLabel_2
+TextLabel_3.BackgroundTransparency = 1.000
+TextLabel_3.Position = UDim2.new(0.5, -7, 0.5, -7)
+TextLabel_3.Size = UDim2.new(0, 13, 0, 9)
+TextLabel_3.Font = Enum.Font.SourceSansBold
+TextLabel_3.Text = ""
+TextLabel_3.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_3.TextSize = 14.000
+TextLabel_3.TextStrokeTransparency = 0.750
+
+Frame_7.Parent = Frame_4
+Frame_7.BackgroundTransparency = 1.000
+Frame_7.ClipsDescendants = true
+Frame_7.Size = UDim2.new(1, 0, 1, 0)
+
+LeaveConfirmationFrame.Name = "LeaveConfirmationFrame"
+LeaveConfirmationFrame.Parent = Frame_7
+LeaveConfirmationFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+LeaveConfirmationFrame.BackgroundTransparency = 0.600
+LeaveConfirmationFrame.BorderSizePixel = 0
+LeaveConfirmationFrame.Position = UDim2.new(0, 0, 1, 0)
+LeaveConfirmationFrame.Size = UDim2.new(1, 0, 1, 0)
+
+TextButton_7.Parent = LeaveConfirmationFrame
+TextButton_7.BackgroundTransparency = 1.000
+TextButton_7.Selectable = false
+TextButton_7.Size = UDim2.new(1, 0, 1, 0)
+TextButton_7.Text = ""
+
+TextButton_8.Parent = LeaveConfirmationFrame
+TextButton_8.BackgroundTransparency = 1.000
+TextButton_8.Selectable = false
+TextButton_8.Size = UDim2.new(0.25, 0, 1, 0)
+TextButton_8.Font = Enum.Font.SourceSansBold
+TextButton_8.Text = "Confirm"
+TextButton_8.TextColor3 = Color3.fromRGB(0, 255, 0)
+TextButton_8.TextSize = 18.000
+TextButton_8.TextStrokeTransparency = 0.750
+
+TextButton_9.Parent = LeaveConfirmationFrame
+TextButton_9.BackgroundTransparency = 1.000
+TextButton_9.Position = UDim2.new(0.75, 0, 0, 0)
+TextButton_9.Selectable = false
+TextButton_9.Size = UDim2.new(0.25, 0, 1, 0)
+TextButton_9.Font = Enum.Font.SourceSansBold
+TextButton_9.Text = "Cancel"
+TextButton_9.TextColor3 = Color3.fromRGB(255, 0, 0)
+TextButton_9.TextSize = 18.000
+TextButton_9.TextStrokeTransparency = 0.750
+
+TextLabel_4.Parent = LeaveConfirmationFrame
+TextLabel_4.BackgroundTransparency = 1.000
+TextLabel_4.Position = UDim2.new(0.25, 0, 0, 0)
+TextLabel_4.Size = UDim2.new(0.5, 0, 1, 0)
+TextLabel_4.Font = Enum.Font.SourceSansBold
+TextLabel_4.Text = "Leave channel <XX>?"
+TextLabel_4.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_4.TextSize = 18.000
+TextLabel_4.TextStrokeTransparency = 0.750
+
+PageLeftButton.Name = "PageLeftButton"
+PageLeftButton.Parent = Frame_4
+PageLeftButton.BackgroundTransparency = 1.000
+PageLeftButton.Position = UDim2.new(0, 4, 0.150000006, 0)
+PageLeftButton.Selectable = false
+PageLeftButton.Size = UDim2.new(0.699999988, 0, 0.699999988, 0)
+PageLeftButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
+PageLeftButton.Visible = false
+PageLeftButton.Image = "rbxassetid://471630199"
+PageLeftButton.ImageTransparency = 0.600
+
+ArrowLabel.Name = "ArrowLabel"
+ArrowLabel.Parent = PageLeftButton
+ArrowLabel.BackgroundTransparency = 1.000
+ArrowLabel.Position = UDim2.new(0.25, 0, 0.300000012, 0)
+ArrowLabel.Rotation = 180.000
+ArrowLabel.Size = UDim2.new(0.400000006, 0, 0.400000006, 0)
+ArrowLabel.Image = "rbxassetid://471630112"
+ArrowLabel.ImageTransparency = 0.600
+
+PositionalHelper.Name = "PositionalHelper"
+PositionalHelper.Parent = Frame_4
+PositionalHelper.BackgroundTransparency = 1.000
+PositionalHelper.Position = UDim2.new(1, 0, 0.150000006, 0)
+PositionalHelper.Size = UDim2.new(0.699999988, 0, 0.699999988, 0)
+PositionalHelper.SizeConstraint = Enum.SizeConstraint.RelativeYY
+
+PageRightButton.Name = "PageRightButton"
+PageRightButton.Parent = PositionalHelper
+PageRightButton.BackgroundTransparency = 1.000
+PageRightButton.Position = UDim2.new(-1, -4, 0, 0)
+PageRightButton.Selectable = false
+PageRightButton.Size = UDim2.new(1, 0, 1, 0)
+PageRightButton.Visible = false
+PageRightButton.Image = "rbxassetid://471630199"
+PageRightButton.ImageTransparency = 0.600
+
+ArrowLabel_2.Name = "ArrowLabel"
+ArrowLabel_2.Parent = PageRightButton
+ArrowLabel_2.BackgroundTransparency = 1.000
+ArrowLabel_2.Position = UDim2.new(0.350000024, 0, 0.300000012, 0)
+ArrowLabel_2.Size = UDim2.new(0.400000006, 0, 0.400000006, 0)
+ArrowLabel_2.Image = "rbxassetid://471630112"
+ArrowLabel_2.ImageTransparency = 0.600
+
+ChatChannelParentFrame.Name = "ChatChannelParentFrame"
+ChatChannelParentFrame.Parent = Frame
+ChatChannelParentFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ChatChannelParentFrame.BackgroundTransparency = 0.600
+ChatChannelParentFrame.BorderSizePixel = 0
+ChatChannelParentFrame.Position = UDim2.new(0, 0, 0, 2)
+ChatChannelParentFrame.Size = UDim2.new(1, 0, 1, -46)
+
+Frame_MessageLogDisplay.Name = "Frame_MessageLogDisplay"
+Frame_MessageLogDisplay.Parent = ChatChannelParentFrame
+Frame_MessageLogDisplay.BackgroundTransparency = 1.000
+Frame_MessageLogDisplay.Size = UDim2.new(1, 0, 1, 0)
+
+Scroller.Name = "Scroller"
+Scroller.Parent = Frame_MessageLogDisplay
+Scroller.Active = true
+Scroller.BackgroundTransparency = 1.000
+Scroller.BorderSizePixel = 0
+Scroller.Position = UDim2.new(0, 0, 0, 3)
+Scroller.Selectable = false
+Scroller.Size = UDim2.new(1, -4, 1, -6)
+Scroller.CanvasSize = UDim2.new(0, 0, 0, 36)
+Scroller.ScrollBarThickness = 4
+
+UIListLayout.Parent = Scroller
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+Frame_8.Parent = Scroller
+Frame_8.BackgroundTransparency = 1.000
+Frame_8.LayoutOrder = 1
+Frame_8.Size = UDim2.new(1, 0, 0, 36)
+
+TextLabel_5.Parent = Frame_8
+TextLabel_5.BackgroundTransparency = 1.000
+TextLabel_5.ClipsDescendants = true
+TextLabel_5.Position = UDim2.new(0, 8, 0, 0)
+TextLabel_5.Size = UDim2.new(1, -14, 1, 0)
+TextLabel_5.Font = Enum.Font.SourceSansBold
+TextLabel_5.Text = "Brew VR - Chat Menu (Please use keyboard for now to chat)"
+TextLabel_5.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_5.TextSize = 18.000
+TextLabel_5.TextStrokeTransparency = 0.750
+TextLabel_5.TextWrapped = true
+TextLabel_5.TextXAlignment = Enum.TextXAlignment.Left
+TextLabel_5.TextYAlignment = Enum.TextYAlignment.Top
+
+ChatLabel.Name = "ChatLabel"
+ChatLabel.Parent = nil
+ChatLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ChatLabel.BackgroundTransparency = 1.000
+ChatLabel.BorderSizePixel = 5
+ChatLabel.LayoutOrder = 2
+ChatLabel.Size = UDim2.new(1, 0, 0, 25)
+ChatLabel.Font = Enum.Font.SourceSansBold
+ChatLabel.Text = "[ChatMessage] : Hello"
+ChatLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ChatLabel.TextSize = 15.000
+ChatLabel.TextStrokeTransparency = 0.700
+ChatLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+ImageButton.Parent = Frame
+ImageButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ImageButton.BackgroundTransparency = 0.600
+ImageButton.BorderSizePixel = 0
+ImageButton.Position = UDim2.new(1, -42, 1, -42)
+ImageButton.Selectable = false
+ImageButton.Size = UDim2.new(0, 42, 0, 42)
+ImageButton.Visible = false
+
+ImageLabel_3.Parent = ImageButton
+ImageLabel_3.BackgroundTransparency = 1.000
+ImageLabel_3.Position = UDim2.new(0.200000003, 0, 0.200000003, 0)
+ImageLabel_3.Size = UDim2.new(0.800000012, 0, 0.800000012, 0)
+ImageLabel_3.Image = "rbxassetid://261880743"
+ImageLabel_3.ImageTransparency = 0.600
+--Converted UI ↑
+
+local ChatScreen = Create("Part",Camera,{
+	Size = Vector3.new(0,0,0),
+	Anchored = true,
+	CanCollide = false,
+	Transparency = 0.8,
+	Color = Color3.new(0,0,0),
+	Material = Enum.Material.SmoothPlastic
+})
+local ChatSurface = Create('SurfaceGui',ChatScreen,{
+	Face = Enum.NormalId.Back,
+	Adornee = ChatScreen,
+	SizingMode = Enum.SurfaceGuiSizingMode.FixedSize,
+	CanvasSize = Vector2.new(800,400),
+	AlwaysOnTop = true,
+})
+Frame.Parent = ChatSurface
+local ColorCorrection = Create("ColorCorrectionEffect",nil,{
+	Brightness = -0.5
+})
+function ToggleChatMenu(t)
+	if os.clock()-Debounces.PromptChat < 0.5 then return end
+	Debounces.PromptChat = os.clock()
+	local SFX = Create("Sound",game:GetService("SoundService"),{
+		SoundId = "rbxassetid://8276741979",
+		Pitch = Random.new():NextNumber(1,1.1),
+		Playing = true,
+	})
+	Destroy(SFX,5)
+	local TheCameraCFrame = Camera.CFrame
+	if Services.VR.VREnabled == true then
+		TheCameraCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-1)
+	end
+	if t == true then
+		ColorCorrection.Parent = game:GetService("Lighting")
+		ColorCorrection.Brightness = 0
+		ChatScreen.CFrame = TheCameraCFrame*CFrame.new(0,0,-5)
+		ChatScreen.Parent = Camera
+		Services.TweenService:Create(ColorCorrection,TweenInfo.new(0.5),{Brightness = -0.5}):Play()
+		Services.TweenService:Create(ChatScreen,TweenInfo.new(0.5),{Size = Vector3.new(8,4,0)}):Play()
+	else
+		Services.TweenService:Create(ChatScreen,TweenInfo.new(0.5),{Size = Vector3.new(0,0,0)}):Play()
+		task.delay(0.5,function()
+			if ChatScreen.Size.Magnitude < 0.2 then
+				Services.TweenService:Create(ColorCorrection,TweenInfo.new(0.2),{Brightness = 0}):Play()
+				task.delay(0.2,function()
+					if ChatScreen.Size.Magnitude < 0.2 then
+						ColorCorrection.Parent = nil
+					end
+				end)
+				ChatScreen.Parent = nil
+			end
+		end)
+	end
+end
+local ChatEnabled = false
+
+function SendChat(MessageToSend)
+	Services.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(MessageToSend, "All")
+end
+
+if game:GetService("RunService"):IsStudio() then
+	Services.UIS.InputBegan:Connect(function(k)
+		if k.KeyCode == Enum.KeyCode.P and Typing == false then
+			ChatEnabled = not ChatEnabled
+			ToggleChatMenu(ChatEnabled)
+			ExtraVariables.ChatOpen = ChatEnabled
+		end
+	end)
+else
+	Services.UIS.InputBegan:Connect(function(k)
+		if k.KeyCode == Enum.KeyCode.ButtonL1 then
+			ChatEnabled = not ChatEnabled
+			ToggleChatMenu(ChatEnabled)
+			ExtraVariables.ChatOpen = ChatEnabled
+		end
+		if k.KeyCode == Enum.KeyCode.Slash then
+			if ChatEnabled == true and ChatBar:IsFocused() == false then
+				local Sfx2 = Create("Sound",game:GetService("SoundService"),{
+					SoundId = 'rbxassetid://9107144420',
+					Playing = true
+				})
+				Destroy(Sfx2,5)
+				ChatBar:CaptureFocus()
+			end
+		end
+	end)
+end
+ChatLabel.RichText = true
+function GetColoredText(Text,Color3_)
+	local Color3_ = {
+		R=math.round(Color3_.R),
+		G=math.round(Color3_.G),
+		B=math.round(Color3_.B),
+	}
+	return '<font color="'.."rgb(".. tostring(Color3_.R*255) ..","..tostring(Color3_.G*255)..","..tostring(Color3_.B*255)..")".."\">" .. Text .. "</font>"
+end
+local Layouts = 0
+function AddChatLog(Text)
+	Layouts = Layouts + 1
+	local Newlog = ChatLabel:Clone()
+	Newlog.Text = Text
+	Newlog.TextWrapped = true
+	Newlog.LayoutOrder = Layouts
+	Newlog.Parent = Scroller
+	local Away = Newlog.AbsoluteSize.Y
+	local Xevent = nil
+	local Start = os.clock()
+	local TemporaryChatEvent = nil
+	TemporaryChatEvent = game:GetService("RunService").RenderStepped:Connect(function()
+		if os.clock() - Start > 120 then
+			TemporaryChatEvent:Disconnect()
+		end
+		Newlog.Size = UDim2.new(
+			1, 0,
+			0, math.max(20,Newlog.TextBounds.Y)
+		)
+	end)
+	Destroy(Newlog,120)
+end
+AddChatLog(GetColoredText("{Brew} :",Color3.new(0,1,0)) .. GetColoredText(" Script created by Amokah, you shouldn't have this.",Color3.new(1,1,0)))
+function OnChat(Player)
+	if User:IsFriendsWith(Player.UserId) then
+		AddChatLog("Notification: {Your friend, '"..Player.DisplayName.." ("..Player.Name..")', is in the server.}")
+	end
+	--
+	local EventX = nil
+	EventX = Player.Chatted:Connect(function(MESSAGE)
+		AddChatLog(GetColoredText("[" .. Player.DisplayName .. "]:",ComputeNameColor(Player.Name)) .. "  " .. MESSAGE)
+	end)
+	local EventN = nil
+	EventN = Player.AncestryChanged:Connect(function()
+		EventX:Disconnect()
+		EventN:Disconnect()
+	end)
+end
+for _,p in pairs(Services.Players:GetPlayers())do
+	OnChat(p)
+end
+Services.Players.PlayerAdded:Connect(OnChat)
+
+local Shifties = {
+	['One'] = "!",
+	['Two'] = "@",
+	['Three'] = "#",
+	['Four'] = "$",
+	['Five'] = "%",
+	['Six'] = "^",
+	['Seven'] = "&",
+	['Eight'] = "*",
+	['Nine'] = "(",
+	['Zero'] = ")",
+	[Enum.KeyCode.Minus.Name] = "_",
+	[Enum.KeyCode.Equals.Name] = "+",
+	[Enum.KeyCode.LeftBracket.Name] = "{",
+	[Enum.KeyCode.RightBracket.Name] = "}",
+	[Enum.KeyCode.BackSlash.Name] = "|",
+	[Enum.KeyCode.Semicolon.Name] = ":",
+	[Enum.KeyCode.Quote.Name] = "'",
+	[Enum.KeyCode.Comma.Name] = "<",
+	[Enum.KeyCode.Period.Name] = ">",
+	[Enum.KeyCode.Slash.Name] = "?",
+	[Enum.KeyCode.Backquote.Name] = "~",
+}
+
+function trulyVisible(button)
+	local visible = button
+	local check = button
+	if visible == false then
+		return false
+	end
+	repeat 
+		if check:IsA("GuiObject") then
+			visible = check.Visible
+		elseif check:IsA("GuiBase") then
+			visible = check.Enabled
+		end
+		if visible == false then
+			return false
+		end
+		check = check.Parent
+	until
+	visible == false or check:IsA("ScreenGui") or check == nil or (check:IsA("GuiObject")==false and check:IsA("GuiBase")==false)
+	return visible
+end
+
+local UIS = game:GetService("UserInputService")
+local Shift = false
+local erase = os.clock()
+
+UIS.InputBegan:Connect(function(k)
+	local Equiv = nil
+	local Upper = nil
+	for X,S in pairs(Shifties)do
+		if k.KeyCode.Name == tostring(X) then
+			Upper = S
+			break
+		end
+	end
+	local HasValue = pcall(function()
+		Equiv = string.char(k.KeyCode.Value)
+	end)
+	if k.KeyCode == Enum.KeyCode.Slash and Typing == false then
+		Typing = true
+		local length = ChatBar.Text
+		ChatBar:CaptureFocus()
+		task.defer(function()
+			ChatBar.Text = length
+			ChatBar.CursorPosition = ChatBar.Text:len()+2
+		end)
+	end
+	if Typing == true and (k.KeyCode == Enum.KeyCode.Return or k.KeyCode == Enum.KeyCode.KeypadEnter) then
+		Typing = false
+		ChatBar:ReleaseFocus()
+		if ChatBar.Text:len() > 0 then
+			local Ok = Instance.new("Sound")
+			Ok.Parent = game:GetService("SoundService")
+			Ok.SoundId = 'rbxassetid://4590657391'
+			Ok.TimePosition = 0
+			Ok:Play()
+			SpawnAlternative(function()
+				task.wait(1.5)
+				Ok:Destroy()
+			end)
+			local PlayerColor = ComputeNameColor(User.Name)
+			AddChatLog(GetColoredText("[" .. User.DisplayName .. "] : ",PlayerColor) .. " " .. ChatBar.Text)
+			SendChat(ChatBar.Text)
+			ChatBar.Text = ""
+		end
+	end
+	if k.KeyCode == Enum.KeyCode.LeftShift or k.KeyCode == Enum.KeyCode.RightShift then
+		Shift = true
+	end
+	if Typing == true and k.KeyCode == Enum.KeyCode.Backspace then
+		local weird = ChatBar.Text:sub(1,ChatBar.Text:len()-1)
+		ChatBar.Text = weird
+		erase = os.clock()
+		ChatBar.CursorPosition = ChatBar.Text:len()+2
+	end
+	if Typing == true and Equiv and string.byte(Equiv)~=8 then
+		if Shift then
+			if Upper == nil then
+				Equiv = Equiv:upper()
+			else
+				Equiv = Upper
+			end
+		end
+		ChatBar.Text = ChatBar.Text .. Equiv
+		ChatBar.CursorPosition = ChatBar.Text:len()+2
+	end
+end)
+UIS.InputEnded:Connect(function(k)
+	if k.KeyCode == Enum.KeyCode.LeftShift or k.KeyCode == Enum.KeyCode.RightShift then
+		Shift = false
+	end
+end)
+
+game:GetService("ContextActionService"):BindAction("Quit",function()end,true,Enum.KeyCode.I)
+game:GetService("ContextActionService"):BindAction("Quit2",function()end,true,Enum.KeyCode.O)
+game:GetService("ContextActionService"):UnbindAllActions()
+
+
+game:GetService("RunService").RenderStepped:Connect(function()
+	if Typing == true and os.clock() - erase > 0.8 then
+		for _,k in pairs(UIS:GetKeysPressed())do
+			if k.KeyCode == Enum.KeyCode.Backspace then
+				local weird = ChatBar.Text:sub(1,ChatBar.Text:len()-1)
+				ChatBar.Text = weird
+				erase = os.clock() - 0.75
+				break
+			end
+		end
+	end
+	local scaleA = 0
+	for i,x in pairs(Scroller:GetChildren())do
+		if x:IsA("GuiObject") then
+			scaleA = scaleA + x.AbsoluteSize.Y
+		end
+	end
+	Scroller.CanvasSize = UDim2.new(0,0,0,scaleA)
+	Scroller.SizeConstraint = Enum.SizeConstraint.RelativeXY
+	Scroller.CanvasPosition = Vector2.new(0,scaleA+1)
+end)
+
+
+--\\\ CHAT SCRIPTING
+
+--//Model Creation for earlier tables: For organization
+
+--Tracker (Converted)
+local B1 = Instance.new("Attachment")
+B1.WorldOrientation = Vector3.new(0, 0, -130)
+local B2 = Instance.new("Attachment")
+B2.WorldOrientation = Vector3.new(0, 0, -90)
+local B3 = Instance.new("Attachment") --This one is the particle thing / the FX for the tracer thing
+local VrMoveTo = Instance.new("Part")
+Tracer = Instance.new("Beam")
+RingParticle = Instance.new("ParticleEmitter")
+RingParticle.TimeScale = 0.1
+RingParticle.LockedToPart = true
+BallParticle = Instance.new("ParticleEmitter")
+BallParticle.LockedToPart = true
+VrMoveTo.Name = "VrMotionTrack"
+VrMoveTo.CFrame = CFrame.new(-9.69146729, 0.5, 38.1137085, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+VrMoveTo.Position = Vector3.new(-9.69146728515625, 0.5, 38.11370849609375)
+VrMoveTo.Transparency = 1
+VrMoveTo.Size = Vector3.new(0.0010000000474974513, 0.0010000000474974513, 0.0010000000474974513)
+VrMoveTo.Anchored = true
+VrMoveTo.BottomSurface = Enum.SurfaceType.Smooth
+VrMoveTo.CanCollide = false
+VrMoveTo.TopSurface = Enum.SurfaceType.Smooth
+B1.Parent = VrMoveTo
+B2.Parent = VrMoveTo
+B3.Parent = VrMoveTo
+Tracer.Name = "VrTrail"
+Tracer.Parent = VrMoveTo
+Tracer.Attachment0 = B1
+Tracer.Attachment1 = B2
+Tracer.Color = ColorSequence.new(Color3.new(0, 0.45098, 1),Color3.new(0, 0.45098, 1))
+Tracer.CurveSize0 = -10
+Tracer.CurveSize1 = 5
+Tracer.FaceCamera = true
+Tracer.LightEmission = 1
+Tracer.Segments = 100
+Tracer.Texture = "rbxassetid://9488075006"
+Tracer.TextureLength = 2
+Tracer.TextureSpeed = 2
+Tracer.Transparency = NumberSequence.new(0,0)
+Tracer.Width0 = 0
+Tracer.Width1 = 1
+Tracer.Brightness = 3
+RingParticle.Name = "RingP"
+RingParticle.Parent = B3
+RingParticle.Speed = NumberRange.new(1,1)
+RingParticle.Orientation = Enum.ParticleOrientation.VelocityPerpendicular
+RingParticle.Color = ColorSequence.new(Color3.new(0, 0.768627, 1),Color3.new(0, 0.768627, 1))
+RingParticle.LightEmission = 1
+RingParticle.Texture = "rbxassetid://9666643209"
+RingParticle.Transparency = NumberSequence.new(0,0.25,1)
+RingParticle.Size = NumberSequence.new(0,2.5)
+RingParticle.Brightness = 2
+RingParticle.Lifetime = NumberRange.new(0.20000000298023224, 0.20000000298023224)
+RingParticle.RotSpeed = NumberRange.new(1000, 1000)
+BallParticle.Name = "BallP"
+BallParticle.Parent = B3
+BallParticle.Speed = NumberRange.new(0, 0)
+BallParticle.Color = ColorSequence.new(Color3.new(0.298039, 1, 0),Color3.new(0.298039, 1, 0))
+BallParticle.LightEmission = 0.5
+BallParticle.Texture = "rbxassetid://9523177906"
+BallParticle.ZOffset = -0.5
+BallParticle.Size = NumberSequence.new(0.5,0.5)
+BallParticle.Lifetime = NumberRange.new(1, 1)
+BallParticle.Rate = 2
+BallParticle.RotSpeed = NumberRange.new(360, 360)
+
+VrTracker = { --Earlier Table
+	AtHand = VrMoveTo,
+	PlaceAtAtt = B2,
+	ParticleFX = B3,
+	PredictedPosition = Vector3.new(0,0,0),
+}
+--Tracker (Converted)
+
+--\\Model Creation for earlier tables: For organization
+
+--//Finalized
+
+repeat task.wait(-1) until ExtraVariables.VrFinalized == true
+task.wait(0.5)
+PromptMessage([[
+→ Controls
+
+LEFT TRIGGER : Move
+LEFT BUTTON 1 : Chat
+RIGHT TRIGGER : Toggles flinging arm
+
+]],8,0.8)
+
+
+local simradius = 'shp'
+--METHOD THING
+if shp and (simradius == "shp") then
+	AlternativeSpawn(function()
+		while Character and game:GetService("RunService").Heartbeat:Wait() do
+			shp(User, "SimulationRadius", math.huge)
+		end
+	end)
+elseif ssr and (simradius == "ssr") then
+	AlternativeSpawn(function()
+		while Character and game:GetService("RunService").Heartbeat:Wait() do
+			ssr(math.huge)
+		end
+	end)
+end
