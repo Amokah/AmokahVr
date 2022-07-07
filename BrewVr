@@ -1801,7 +1801,7 @@ RIGHT TRIGGER : Toggles flinging arm
 
 
 local simradius = 'shp'
---METHOD THING
+--METHOD THING (Literally ONLY this piece is not mine.)
 if shp and (simradius == "shp") then
 	AlternativeSpawn(function()
 		while Character and game:GetService("RunService").Heartbeat:Wait() do
