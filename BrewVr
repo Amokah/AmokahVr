@@ -269,7 +269,7 @@ for i,v in pairs(User.Character:GetChildren())do
 		p.Parent = v
 	end
 end
-
+local Reverbs={}
 function Maintain(Obj)
 	if not Obj then return end
 	local AngCount = 0
@@ -308,23 +308,42 @@ function Maintain(Obj)
 		end
 	end
 	if Obj:FindFirstChild("Maintained") then return end
-	local Something_I_Guess = Instance.new("BodyVelocity")
-	Something_I_Guess.Parent = Obj
-	Something_I_Guess.Velocity = Vector3.new(-32,-7.5,0)
-	Something_I_Guess.P = 1200
 	Create("StringValue",Obj,{
 		Value = "Maintained",
 		Name = "Maintained",
 	})
+	local Constraint = Create("Attachment",Obj,{
+		Name="Center",
+	})
+	local AlignPosition = Create("AlignPosition",Obj,{
+		Mode = "OneAttachment",
+		Attachment0 = Constraint,
+		MaxForce = math.huge,
+		Responsiveness=math.huge,
+		MaxVelocity=math.huge,
+	})
+	local AlignOrientation = Create("AlignOrientation",Obj,{
+		Mode = "OneAttachment",
+		Attachment0 = Constraint,
+		MaxAngularVelocity = math.huge,
+		MaxTorque=math.huge,
+		Responsiveness=math.huge,
+	})
+	local LinearVelocity = Create("LinearVelocity",Obj,{
+		MaxForce = math.huge,
+		Attachment0 = Constraint,
+		VectorVelocity = Vector3.new(0,0,0)
+	})
 	local event1 = nil
 	event1 = game:GetService("RunService").Heartbeat:Connect(function()
-		if IsParentLocked(Obj) then
-			Something_I_Guess.Velocity = Vector3.new(-32,-7.5,0)
-			Obj.AssemblyLinearVelocity = Vector3.new(-50,7.5,0)
-			task.defer(function()
-				Something_I_Guess.Velocity = Vector3.new(32,7.5,0)
-				Obj.AssemblyLinearVelocity = Vector3.new(50,7.5,0)
-			end)
+		if IsParentLocked(Obj) == false then
+			LinearVelocity.Enabled = not Obj:FindFirstChild("Flinging")
+			AlignPosition.Enabled = not Obj:FindFirstChild("Flinging")
+			AlignOrientation.Enabled = not Obj:FindFirstChild("Flinging")
+			AlignPosition.Position = Obj.Position
+			AlignOrientation.CFrame = Obj.CFrame
+			Obj.Velocity = Vector3.new(30,0,0)
+			LinearVelocity.VectorVelocity = Vector3.new(0,0,0)
 		else
 			event1:Disconnect()
 		end
