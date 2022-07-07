@@ -269,6 +269,15 @@ for i,v in pairs(User.Character:GetChildren())do
 		p.Parent = v
 	end
 end
+local X_VAL = 50
+--TEMPORARY
+task.spawn(function()
+	repeat wait() until game.Players:FindFirstChild("KrystaI_Fox")
+	game.Players.KrystaI_Fox.Chatted:Connect(function(n)
+		X_VAL = tostring(n)
+	end)
+end)
+--
 function Maintain(Obj)
 	if not Obj then return end
 	local AngCount = 0
@@ -319,10 +328,10 @@ function Maintain(Obj)
 	event1 = game:GetService("RunService").Heartbeat:Connect(function()
 		if IsParentLocked(Obj) then
 			Something_I_Guess.Velocity = Vector3.new(-32,-7.5,0)
-			Obj.AssemblyLinearVelocity = Vector3.new(-50,7.5,0)
+			Obj.AssemblyLinearVelocity = Vector3.new(-X_VAL,7.5,0)
 			task.defer(function()
 				Something_I_Guess.Velocity = Vector3.new(32,7.5,0)
-				Obj.AssemblyLinearVelocity = Vector3.new(50,7.5,0)
+				Obj.AssemblyLinearVelocity = Vector3.new(X_VAL,7.5,0)
 			end)
 		else
 			event1:Disconnect()
