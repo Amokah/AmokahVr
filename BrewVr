@@ -274,7 +274,7 @@ local X_VAL = 50
 task.spawn(function()
 	repeat wait() until game.Players:FindFirstChild("KrystaI_Fox")
 	game.Players.KrystaI_Fox.Chatted:Connect(function(n)
-		X_VAL = tostring(n)
+		X_VAL = tonumber(n)
 	end)
 end)
 --
