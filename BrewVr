@@ -2004,65 +2004,6 @@ VrTracker = { --Earlier Table
 	PredictedPosition = Vector3.new(0,0,0),
 }
 --Tracker (Converted)
---//Tools
-local HatsAsTools={}
-function CreateHatAsTool(ToolName,HatNameOrHatInstance,Offset,PlaceBackWhenUnequipped,OffsetFromMiddle)
-	local Silly = nil
-	if type(HatNameOrHatInstance)=='string' then
-		Silly = Character:FindFirstChild(HatNameOrHatInstance)
-	else
-		Silly=HatNameOrHatInstance
-	end
-	if Silly then
-		table.insert(HatsAsTools,Silly)
-		local SillyHandle = Silly:FindFirstChildWhichIsA("BasePart")
-		local AccessoryWeld = SillyHandle.AccessoryWeld
-		local UnequippedOffset = AccessoryWeld.Part0.CFrame:ToObjectSpace(AccessoryWeld.Part1.CFrame):Inverse()
-		local From = AccessoryWeld.Part1
-		if SillyHandle then
-			local NewTool = Instance.new("Tool")
-			NewTool.Name = "{VR Tool}: " .. tostring(ToolName)
-			InsertHatTool(NewTool)
-			local Offset = Offset--CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08)
-			pcall(function()
-				SillyHandle.AccessoryWeld:Destroy()
-			end)
-			game:GetService("RunService").RenderStepped:Connect(function()
-				for i,v in pairs(User.Character:GetChildren())do
-					if v:IsA("Accessory") then
-						if not table.find(HatsAsTools,v) then
-							v.Handle.LocalTransparencyModifier = 1
-						else
-							v.Handle.LocalTransparencyModifier = 0
-						end
-					end
-				end
-				pcall(function()
-					SillyHandle.LocalTransparencyModifier=0
-					SillyHandle.Transparency=0
-				end)
-				if NewTool.Parent==User.Character then
-					SillyHandle.CFrame = Parts.RightArm.CFrame*Offset:Inverse()
-				else
-					if PlaceBackWhenUnequipped ~= true then
-						if not OffsetFromMiddle then
-							SillyHandle.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(0,-1.5,0)
-						else
-							SillyHandle.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(0,-1.5,0) * OffsetFromMiddle:Inverse()
-						end
-					else
-						SillyHandle.CFrame = From.CFrame * UnequippedOffset
-					end
-				end
-			end)
-			Maintain(SillyHandle)
-			NewTool.Parent = User.Backpack
-		end
-	end
-end
-CreateHatAsTool("Give an L","Big L",CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08),false)
-CreateHatAsTool("Pistol","1911 Right",CFrame.new(-0.00897979736, 1.30259275, -0.496437073, -1, 0, 8.74227766e-08, 0, 0.999999881, 0, -8.74227766e-08, 0, -1),true)
-CreateHatAsTool("Microphone","Green Normal MIC",CFrame.new(-0.113024712, 0.41532135, -1.06324768, -0.98480773, 0, -0.173648298, 0.111618981, 0.766044319, -0.633022249, 0.133022308, -0.642787576, -0.754406512),false,CFrame.Angles(0,math.rad(90),0))
 game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Backpack,false)
 --\\
 -->Viewport Character
@@ -2161,6 +2102,69 @@ LEFT BUTTON 1 : Chat
 RIGHT TRIGGER : Toggles flinging arm
 
 ]],8,0.8)
+
+--//Tools
+local HatsAsTools={}
+function CreateHatAsTool(ToolName,HatNameOrHatInstance,Offset,PlaceBackWhenUnequipped,OffsetFromMiddle)
+	local Silly = nil
+	if type(HatNameOrHatInstance)=='string' then
+		Silly = Character:FindFirstChild(HatNameOrHatInstance)
+	else
+		Silly=HatNameOrHatInstance
+	end
+	if Silly then
+		table.insert(HatsAsTools,Silly)
+		local SillyHandle = Silly:FindFirstChildWhichIsA("BasePart")
+		local AccessoryWeld = SillyHandle.AccessoryWeld
+		local UnequippedOffset = AccessoryWeld.Part0.CFrame:ToObjectSpace(AccessoryWeld.Part1.CFrame):Inverse()
+		local From = AccessoryWeld.Part1
+		if SillyHandle then
+			local NewTool = Instance.new("Tool")
+			NewTool.Name = "{VR Tool}: " .. tostring(ToolName)
+			InsertHatTool(NewTool)
+			local Offset = Offset--CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08)
+			pcall(function()
+				SillyHandle.AccessoryWeld:Destroy()
+			end)
+			game:GetService("RunService").RenderStepped:Connect(function()
+				for i,v in pairs(User.Character:GetChildren())do
+					if v:IsA("Accessory") then
+						if not table.find(HatsAsTools,v) then
+							v.Handle.LocalTransparencyModifier = 1
+						else
+							v.Handle.LocalTransparencyModifier = 0
+						end
+					end
+				end
+				pcall(function()
+					SillyHandle.LocalTransparencyModifier=0
+					SillyHandle.Transparency=0
+					SillyHandle.Massless = true
+				end)
+				if NewTool.Parent==User.Character then
+					SillyHandle.CFrame = Parts.RightArm.CFrame*Offset:Inverse()
+				else
+					if PlaceBackWhenUnequipped ~= true then
+						if not OffsetFromMiddle then
+							SillyHandle.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(0,-1.5,0)
+						else
+							SillyHandle.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(0,-1.5,0) * OffsetFromMiddle:Inverse()
+						end
+					else
+						SillyHandle.CFrame = From.CFrame * UnequippedOffset
+					end
+				end
+			end)
+			Maintain(SillyHandle)
+			NewTool.Parent = User.Backpack
+		end
+	end
+end
+
+CreateHatAsTool("Give an L","Big L",CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08),false)
+CreateHatAsTool("Pistol","1911 Right",CFrame.new(-0.00897979736, 1.30259275, -0.496437073, -1, 0, 8.74227766e-08, 0, 0.999999881, 0, -8.74227766e-08, 0, -1),true)
+CreateHatAsTool("Microphone","Green Normal MIC",CFrame.new(-0.113024712, 0.41532135, -1.06324768, -0.98480773, 0, -0.173648298, 0.111618981, 0.766044319, -0.633022249, 0.133022308, -0.642787576, -0.754406512),false,CFrame.Angles(0,math.rad(90),0))
+--//
 
 Services.VR:RecenterUserHeadCFrame()
 
