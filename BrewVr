@@ -2100,6 +2100,12 @@ PromptMessage([[
 LEFT TRIGGER : Move
 LEFT BUTTON 1 : Chat
 RIGHT TRIGGER : Toggles flinging arm
+RIGHT BUTTON 1 : Movement teleport
+TWIST RIGHT ARM : Change tools left to right
+
+→
+
+(Hats will turn into tools after this prompt)
 
 ]],8,0.8)
 
