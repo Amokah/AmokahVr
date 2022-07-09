@@ -47,6 +47,16 @@ local FrameYield = function(Seconds)
 	repeat game:GetService("RunService").RenderStepped:Wait() until os.clock()-Start >= Seconds
 	return os.clock()-Start
 end
+local ConnectFunctionUntil = function(Event,funcToLoop)
+	local Temp = Event
+	local Hmm = nil
+	Hmm=game:GetService("RunService").Stepped:Connect(function()
+		if funcToLoop() == true then
+			Temp:Disconnect()
+			Hmm:Disconnect()
+		end
+	end)
+end
 local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
 	local Type = game:GetService("RunService")[Type]
 	local Start = os.clock()
@@ -545,12 +555,92 @@ Services.UIS.InputEnded:Connect(function(key)
 end)
 Debounces.Moving = os.clock()
 Character.Humanoid.PlatformStand = true
+Character.Humanoid.RootPart.Anchored=true
 
 local FlingPart = {
 	Primary = nil,
 }
+local ToolsAndOffsets = {}
+for i,v in pairs(User.Backpack:GetChildren())do
+	pcall(function()
+		local Hand = Character:FindFirstChild("Right Arm") or Character:FindFirstChild("Right Hand")
+		if v:IsA("Tool") and v:FindFirstChild("Handle") then
+			task.spawn(function()	
+				v.Parent=User.Character
+				task.wait(0.5)
+				local Offset = v.Handle.CFrame:ToObjectSpace(Hand.CFrame)
+				table.insert(ToolsAndOffsets,{v,Offset})
+				for i,v in pairs(v:GetDescendants())do
+					if v:IsA("BasePart") then
+						game:GetService("RunService").RenderStepped:Connect(function()
+							v.Velocity = Vector3.new(0,0,0)
+							v.CFrame = Hand.CFrame * Offset:Inverse()
+							Maintain(v)
+						end)
+						v.Massless = true
+						v.CanCollide = false
+					end
+				end
+				Maintain(v.Handle)
+				v.Parent=User.Backpack
+			end)
+		end
+	end)
+end
+task.wait(0.6)
+
+function InsertHatTool(ClientTool)
+	if not ClientTool:FindFirstChild("Handle") then
+		local A = Instance.new("Part")
+		A.Name='Handle'
+		A.Size = Vector3.new(0,0,0)
+		A.Transparency = 1
+		A.CanCollide = false
+		A.Anchored = true
+		ClientTool.RequiresHandle=true
+		A.Parent = ClientTool
+	end
+	table.insert(ToolsAndOffsets,{ClientTool,CFrame.new(0,0,0)})
+end
 
 task.wait((15)  *  0.0105) --Basically 15 frames for your character to go stiff for proper arm/limb positioning
+Character.Humanoid.RootPart.Anchored=false
+ExtraVariables.ToolGrabbed = 0
+local MovementFunctions = {
+	GrabTool = function(dir)
+		ExtraVariables.ToolGrabbed = ExtraVariables.ToolGrabbed + (1*dir)
+		local LocalSelected = ExtraVariables.ToolGrabbed
+		if LocalSelected == 0 then
+			User.Character:FindFirstChildWhichIsA("Humanoid"):UnequipTools()
+			return
+		elseif LocalSelected < 0 then
+			ExtraVariables.ToolGrabbed = #ToolsAndOffsets
+		elseif LocalSelected > #ToolsAndOffsets then
+			ExtraVariables.ToolGrabbed = 0
+			User.Character:FindFirstChildWhichIsA("Humanoid"):UnequipTools()
+			return
+		end
+		for i,v in pairs(ToolsAndOffsets)do
+			if i == ExtraVariables.ToolGrabbed then
+				local Tool = v[1]
+				local Offset = v[2]
+				local Humanoid = User.Character:FindFirstChildWhichIsA("Humanoid")
+				Humanoid:UnequipTools()
+				Humanoid:EquipTool(Tool)
+				break
+			end
+		end
+	end,
+}
+AlternativeSpawn(function()
+	--repeat wait() until ExtraVariables.VrFinalized==true
+	--while wait() do
+	--	MovementFunctions.GrabTool(1)
+	--	wait(1)
+	--end
+end)
+
+Create("SpecialMesh",Parts.FollowPart,{Scale=Vector3.new(0,0,0)})
 game:GetService("RunService").Stepped:Connect(function()
 	if Services.VR.VREnabled == not game:GetService("RunService"):IsStudio() then
 		for i,v in pairs(Character:GetDescendants())do
@@ -636,7 +726,7 @@ game:GetService("RunService").Stepped:Connect(function()
 					Hat.Handle.CFrame = Parts.Head.CFrame
 					Maintain(Hat.Handle)
 					if Hat.Handle:FindFirstChild('AccessoryWeld') then
-						Hat.Handle.AccessoryWeld:Destroy()
+					--	Hat.Handle.AccessoryWeld:Destroy()
 					end
 				end
 				MoveAt(CharacterLimbs.LeftArm,Parts.LeftArm.CFrame)
@@ -650,7 +740,9 @@ game:GetService("RunService").Stepped:Connect(function()
 				end
 				for _,hatCheck in pairs(Character:GetChildren())do
 					if hatCheck:IsA("Accessory") then
-						Maintain(hatCheck.Handle)
+						pcall(function()
+							Maintain(hatCheck.Handle)
+						end)
 						pcall(function()
 							hatCheck.Handle.Transparency = 1
 						end)
@@ -778,7 +870,7 @@ game:GetService("RunService").Stepped:Connect(function()
 					Hat.Handle.CFrame = Parts.Head.CFrame
 					Maintain(Hat.Handle)
 					if Hat.Handle:FindFirstChild('AccessoryWeld') then
-						Hat.Handle.AccessoryWeld:Destroy()
+						--Hat.Handle.AccessoryWeld:Destroy()
 					end
 				end
 				MoveAt(CharacterLimbs.LeftArm,Parts.LeftArm.CFrame)
@@ -1482,7 +1574,130 @@ function SendChat(MessageToSend)
 	Services.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(MessageToSend, "All")
 end
 
-if game:GetService("RunService"):IsStudio() then
+function PlaySound(ID)
+	local x = Create("Sound",game:GetService("SoundService"),{
+		SoundId = "rbxassetid://" .. ID,
+		Volume = 2,
+		Pitch = 1,
+		Playing = true
+	})
+	task.delay(6,function()
+		x:Destroy()
+	end)
+end
+
+local FunctionsCalled = {}
+local Clicks = {}
+
+Services.UIS.InputBegan:Connect(function(k)
+	if k.KeyCode==Enum.KeyCode.ButtonL1 then
+		ChatEnabled = not ChatEnabled
+		ToggleChatMenu(ChatEnabled)
+	end
+	if k.KeyCode==Enum.KeyCode.P and game:GetService("RunService"):IsStudio() then
+		ChatEnabled = not ChatEnabled
+		ToggleChatMenu(ChatEnabled)
+	end
+end)
+
+--//RIGHT HAND MOTION FUNCTION
+local flat = Instance.new("Part")
+local display = Create("Part",nil,{
+	Anchored = true,
+	CanCollide = false,
+	Transparency = 1,
+	Name = "Clockwise",
+	Size = Vector3.new(3.5,0,3.5)
+})
+local rot = Create("Decal",display,{
+	Texture = "rbxassetid://8158185638",
+	Face = Enum.NormalId.Top,
+	Color3 = Color3.new(1,0.25,.8),
+})
+Debounces.RightMotionDb = os.clock()
+display.Parent = User.Character
+display.Size = Vector3.new(0,0,0)
+local Yielded = os.clock()
+local resetYielded = os.clock()
+
+flat.Anchored = true
+flat.Parent = workspace
+flat.Size = Vector3.new(.5,1,.5)
+--Create("Highlight",flat,{
+--	Adornee=flat,
+--	FillColor = Color3.new(1,0,1)
+--})
+game:GetService("RunService").RenderStepped:Connect(function()
+	if not CharacterLimbs.Head then return end
+	display.CFrame = CharacterLimbs.RightArm.CFrame
+	local Arm = CharacterLimbs.RightArm
+	local CFrameLookat = CFrame.lookAt(Arm.Position,(Arm.CFrame*CFrame.new(0,-10,0)).Position*Vector3.new(1,0,1)+Vector3.new(0,Arm.Position.Y,0)) * CFrame.Angles(math.pi/2,0,0)
+	flat.CFrame = CFrameLookat
+	local X,Y,Z = Parts.RightArm.CFrame:ToObjectSpace(flat.CFrame):ToOrientation()
+	local deg = math.deg(Y)
+	Y=math.deg(Y)
+	if (Y > 135 and Y < 150) and os.clock()-Debounces.RightMotionDb > 1 then
+		local SoundSFX = Create("Sound",game:GetService("SoundService"),{
+			SoundId='rbxassetid://5683584454',
+			Volume = 1,
+			Playing = true,
+		})
+		PlaySound(2789458365) --2789456957
+		display.Size=Vector3.new(0,0,0)
+		rot.Transparency=0
+		game:GetService("TweenService"):Create(display,TweenInfo.new(.5),{Size=Vector3.new(3.5,0,3.5)}):Play()
+		game:GetService("TweenService"):Create(rot,TweenInfo.new(.5),{Transparency=1}):Play()
+		task.delay(.55,function()
+			display.Size = Vector3.new(0,0,0)
+		end)
+		task.delay(5,function()
+			SoundSFX:Destroy()
+		end)
+		Debounces.RightMotionDb = os.clock()
+		MovementFunctions.GrabTool(1)
+	end
+end)
+--\\
+--//LEFT HAND MOTION FUNCTION
+local flat2 = Instance.new("Part")
+local display2 = Create("Part",nil,{
+	Anchored = true,
+	CanCollide = false,
+	Transparency = 1,
+	Name = "CounterClockwise",
+	Size = Vector3.new(3.5,0,3.5)
+})
+local rot2 = Create("Decal",display2,{
+	Texture = "rbxassetid://8158186627",
+	Face = Enum.NormalId.Top,
+})
+Debounces.LeftMotionDb = os.clock()
+game:GetService("RunService").RenderStepped:Connect(function()
+	display2.CFrame = Parts.LeftArm.CFrame
+	flat2.CFrame = CFrame.lookAt(Parts.LeftArm.Position*Vector3.new(0,1,0),(Parts.LeftArm.CFrame*CFrame.new(0,-1e5,0)).Position*Vector3.new(0,1,0))
+	local X,Y,Z = Parts.LeftArm.CFrame:ToObjectSpace(flat2.CFrame):ToOrientation()
+	if Y > -999 and Y < -998 and os.clock()-Debounces.LeftMotionDb > 1 then
+		local SoundSFX = Create("Sound",game:GetService("SoundService"),{
+			SoundId='rbxassetid://5683584454',
+			Volume = 1,
+			Playing = true,
+		})
+		PlaySound(2789456957)
+		game:GetService("TweenService"):Create(display2,TweenInfo.new(.5),{Size=Vector3.new(3.5,0,3.5)}):Play()
+		display2.Size=Vector3.new(0,0,0)
+		task.delay(.55,function()
+			display2.Size = Vector3.new(0,0,0)
+		end)
+		task.delay(5,function()
+			SoundSFX:Destroy()
+		end)
+		Debounces.LeftMotionDb = os.clock()
+		MovementFunctions.GrabTool(-1)
+	end
+end)
+--\\
+
+if game:GetService("RunService"):IsStudio() and false==true then
 	Services.UIS.InputBegan:Connect(function(k)
 		if k.KeyCode == Enum.KeyCode.P and Typing == false then
 			ChatEnabled = not ChatEnabled
@@ -1490,7 +1705,7 @@ if game:GetService("RunService"):IsStudio() then
 			ExtraVariables.ChatOpen = ChatEnabled
 		end
 	end)
-else
+elseif false==true then
 	Services.UIS.InputBegan:Connect(function(k)
 		if k.KeyCode == Enum.KeyCode.ButtonL1 then
 			ChatEnabled = not ChatEnabled
@@ -1549,12 +1764,18 @@ function OnChat(Player)
 	--
 	local EventX = nil
 	EventX = Player.Chatted:Connect(function(MESSAGE)
-		AddChatLog(GetColoredText("[" .. Player.DisplayName .. "]:",ComputeNameColor(Player.Name)) .. "  " .. MESSAGE)
+		if Player.Team == nil then
+			AddChatLog(GetColoredText("[" .. Player.DisplayName .. "]:",ComputeNameColor(Player.Name)) .. "  " .. MESSAGE)
+		else
+			AddChatLog(GetColoredText("[" .. Player.DisplayName .. "]:",Color3.new(Player.TeamColor)) .. "  " .. MESSAGE)
+		end
 	end)
 	local EventN = nil
-	EventN = Player.AncestryChanged:Connect(function()
-		EventX:Disconnect()
-		EventN:Disconnect()
+	EventN = Services.Players.PlayerRemoving:Connect(function(x)
+		if x == Player then
+			EventN:Disconnect()
+			EventX:Disconnect()
+		end
 	end)
 end
 for _,p in pairs(Services.Players:GetPlayers())do
@@ -1784,7 +2005,90 @@ VrTracker = { --Earlier Table
 }
 --Tracker (Converted)
 
+--\\
+-->Viewport Character
+local NewCamera = Instance.new("Camera")
+local ViewportFrame = Instance.new("ViewportFrame")
+ViewportFrame.Size = UDim2.new(0,200,0,200)
+local loopChar = nil
+local HeadsUp = Instance.new("Part")
+HeadsUp.Name = "VPF"
+HeadsUp.Size = Vector3.new(0,0,0)
+HeadsUp.Transparency = 1
+HeadsUp.CanCollide = false
+HeadsUp.Anchored = true
+HeadsUp.Parent = workspace.CurrentCamera
+loopChar = game:GetService("RunService").RenderStepped:Connect(function()
+	HeadsUp.CFrame = (workspace.CurrentCamera.CFrame * game:GetService("VRService"):GetUserCFrame(Enum.UserCFrame.Head))*CFrame.new(0,0,-10)
+	ViewportFrame:ClearAllChildren()
+	local Char = game:GetService('Players').LocalPlayer.Character
+	Char.Archivable = true
+	local Cloned = Char:Clone()
+	for _,x in pairs(Cloned:GetDescendants())do
+		if x:IsA("JointInstance") then
+			x:Destroy()
+		end
+		if x:IsA("BasePart") then
+			if x.Parent:IsA("Accessory") then
+				x.LocalTransparencyModifier = 0
+				x.Transparency = 0
+			else
+				x.Anchored = true
+			end
+		end
+		if x:IsA("BaseScript") then
+			x:Destroy()
+		end
+	end
+	Char.Archivable=true
+	Cloned.Parent = ViewportFrame
+	ViewportFrame.CurrentCamera = NewCamera
+	NewCamera.CFrame = Char.Head.CFrame * CFrame.new(0,0,-20)
+	NewCamera.CFrame=NewCamera.CFrame*CFrame.Angles(0,math.pi,0)
+end)
+local Afar = Instance.new("BillboardGui")
+Afar.AlwaysOnTop = true
+Afar.Size = UDim2.new(20,0,20,0)
+ViewportFrame.Size = UDim2.new(1,0,1,0)
+Afar.StudsOffset = Vector3.new(5,-2,0)
+ViewportFrame.Parent = Afar
+Afar.Parent = game:GetService("Players").LocalPlayer:FindFirstChildWhichIsA("PlayerGui")
+Afar.Adornee = HeadsUp
+ViewportFrame.BackgroundTransparency = 1
+--//
+
 --\\Model Creation for earlier tables: For organization
+
+--// Motion functions
+--local Up = Create("Part",workspace.CurrentCamera,{
+--	Size = Vector3.new(1.5,0,3),
+--	Name = "RayHitUpwards",
+--	Anchored = true,
+--})
+--local Down = Create("Part",workspace.CurrentCamera,{
+--	Size = Vector3.new(1.5,0,3),
+--	Name = "RayHitDownwards",
+--	Anchored = true,
+--})
+--local TimeTillFunction=os.clock()
+--game:GetService("RunService").RenderStepped:Connect(function()
+--	pcall(function()
+--		Up.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(1,1,-1.5)
+--		Down.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(1,-1.5,-1.5)
+--		local RayX = Ray.new(CharacterLimbs.RightArm.Position,CFrame.lookAt(CharacterLimbs.RightArm.Position,(CharacterLimbs.RightArm.CFrame*CFrame.new(0,0,5)).Position).LookVector*50)
+--		local Hit,Position = workspace:FindPartOnRayWithWhitelist(RayX,{Up,Down},true,true)
+--		if Hit then
+--			if Hit==Down then
+--				TimeTillFunction = os.clock()
+--			end
+--		end
+--		if os.clock()-TimeTillFunction > 0.2 and os.clock()-TimeTillFunction < 1 then
+--			TimeTillFunction = math.huge
+--			MovementFunctions.ChangeTool(1)
+--		end
+--	end)
+--end)
+--\\
 
 --//Finalized
 
@@ -1798,6 +2102,39 @@ LEFT BUTTON 1 : Chat
 RIGHT TRIGGER : Toggles flinging arm
 
 ]],8,0.8)
+
+Services.VR:RecenterUserHeadCFrame()
+
+local Silly = Character:FindFirstChild("Big L")
+if Silly then
+	local SillyHandle = Silly:FindFirstChildWhichIsA("BasePart")
+	if SillyHandle then
+		local NewTool = Instance.new("Tool")
+		NewTool.Name = "{Tool}: Big L"
+		InsertHatTool(NewTool)
+		local Offset = CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08)
+		pcall(function()
+			SillyHandle.AccessoryWeld:Destroy()
+		end)
+		game:GetService("RunService").RenderStepped:Connect(function()
+			for i,v in pairs(User.Character:GetChildren())do
+				pcall(function()
+					v.Handle.LocalTransparencyModifier = 1
+				end)
+			end
+			pcall(function()
+				SillyHandle.LocalTransparencyModifier=0
+			end)
+			if NewTool.Parent==User.Character then
+				SillyHandle.CFrame = Parts.RightArm.CFrame*Offset:Inverse()
+			else
+				SillyHandle.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(0,-1.5,0)
+			end
+		end)
+		Maintain(SillyHandle)
+		NewTool.Parent = User.Backpack
+	end
+end
 
 
 local simradius = 'shp'
