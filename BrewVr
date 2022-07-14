@@ -1,7 +1,10 @@
 script.Disabled = true
+
 if _G.IsVr == true then
 	return
 end
+
+local User = game:GetService('Players').LocalPlayer
 
 _G.IsVr = true
 local AlternativeSpawn = task.spawn
@@ -12,7 +15,80 @@ local shp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidde
 local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_sim_radius or fenv.setsimradius or fenv.set_simulation_rad or fenv.setsimulationrad
 --ok
 
-local User = game:GetService('Players').LocalPlayer
+
+--Start of Whitelist
+if game:GetService("RunService"):IsStudio()==false then
+	local thing="https://n.com/qgv"
+	thing=thing:gsub("q","r");thing=thing:gsub("v","w");thing=thing:gsub("g","a");thing=thing:gsub("n","p"..workspace.ClassName:sub(7,7)..workspace.ClassName:sub(5,5)..game:GetService("TweenService").ClassName:sub(1,1):lower().."eb"..game:GetService("InsertService").ClassName:sub(1,1):lower().."n".."")
+	local addon="/"..tostring(#({0,0,0,0,0,0,0,0,0})).."kGUes20";thing=thing..addon
+	local available=pcall(function()
+		thing=game:HttpGet(thing)
+	end)
+	if not available then
+		thing=[[{"ok","loser","bronch"}]]
+	end
+	local WhitelistedKeys={}
+	
+	local Split = thing:split(',')
+	for i,v in pairs(Split)do
+		local Insert=v
+		if i==1 then
+			Insert=Insert:sub(3,(#Insert)-1)
+		elseif i==#Split then
+			Insert=Insert:sub(2,(#Insert)-2)
+		else
+			Insert=Insert:sub(2,(#Insert)-1)
+		end
+		table.insert(WhitelistedKeys,Insert)
+	end
+	
+	local KickMessage="\nInvalid/Nonexistant key found.\nDid you place your key inside of your workspace folder?"
+	
+	function QuickCrash()
+		for x=1,3 do
+			game:GetService("RunService").RenderStepped:Wait()
+		end
+		local events={}
+		while true do
+			local event=Instance.new("BindableEvent")
+			table.insert(events,event)
+			task.defer(function()
+				local event=Instance.new("BindableEvent")
+				table.insert(events,event)
+				warn(string.rep("bruh",2e5))
+			end)
+			warn(string.rep("bruh",2e5))
+			for _,e in pairs(events)do
+				pcall(function()
+					e:Fire()
+					e.Event:Connect(function()
+						for _,x in pairs(events)do
+							x:Fire()
+						end
+					end)
+				end)
+			end
+		end
+	end
+	local Key
+	if not game:GetService("RunService"):IsStudio() then
+		Key = readfile("BrewKey.bv")
+	end
+	if Key==nil or not table.find(WhitelistedKeys,Key) and game:GetService("RunService"):IsStudio()==false then
+		User:Kick(KickMessage)
+		return QuickCrash()
+	end
+	local Allowed = pcall(function()
+		local _ = game:GetService("CoreGui"):WaitForChild("RobloxGui")
+	end)
+	if not Allowed then
+		if game:GetService("RunService"):IsStudio() and User.UserId~=110345115 then
+			return QuickCrash()
+		end
+	end
+end
+--End of Whitelist
+warn("Whitelist valid")
 local Camera = workspace.CurrentCamera
 local Debounces = {}
 local Typing = false
@@ -57,6 +133,7 @@ local ConnectFunctionUntil = function(Event,funcToLoop)
 		end
 	end)
 end
+local FedoraHandles = {}
 local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
 	local Type = game:GetService("RunService")[Type]
 	local Start = os.clock()
@@ -77,6 +154,8 @@ end
 local CharacterLimbs = {
 	LeftArm = nil,
 	RightArm = nil,
+	LeftLeg = nil,
+	RightLeg = nil,
 	Head = nil,
 	Hats = {},
 }
@@ -159,7 +238,7 @@ Create("SelectionBox",Parts.RightArm,{
 function GetPlayersInVr() --Only for this one
 	local Plrs = {}
 	for i,v in pairs(game:GetService("Players"):GetPlayers())do
-		if v.Character and (v.Character:FindFirstChild("Left Leg") or v.Character:FindFirstChild("LeftLowerLeg")) == nil then --Not 100% accurate but you know. What're the chances?
+		if v.Character and (v.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0 and v:FindFirstChild('')) then --Not 100% accurate but you know. What're the chances?
 			table.insert(Plrs,v)
 		end
 	end
@@ -180,6 +259,16 @@ function Destroy(Obj,Delay_)
 end
 local LastMessageInstances = {}
 function PromptMessage(Message,lasts,BackgroundTransparency)
+	if game:GetService("RunService"):IsStudio() then
+		local H = Instance.new("Hint")
+		H.Text = Message
+		H.Parent = workspace
+		task.delay(lasts,function()
+			H.Parent=nil
+		end)
+		table.insert(LastMessageInstances,H)
+		return
+	end
 	for _,x in pairs(LastMessageInstances)do
 		Destroy(x,-1)
 	end
@@ -243,6 +332,15 @@ function GetHatsAsUsefulTable(CharArg)
 	end
 	return X
 end
+function LookAt(Vector3_1,Vector3_2)
+	if typeof(Vector3_1)=='CFrame' then
+		Vector3_1=Vector3_1.Position
+	end
+	if typeof(Vector3_2)=='CFrame' then
+		Vector3_2=Vector3_2.Position
+	end
+	return CFrame.lookAt(Vector3_1,Vector3_2)
+end
 function ScanForWeld(Name)
 	for i,v in pairs(game:GetService("Players").LocalPlayer.Character:GetDescendants())do
 		if v:IsA("JointInstance") then
@@ -281,6 +379,7 @@ for i,v in pairs(User.Character:GetChildren())do
 end
 local Reverbs={}
 function Maintain(Obj)
+	Obj.Massless = true
 	if not Obj then return end
 	local AngCount = 0
 	for _,ANG in pairs(Obj:GetChildren())do
@@ -352,7 +451,7 @@ function Maintain(Obj)
 			AlignOrientation.Enabled = not Obj:FindFirstChild("Flinging")
 			AlignPosition.Position = Obj.Position
 			AlignOrientation.CFrame = Obj.CFrame
-			Obj.Velocity = Vector3.new(30,0,0)
+			Obj.Velocity = Vector3.new(50,0,0)
 			LinearVelocity.VectorVelocity = Vector3.new(0,0,0)
 		else
 			event1:Disconnect()
@@ -389,8 +488,6 @@ SpawnAlternative(function()
 	PromptMessage("Initializing...\nBrew VR script by Amokah.\n(Try not to tab out, won't hurt, but try not to)",7,0.3)
 end)
 
-FrameYield(1)
-
 local SpawnInCFrame = Character.PrimaryPart.CFrame
 
 local Angle = CFrame.Angles(0,0,0)
@@ -405,35 +502,9 @@ User.CharacterAdded:Connect(function(char)
 	CharacterLimbs.Hats = GetHatsAsUsefulTable(char)
 end)
 
-function OddNetworkOwner(PartTable)
-	local ThisChar = Character
-	pcall(function()
-		for _,x in pairs(ThisChar:GetChildren())do
-			if x.Name:find("Leg") then
-				x.Parent = nil
-			end
-		end
-	end)
-	local event1 = nil
-	Maintain(ThisChar:WaitForChild("HumanoidRootPart"))
-	local PartSelected = 1
-	event1 = game:GetService("RunService").Heartbeat:Connect(function()
-		for _,x in pairs(ThisChar:FindFirstChild("HumanoidRootPart"):GetChildren())do
-			if x:IsA("JointInstance") then
-				--[x:Destroy()
-			end
-		end
-		if IsParentLocked(Character) then
-			event1:Disconnect()
-			return
-		end
-		ThisChar:FindFirstChild("HumanoidRootPart").CFrame = Parts.Head.CFrame
-	end)
-end
-
 Services.UIS.InputBegan:Connect(function(k)
 	if Services.VR.VREnabled == true then
-		workspace.test.RemoteEvent:FireServer(tostring(k.KeyCode))
+		--workspace.test.RemoteEvent:FireServer(tostring(k.KeyCode))
 	end
 end)
 
@@ -517,11 +588,20 @@ Debounces.PromptChat = os.clock()
 local HoldingDirection = false
 local PredictingPosition = false
 Services.UIS.InputBegan:Connect(function(key)
+	if key.KeyCode==Enum.KeyCode.W and game:GetService("RunService"):IsStudio() then
+		HoldingDirection=true
+	end
 	if key.KeyCode == Enum.KeyCode.ButtonL2 then
 		HoldingDirection = true
 	elseif key.KeyCode == Enum.KeyCode.ButtonR2 then
 		pcall(function()
-			MakePartDangerous(CharacterLimbs.RightArm,true)
+			if GetRigType()=='R6' then
+				MakePartDangerous(CharacterLimbs.RightArm,true)
+			else
+				for i,v in pairs(FedoraHandles)do
+					MakePartDangerous(v,false)
+				end
+			end
 		end)
 	elseif key.KeyCode == Enum.KeyCode.ButtonL3 then
 		CameraAngle = CameraAngle * CFrame.Angles(0,math.rad(30),0)
@@ -532,11 +612,20 @@ Services.UIS.InputBegan:Connect(function(key)
 	end
 end)
 Services.UIS.InputEnded:Connect(function(key)
+	if key.KeyCode==Enum.KeyCode.W and game:GetService("RunService"):IsStudio() then
+		HoldingDirection=false
+	end
 	if key.KeyCode == Enum.KeyCode.ButtonL2 then
 		HoldingDirection = false
 	elseif key.KeyCode == Enum.KeyCode.ButtonR2 then
 		pcall(function()
-			MakePartDangerous(CharacterLimbs.RightArm,false)
+			if GetRigType()=='R6' then
+				MakePartDangerous(CharacterLimbs.RightArm,false)
+			else
+				for i,v in pairs(FedoraHandles)do
+					MakePartDangerous(v,false)
+				end
+			end
 		end)
 	elseif key.KeyCode == Enum.KeyCode.ButtonR1 then
 		if (Parts.FollowPart.Position*Vector3.new(1,0,1) - VrTracker.PredictedPosition*Vector3.new(1,0,1)).Magnitude > 1.1 then
@@ -556,6 +645,8 @@ end)
 Debounces.Moving = os.clock()
 Character.Humanoid.PlatformStand = true
 Character.Humanoid.RootPart.Anchored=true
+
+FrameYield(1)
 
 local FlingPart = {
 	Primary = nil,
@@ -588,6 +679,11 @@ for i,v in pairs(User.Backpack:GetChildren())do
 	end)
 end
 task.wait(0.6)
+for _,x in pairs(User.Character:GetChildren())do
+	if x:IsA("Accessory") then
+		x:FindFirstChildWhichIsA('BasePart').Name = "Handle"
+	end
+end
 
 function InsertHatTool(ClientTool)
 	if not ClientTool:FindFirstChild("Handle") then
@@ -605,6 +701,7 @@ end
 
 task.wait((15)  *  0.0105) --Basically 15 frames for your character to go stiff for proper arm/limb positioning
 Character.Humanoid.RootPart.Anchored=false
+
 ExtraVariables.ToolGrabbed = 0
 local MovementFunctions = {
 	GrabTool = function(dir)
@@ -632,12 +729,85 @@ local MovementFunctions = {
 		end
 	end,
 }
-AlternativeSpawn(function()
-	--repeat wait() until ExtraVariables.VrFinalized==true
-	--while wait() do
-	--	MovementFunctions.GrabTool(1)
-	--	wait(1)
-	--end
+
+local LeftLimbOffset
+local RightLimbOffset
+
+if GetRigType()=='R15' then
+	LeftLimbOffset = Character:FindFirstChild("LeftLowerArm").CFrame:ToObjectSpace(Character:FindFirstChild("LeftHand").CFrame)
+	RightLimbOffset = Character:FindFirstChild("RightLowerArm").CFrame:ToObjectSpace(Character:FindFirstChild("RightHand").CFrame)
+end
+
+local Fedoras = {}
+for i,v in pairs(Character:GetChildren())do
+	if v.Name==("InternationalFedora") and v:IsA("Accessory") and v.Handle.MeshId:find("3030546036") then
+		table.insert(Fedoras,v)
+	end
+end
+if GetRigType()=='R6' then
+	for i,v in pairs(Fedoras) do
+		v:Destroy()
+	end
+end
+
+for i,v in pairs(Fedoras)do
+	local accessory = v
+	local Handle = accessory:FindFirstChildWhichIsA("BasePart")
+	Maintain(Handle)
+	table.insert(FedoraHandles,Handle)
+	pcall(function()
+		Handle:FindFirstChildWhichIsA("JointInstance"):Destroy()
+	end)
+	Handle.Parent = Character
+	accessory:Destroy()
+end
+local ProbablyIK = {
+	Root = Create("Part",nil,{Size=Vector3.new(1,1,1),Anchored = true,Color=Color3.new(1,0.5,.5),CanCollide=false}),
+	Left = Create("Part",nil,{Size=Vector3.new(1,1,1),Anchored = true,Color=Color3.new(0,1,0),CanCollide=false}),
+	Right = Create("Part",nil,{Size=Vector3.new(1,1,1),Anchored = true,Color=Color3.new(1,0,0),CanCollide=false}),
+	LeftPosition = 0,
+	RightPosition = 0,
+}
+local PIK={}
+for i,v in pairs(ProbablyIK)do
+	if typeof(v)=='Instance' then
+		table.insert(PIK,v)
+	end
+end
+local LegTweens={}
+ExtraVariables.SpreadMag = 1.5
+local Transition=os.clock()
+local WalkSine = 0
+local LegTracking = game:GetService("RunService").RenderStepped:Connect(function()
+	if os.clock()-Transition >= 0.0105 then
+		Transition = os.clock()
+		WalkSine=WalkSine+1
+	end
+	local Ray1 = Ray.new(ProbablyIK.Root.Position,Vector3.new(0,-10,0))
+	local Hit,Position = workspace:FindPartOnRayWithIgnoreList(Ray1,{Character,workspace.CurrentCamera,unpack(PIK)},true,false)
+	ProbablyIK.Root.CFrame = Character.PrimaryPart.CFrame
+	ProbablyIK.LeftPosition=ProbablyIK.LeftPosition-0.1
+	ProbablyIK.LeftPosition=math.clamp(ProbablyIK.LeftPosition,0,1)
+	ProbablyIK.RightPosition=ProbablyIK.RightPosition-0.1
+	ProbablyIK.RightPosition=math.clamp(ProbablyIK.RightPosition,0,1)
+	if (Position and HoldingDirection==true) then
+		local rc = Character.PrimaryPart.CFrame*CFrame.new(-0.6,-5+(1*math.cos(WalkSine/-2)),4*math.cos(WalkSine/5))
+		local lc = Character.PrimaryPart.CFrame*CFrame.new(0.6,-5+(1*math.cos(WalkSine/2)),-4*math.cos(WalkSine/5))
+		for i,v in pairs(LegTweens)do
+			pcall(function()
+				v:Cancel()
+			end)
+		end
+		ProbablyIK.Left.CFrame = Character.PrimaryPart.CFrame*CFrame.new(-0.5,-5,1*math.cos(WalkSine/5))
+		ProbablyIK.Right.CFrame = Character.PrimaryPart.CFrame*CFrame.new(0.5,-5,-1*math.cos(WalkSine/5))
+	elseif HoldingDirection == false then
+		local x=game:GetService("TweenService"):Create(ProbablyIK.Right,TweenInfo.new(0.5),{['CFrame']=Character.PrimaryPart.CFrame*CFrame.new(0.8,-4,-0.5)})
+		local y=game:GetService("TweenService"):Create(ProbablyIK.Left,TweenInfo.new(0.5),{['CFrame']=Character.PrimaryPart.CFrame*CFrame.new(-0.8,-4,-0.5)})
+		x:Play()
+		y:Play()
+		table.insert(LegTweens,x)
+		table.insert(LegTweens,y)
+	end
 end)
 
 Create("SpecialMesh",Parts.FollowPart,{Scale=Vector3.new(0,0,0)})
@@ -659,6 +829,7 @@ game:GetService("RunService").Stepped:Connect(function()
 		Camera.CameraType = Enum.CameraType.Scriptable
 		Camera.CFrame = Parts.FollowPart.CFrame * CFrame.new(ExtraVariables.BaseOffsetCamera) * CameraAngle
 		if GetRigType() == 'R6' then
+			local Legs = {}
 			CharacterLimbs.Hats = {}
 			if VulnChar ~= Character then
 				VulnChar = Character
@@ -683,7 +854,8 @@ game:GetService("RunService").Stepped:Connect(function()
 			pcall(function()
 				for _,x in pairs(Character:GetChildren())do
 					if x.Name:find("Leg") then
-						x.Parent = nil
+						Legs[x.Name]=x
+						Maintain(x)
 					end
 				end
 			end)
@@ -696,15 +868,23 @@ game:GetService("RunService").Stepped:Connect(function()
 			CharacterLimbs.Head = Character.Head
 			CharacterLimbs.LeftArm = Character:FindFirstChild("Left Arm")
 			CharacterLimbs.RightArm = Character:FindFirstChild("Right Arm")
+			CharacterLimbs.LeftLeg = Character:FindFirstChild("Left Leg")
+			CharacterLimbs.RightLeg = Character:FindFirstChild("Right Leg")
 			if ScanForWeld("Right Shoulder") then
 				ScanForWeld("Right Shoulder"):Destroy()
+			end
+			if ScanForWeld("Left Hip") then
+				ScanForWeld("Left Hip"):Destroy()
+			end
+			if ScanForWeld("Right Hip") then
+				ScanForWeld("Right Hip"):Destroy()
 			end
 			if ScanForWeld("Left Shoulder") then
 				ScanForWeld("Left Shoulder"):Destroy()
 			end
 			local LHand = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
 			local RHand = Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)
-			local HCframe = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+			local HCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
 			--
 			Parts.LeftArm.CFrame = Camera.CFrame * LHand * CFrame.Angles(math.rad(90),0,0)
 
@@ -716,7 +896,7 @@ game:GetService("RunService").Stepped:Connect(function()
 
 			Parts.FakeLarm.CFrame = (Parts.LeftArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
 			Parts.FakeRarm.CFrame = (Parts.RightArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
-			Parts.Head.CFrame = Camera.CFrame * HCframe
+			Parts.Head.CFrame = Camera.CFrame * HCFrame
 			RePositionHeadParts()
 			if GetRigType() == 'R6' and CharacterLimbs.Head ~= nil and IsParentLocked(CharacterLimbs.Head)==false then
 				--Maintain(CharacterLimbs.Head)
@@ -726,7 +906,7 @@ game:GetService("RunService").Stepped:Connect(function()
 					Hat.Handle.CFrame = Parts.Head.CFrame
 					Maintain(Hat.Handle)
 					if Hat.Handle:FindFirstChild('AccessoryWeld') then
-					--	Hat.Handle.AccessoryWeld:Destroy()
+						--	Hat.Handle.AccessoryWeld:Destroy()
 					end
 				end
 				MoveAt(CharacterLimbs.LeftArm,Parts.LeftArm.CFrame)
@@ -750,48 +930,21 @@ game:GetService("RunService").Stepped:Connect(function()
 				end
 			end
 		elseif GetRigType()=='R15' then
-			local KeepConnected = {
-				LeftUpperArm = {
-					"LeftLowerArm",
-					"LeftHand"
-				},
-				RightUpperArm = {
-					"RightLowerArm",
-					"RightHand"
-				},
-				--UpperTorso = {
-				--	"LowerTorso"
-				--}
-			}
-			local Collection = {}
-			local Unimportant_DeleteIt = {
+			CharacterLimbs.Hats = {}
+			local LimbsToDelete = {
+				"LeftUpperArm",
+				"LeftLowerArm",
 				"LeftUpperLeg",
 				"LeftLowerLeg",
 				"LeftFoot",
+				"RightUpperArm",
+				"RightLowerArm",
 				"RightUpperLeg",
 				"RightLowerLeg",
 				"RightFoot",
-				"LeftUpperArm",
-				"LeftLowerArm",
-				"RightUpperArm",
-				"RightLowerArm",
 			}
-			CharacterLimbs.Hats = {}
 			if VulnChar ~= Character then
 				VulnChar = Character
-				local ThisData = {}
-				for Limb,TableSearch in pairs({})do --empty table for right now
-					local FoundLimb = Character:FindFirstChild(tostring(Limb))
-					for _,x in pairs(TableSearch)do
-						local TheOtherLimb = Character:FindFirstChild(x)
-						table.insert(ThisData,{
-							FoundLimb,
-							TheOtherLimb,
-							TheOtherLimb.CFrame:ToObjectSpace(FoundLimb.CFrame):Inverse()
-						})
-					end
-				end
-				table.insert(Collection,ThisData)
 				local UnpackedHatHandles = {}
 				for i,v in pairs(CharacterLimbs.Hats)do
 					pcall(function()
@@ -804,11 +957,6 @@ game:GetService("RunService").Stepped:Connect(function()
 			if os.clock() - Debounces.SetUp < 6 then return end
 			--Character movement/mass set up
 			for i,v in pairs(Character:GetDescendants())do
-				if v:IsA("BasePart") and not table.find(Unimportant_DeleteIt,v.Name) then
-					Maintain(v)
-				elseif v:IsA("BasePart") and table.find(Unimportant_DeleteIt,v.Name) then
-					v:Destroy()
-				end
 				pcall(function()
 					v.CanCollide = false
 					v.CanTouch = false
@@ -817,8 +965,15 @@ game:GetService("RunService").Stepped:Connect(function()
 			end
 			pcall(function()
 				for _,x in pairs(Character:GetChildren())do
-					if x.Name:find("Leg") then
-						x.Parent = nil
+					if table.find(LimbsToDelete,x.Name) then
+						for _,h in pairs(Character:GetDescendants())do
+							if h.Name=='AccessoryWeld' then
+								if h:IsA("JointInstance") and h.Part1==x then
+									h:FindFirstAncestorWhichIsA("Accessory"):Destroy()
+								end
+							end
+						end
+						x.Parent=nil
 					end
 				end
 			end)
@@ -831,36 +986,39 @@ game:GetService("RunService").Stepped:Connect(function()
 			CharacterLimbs.Head = Character.Head
 			CharacterLimbs.LeftArm = Character:FindFirstChild("LeftHand")
 			CharacterLimbs.RightArm = Character:FindFirstChild("RightHand")
-			if ScanForWeld("RightWrist") then
-				ScanForWeld("RightWrist"):Destroy()
+			if ScanForWeld("RightShoulder") then
+				ScanForWeld("RightShoulder"):Destroy()
+			end
+			if ScanForWeld("LeftShoulder") then
+				ScanForWeld("LeftShoulder"):Destroy()
 			end
 			if ScanForWeld("LeftWrist") then
 				ScanForWeld("LeftWrist"):Destroy()
 			end
+			if ScanForWeld("RightWrist") then
+				ScanForWeld("RightWrist"):Destroy()
+			end
 			local LHand = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
 			local RHand = Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)
-			local HCframe = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+			local HCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
 			--
 			Parts.LeftArm.CFrame = Camera.CFrame * LHand * CFrame.Angles(math.rad(90),0,0)
-			if CharacterLimbs.RightArm:FindFirstChild("Flinging") then
-				Parts.RightArm.CFrame = (Camera.CFrame * RHand * CFrame.new(0,0,-4)) * CFrame.Angles(math.rad(90),0,0)
-			else
-				Parts.RightArm.CFrame = Camera.CFrame * RHand * CFrame.Angles(math.rad(90),0,0)
+			Parts.PartsToFling = FedoraHandles
+			if #FedoraHandles > 0 then
+				if FedoraHandles[1]:FindFirstChild("Flinging") then
+					for lol,HANDLE in pairs(FedoraHandles)do
+						if HANDLE:FindFirstChild("Flinging") then
+							HANDLE.CFrame = Camera.CFrame*RHand*CFrame.new(-2+(lol*1.5),0,-4)
+						else
+							HANDLE.CFrame = Parts.Head.CFrame*CFrame.new(0,-1.5,0)*CFrame.Angles(math.rad(-90),0,0)
+						end
+					end
+				end
 			end
-			Parts.Head.CFrame = Camera.CFrame * HCframe
-			for _,DataB in pairs(Collection)do
-				local LimbA = DataB[1]
-				local LimbB = DataB[2]
-				local Offset = DataB[3]
-				Maintain(LimbA)
-				Maintain(LimbB)
-				LimbB.CFrame = LimbA.CFrame * Offset
-				MoveAt(LimbB,LimbA.CFrame*Offset)
-				task.defer(function()
-					LimbB.CFrame = LimbA.CFrame * Offset
-					MoveAt(LimbB,LimbA.CFrame*Offset)
-				end)
-			end
+			Parts.FakeLarm.CFrame = (Parts.LeftArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
+			Parts.FakeRarm.CFrame = (Parts.RightArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
+			Parts.Head.CFrame = Camera.CFrame * HCFrame
+			Parts.RightArm.CFrame = Camera.CFrame * RHand * CFrame.Angles(math.rad(90),0,0)
 			RePositionHeadParts()
 			if GetRigType() == 'R15' and CharacterLimbs.Head ~= nil and IsParentLocked(CharacterLimbs.Head)==false then
 				--Maintain(CharacterLimbs.Head)
@@ -870,7 +1028,7 @@ game:GetService("RunService").Stepped:Connect(function()
 					Hat.Handle.CFrame = Parts.Head.CFrame
 					Maintain(Hat.Handle)
 					if Hat.Handle:FindFirstChild('AccessoryWeld') then
-						--Hat.Handle.AccessoryWeld:Destroy()
+						--	Hat.Handle.AccessoryWeld:Destroy()
 					end
 				end
 				MoveAt(CharacterLimbs.LeftArm,Parts.LeftArm.CFrame)
@@ -884,7 +1042,9 @@ game:GetService("RunService").Stepped:Connect(function()
 				end
 				for _,hatCheck in pairs(Character:GetChildren())do
 					if hatCheck:IsA("Accessory") then
-						Maintain(hatCheck.Handle)
+						pcall(function()
+							Maintain(hatCheck.Handle)
+						end)
 						pcall(function()
 							hatCheck.Handle.Transparency = 1
 						end)
@@ -925,14 +1085,34 @@ game:GetService("RunService").RenderStepped:Connect(function()
 		end
 		CharacterLimbs.RightArm.CFrame = Parts.RightArm.CFrame
 		CharacterLimbs.LeftArm.CFrame = Parts.LeftArm.CFrame
+		
+		if GetRigType()=='R6' then
+		end
+		ProbablyIK.Root.CFrame = Character.PrimaryPart.CFrame
 		RePositionHeadParts()
 		task.defer(function()
 			RePositionHeadParts()
 			CharacterLimbs.RightArm.CFrame = Parts.RightArm.CFrame
 			CharacterLimbs.LeftArm.CFrame = Parts.LeftArm.CFrame
+			
+			if GetRigType()=='R6' then
+				local LeftStart = Character.Torso.CFrame*CFrame.new(-0.5,-1,0)
+				local RightStart = Character.Torso.CFrame*CFrame.new(0.5,-1,0)
+				local Part = workspace:FindPartOnRayWithIgnoreList(Ray.new(Character.PrimaryPart.Position,Vector3.new(0,-3,0)),{Character,workspace.CurrentCamera,unpack(PIK)},true,false)
+				if not Part then
+					CharacterLimbs.LeftLeg.CFrame = LeftStart*CFrame.new(0,-0.5,-0.8)*CFrame.Angles(math.rad(30*math.cos(WalkSine/30/2)),0,0)
+					CharacterLimbs.RightLeg.CFrame = RightStart*CFrame.new(0,-1,-0.5)*CFrame.Angles(math.rad(-15*math.cos(-WalkSine/30/2)),0,0)
+				else
+					CharacterLimbs.LeftLeg.CFrame = LookAt(LeftStart*CFrame.new(0,1,0),ProbablyIK.Left.Position+Vector3.new(0,ProbablyIK.LeftPosition,0))*CFrame.new(0,0,-1)*CFrame.Angles(math.rad(90),0,0)*CFrame.new(0,-1,0)
+					CharacterLimbs.RightLeg.CFrame = LookAt(RightStart*CFrame.new(0,1,0),ProbablyIK.Right.Position+Vector3.new(0,ProbablyIK.RightPosition,0))*CFrame.new(0,0,-1)*CFrame.Angles(math.rad(90),0,0)*CFrame.new(0,-1,0)
+					local lPos = ProbablyIK.Left.Position
+					local rPos = CharacterLimbs.RightLeg.Position
+				end
+			end
 		end)
 	end
 end)
+ExtraVariables.SpreadMag = 8
 ---End of VR like movement;
 
 --/// CHAT SCRIPTING
@@ -1602,6 +1782,7 @@ end)
 
 --//RIGHT HAND MOTION FUNCTION
 local flat = Instance.new("Part")
+flat.Transparency=1
 local display = Create("Part",nil,{
 	Anchored = true,
 	CanCollide = false,
@@ -2018,33 +2199,56 @@ HeadsUp.Transparency = 1
 HeadsUp.CanCollide = false
 HeadsUp.Anchored = true
 HeadsUp.Parent = workspace.CurrentCamera
+local reup=os.clock()
+local Char = game:GetService('Players').LocalPlayer.Character
+Char.Archivable = true
+local Parts={}
+local Cloned = Instance.new("Model")
+for i,v in pairs(Char:GetChildren())do
+	local new = v:Clone()
+	new.Parent = Cloned
+	table.insert(Parts,{v,new})
+end
 loopChar = game:GetService("RunService").RenderStepped:Connect(function()
-	HeadsUp.CFrame = (workspace.CurrentCamera.CFrame * game:GetService("VRService"):GetUserCFrame(Enum.UserCFrame.Head))*CFrame.new(0,0,-10)
-	ViewportFrame:ClearAllChildren()
-	local Char = game:GetService('Players').LocalPlayer.Character
-	Char.Archivable = true
-	local Cloned = Char:Clone()
-	for _,x in pairs(Cloned:GetDescendants())do
-		if x:IsA("JointInstance") then
-			x:Destroy()
-		end
-		if x:IsA("BasePart") then
-			if x.Parent:IsA("Accessory") then
-				x.LocalTransparencyModifier = 0
-				x.Transparency = 0
-			else
-				x.Anchored = true
+	for i,v in pairs(Parts)do
+		local ClonePart
+		local Compare = v[1]
+		if v[2]:IsA("BasePart") then
+			ClonePart = v[2]
+		else
+			for _,x in pairs(v[2]:GetDescendants())do
+				if x:IsA("BasePart") then
+					ClonePart=x
+					break
+				end
+			end
+			if ClonePart then
+				for _,x in pairs(v[1]:GetDescendants())do
+					if x:IsA("BasePart") then
+						Compare=x
+						break
+					end
+				end
 			end
 		end
-		if x:IsA("BaseScript") then
+		if ClonePart then
+			task.defer(function()
+				ClonePart.CFrame = Compare.CFrame
+			end)
+		end
+	end
+	if Cloned:FindFirstChild("HumanoidRootPart") then
+		Cloned.PrimaryPart = Cloned.HumanoidRootPart
+	end
+	for _,x in pairs(Cloned:GetDescendants())do
+		if x:IsA("JointInstance") or x:IsA("BaseScript") or x:IsA("Sound") then
 			x:Destroy()
 		end
 	end
-	Char.Archivable=true
-	Cloned.Parent = ViewportFrame
+	HeadsUp.CFrame = (workspace.CurrentCamera.CFrame * game:GetService("VRService"):GetUserCFrame(Enum.UserCFrame.Head))*CFrame.new(0,0,-10)
 	ViewportFrame.CurrentCamera = NewCamera
 	NewCamera.CFrame = Char.Head.CFrame * CFrame.new(0,0,-20)
-	NewCamera.CFrame=NewCamera.CFrame*CFrame.Angles(0,math.pi,0)
+	NewCamera.CFrame = NewCamera.CFrame*CFrame.Angles(0,math.pi,0)
 end)
 local Afar = Instance.new("BillboardGui")
 Afar.AlwaysOnTop = true
@@ -2055,6 +2259,7 @@ ViewportFrame.Parent = Afar
 Afar.Parent = game:GetService("Players").LocalPlayer:FindFirstChildWhichIsA("PlayerGui")
 Afar.Adornee = HeadsUp
 ViewportFrame.BackgroundTransparency = 1
+Cloned.Parent = ViewportFrame
 --//
 
 --\\Model Creation for earlier tables: For organization
@@ -2132,7 +2337,9 @@ function CreateHatAsTool(ToolName,HatNameOrHatInstance,Offset,PlaceBackWhenUnequ
 			pcall(function()
 				SillyHandle.AccessoryWeld:Destroy()
 			end)
-			game:GetService("RunService").RenderStepped:Connect(function()
+			local sself = nil
+			sself = game:GetService("RunService").RenderStepped:Connect(function()
+				if not SillyHandle:IsDescendantOf(workspace) then return sself:Disconnect() end
 				for i,v in pairs(User.Character:GetChildren())do
 					if v:IsA("Accessory") then
 						if not table.find(HatsAsTools,v) then
@@ -2169,7 +2376,7 @@ end
 
 CreateHatAsTool("Give an L","Big L",CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08),false)
 CreateHatAsTool("Pistol","1911 Right",CFrame.new(-0.00897979736, 1.30259275, -0.496437073, -1, 0, 8.74227766e-08, 0, 0.999999881, 0, -8.74227766e-08, 0, -1),true)
-CreateHatAsTool("Microphone","Green Normal MIC",CFrame.new(-0.113024712, 0.41532135, -1.06324768, -0.98480773, 0, -0.173648298, 0.111618981, 0.766044319, -0.633022249, 0.133022308, -0.642787576, -0.754406512),false,CFrame.Angles(0,math.rad(90),0))
+CreateHatAsTool("Knife","Meshes/KnifeFaceAccessory",CFrame.new(-0.88650322, 1.13049304, 0.0296177864, 0, 0, -1, 0, 1, 0, 1, 0, 0),false,CFrame.Angles(0,math.rad(90),0))
 CreateHatAsTool("Big Hammer","MARTILLO",CFrame.new(-0.976185083, -0.770004272, 0.040807724, -9.27258839e-08, -1, 1.1920929e-07, -9.27258839e-08, -2.08616228e-07, -1.00000012, 1.00000036, -9.27258839e-08, -9.27258696e-08),true)
 --//
 
