@@ -2346,7 +2346,6 @@ Cloned.Parent = ViewportFrame
 --\\
 
 --//Finalized
-SetupModel=game.Players.MenuSetup
 function GetTrueVisibility(Object:GuiObject)
 	local v = Object.Visible
 	local p = Object.Parent
