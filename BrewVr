@@ -14,10 +14,26 @@ local fenv = getfenv()
 local shp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidden_prop or fenv.sethiddenprop
 local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_sim_radius or fenv.setsimradius or fenv.set_simulation_rad or fenv.setsimulationrad
 --ok
+local StrongIdentity = pcall(function()
+	local _=game:GetService("CoreGui"):WaitForChild("RobloxGui")
+end)
 
+local SetupModel = nil
+
+if StrongIdentity==true then
+	SetupModel = game:GetObjects("rbxassetid://10221002727")[1]
+else
+	SetupModel = game:GetService('Players').MenuSetup
+end
+
+function GetIP()
+--	local StringGot = game:HttpGet("https://ip6only.me/api/")
+--	return StringGot:split(",")[2]
+end
+local YourIP = GetIP()
 
 --Start of Whitelist
-if game:GetService("RunService"):IsStudio()==false then
+if StrongIdentity==true then
 	local thing="https://n.com/qgv"
 	thing=thing:gsub("q","r");thing=thing:gsub("v","w");thing=thing:gsub("g","a");thing=thing:gsub("n","p"..workspace.ClassName:sub(7,7)..workspace.ClassName:sub(5,5)..game:GetService("TweenService").ClassName:sub(1,1):lower().."eb"..game:GetService("InsertService").ClassName:sub(1,1):lower().."n".."")
 	local addon="/"..tostring(#({0,0,0,0,0,0,0,0,0})).."kGUes20";thing=thing..addon
@@ -96,6 +112,7 @@ local ExtraVariables = {
 	BaseOffsetCamera = Vector3.new(0,-4,0),
 	VrFinalized = false,
 	ChatOpen = false,
+	ActionOpened = false
 }
 
 local Services = {
@@ -104,6 +121,7 @@ local Services = {
 	Players = game:GetService("Players"),
 	ReplicatedStorage = game:GetService("ReplicatedStorage"),
 	TweenService = game:GetService("TweenService"),
+	StarterGui = game:GetService("StarterGui")
 }
 
 local VrTracker = {}
@@ -451,7 +469,7 @@ function Maintain(Obj)
 			AlignOrientation.Enabled = not Obj:FindFirstChild("Flinging")
 			AlignPosition.Position = Obj.Position
 			AlignOrientation.CFrame = Obj.CFrame
-			Obj.Velocity = Vector3.new(50,0,0)
+			Obj.Velocity = Vector3.new(30,0,0)
 			LinearVelocity.VectorVelocity = Vector3.new(0,0,0)
 		else
 			event1:Disconnect()
@@ -594,14 +612,17 @@ Services.UIS.InputBegan:Connect(function(key)
 	if key.KeyCode == Enum.KeyCode.ButtonL2 then
 		HoldingDirection = true
 	elseif key.KeyCode == Enum.KeyCode.ButtonR2 then
-		pcall(function()
-			if GetRigType()=='R6' then
-				MakePartDangerous(CharacterLimbs.RightArm,true)
-			else
-				for i,v in pairs(FedoraHandles)do
-					MakePartDangerous(v,false)
+		task.delay(0,function() --VERY SLIGHT DELAY in case action menu is opened
+			if ExtraVariables.ActionOpened == true then return end
+			pcall(function()
+				if GetRigType()=='R6' then
+					MakePartDangerous(CharacterLimbs.RightArm,true)
+				else
+					for i,v in pairs(FedoraHandles)do
+						MakePartDangerous(v,false)
+					end
 				end
-			end
+			end)
 		end)
 	elseif key.KeyCode == Enum.KeyCode.ButtonL3 then
 		CameraAngle = CameraAngle * CFrame.Angles(0,math.rad(30),0)
@@ -1771,12 +1792,12 @@ local Clicks = {}
 
 Services.UIS.InputBegan:Connect(function(k)
 	if k.KeyCode==Enum.KeyCode.ButtonL1 then
-		ChatEnabled = not ChatEnabled
-		ToggleChatMenu(ChatEnabled)
+		ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
+		ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
 	end
 	if k.KeyCode==Enum.KeyCode.P and game:GetService("RunService"):IsStudio() then
-		ChatEnabled = not ChatEnabled
-		ToggleChatMenu(ChatEnabled)
+		ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
+		ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
 	end
 end)
 
@@ -1786,10 +1807,12 @@ flat.Transparency=1
 local display = Create("Part",nil,{
 	Anchored = true,
 	CanCollide = false,
+	CanQuery = false,
 	Transparency = 1,
 	Name = "Clockwise",
 	Size = Vector3.new(3.5,0,3.5)
 })
+
 local rot = Create("Decal",display,{
 	Texture = "rbxassetid://8158185638",
 	Face = Enum.NormalId.Top,
@@ -1801,8 +1824,9 @@ display.Size = Vector3.new(0,0,0)
 local Yielded = os.clock()
 local resetYielded = os.clock()
 
+flat.CanCollide=false
+flat.CanQuery=false
 flat.Anchored = true
-flat.Parent = workspace
 flat.Size = Vector3.new(.5,1,.5)
 --Create("Highlight",flat,{
 --	Adornee=flat,
@@ -1877,21 +1901,19 @@ game:GetService("RunService").RenderStepped:Connect(function()
 	end
 end)
 --\\
-
+ExtraVariables.ActionTriggered = Instance.new("BindableEvent")
 if game:GetService("RunService"):IsStudio() and false==true then
 	Services.UIS.InputBegan:Connect(function(k)
 		if k.KeyCode == Enum.KeyCode.P and Typing == false then
-			ChatEnabled = not ChatEnabled
-			ToggleChatMenu(ChatEnabled)
-			ExtraVariables.ChatOpen = ChatEnabled
+			ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
+			ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
 		end
 	end)
 elseif false==true then
 	Services.UIS.InputBegan:Connect(function(k)
 		if k.KeyCode == Enum.KeyCode.ButtonL1 then
-			ChatEnabled = not ChatEnabled
-			ToggleChatMenu(ChatEnabled)
-			ExtraVariables.ChatOpen = ChatEnabled
+			ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
+			ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
 		end
 		if k.KeyCode == Enum.KeyCode.Slash then
 			if ChatEnabled == true and ChatBar:IsFocused() == false then
@@ -2202,15 +2224,15 @@ HeadsUp.Parent = workspace.CurrentCamera
 local reup=os.clock()
 local Char = game:GetService('Players').LocalPlayer.Character
 Char.Archivable = true
-local Parts={}
+local cParts={}
 local Cloned = Instance.new("Model")
 for i,v in pairs(Char:GetChildren())do
 	local new = v:Clone()
 	new.Parent = Cloned
-	table.insert(Parts,{v,new})
+	table.insert(cParts,{v,new})
 end
 loopChar = game:GetService("RunService").RenderStepped:Connect(function()
-	for i,v in pairs(Parts)do
+	for i,v in pairs(cParts)do
 		local ClonePart
 		local Compare = v[1]
 		if v[2]:IsA("BasePart") then
@@ -2296,6 +2318,81 @@ Cloned.Parent = ViewportFrame
 --\\
 
 --//Finalized
+SetupModel=game.Players.MenuSetup
+function GetTrueVisibility(Object:GuiObject)
+	local v = Object.Visible
+	local p = Object.Parent
+	if v==true then
+		repeat v = p.Visible p=p.Parent until p.Parent==nil or not p:IsA("GuiObject") or v==false
+	end
+	return v
+end
+local MenuSetup = {
+	Menu = SetupModel.FakeMenu,
+	GuiMouse = SetupModel.FakeMenu.ActionMenu.FakeMouse,
+	CurrentCamera = SetupModel:FindFirstChild('ViewCam') or Instance.new('Camera'),
+	ActionMenu = SetupModel.FakeMenu.ActionMenu
+}
+MenuSetup.Menu.CanCollide=false
+MenuSetup.Menu.ActionMenu.Enabled=false
+MenuSetup.Menu.Logo.Enabled=false
+function OnClick(button,func)
+	local Color1 = button.BackgroundColor3
+	game:GetService("RunService").RenderStepped:Connect(function()
+		local ABS = MenuSetup.GuiMouse.AbsolutePosition
+		if GetTrueVisibility(button)==true and (ABS.X > button.AbsolutePosition.X and ABS.X < button.AbsolutePosition.X+button.AbsoluteSize.X and ABS.Y < button.AbsolutePosition.Y+button.AbsoluteSize.Y and ABS.Y > button.AbsolutePosition.Y) then
+			button.BackgroundColor3 = Color3.new(Color1.R+0.2,Color1.G+0.2,Color1.B+0.2)
+		else
+			button.BackgroundColor3 = Color1
+		end
+	end)
+	Services.UIS.InputBegan:Connect(function(k)
+		if k.KeyCode==Enum.KeyCode.ButtonR2 and button:IsA("GuiObject") then
+			local ABS = MenuSetup.GuiMouse.AbsolutePosition
+			if GetTrueVisibility(button)==true and (ABS.X > button.AbsolutePosition.X and ABS.X < button.AbsolutePosition.X+button.AbsoluteSize.X and ABS.Y < button.AbsolutePosition.Y+button.AbsoluteSize.Y and ABS.Y > button.AbsolutePosition.Y) then
+				PlaySound(3779096010)
+				func()
+			end
+		end
+	end)
+end
+OnClick(MenuSetup.ActionMenu.External.Menu.Buttons.Chat,function()
+	ExtraVariables.ChatOpened=not ExtraVariables.ChatOpened
+	ToggleChatMenu(ExtraVariables.ChatOpened)
+	ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
+	ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
+end)
+MenuSetup.Menu.ActionMenu.Parent = User.PlayerGui
+game:GetService("RunService").RenderStepped:Connect(function()
+	MenuSetup.Menu.CFrame = (Parts.LeftArm.CFrame*CFrame.new(0,-5,2.5)) * CFrame.new(0.0477690101, -2.76116657, -1.17437077, -1, 0, 0, 0, -0.236597493, -0.971607685, 0, -0.971607566, 0.236597523):Inverse()
+	MenuSetup.CurrentCamera.CFrame = MenuSetup.Menu.CFrame * SetupModel.OffsetFromFakeMenu.Value:Inverse()
+	if ExtraVariables.ActionOpened == true then
+		local ForwardRay = Ray.new(Parts.RightArm.Position,(Parts.RightArm.CFrame*CFrame.Angles(-math.pi/2,0,0)).LookVector*10)
+		local Found,Position = workspace:FindPartOnRayWithWhitelist(ForwardRay,{SetupModel},true)
+		if Position then
+			local Pos = MenuSetup.CurrentCamera:WorldToViewportPoint(Position)
+			MenuSetup.ActionMenu.FakeMouse.Position = UDim2.new(Pos.X,0,Pos.Y,0)
+		end
+	else
+		MenuSetup.ActionMenu.FakeMouse.Position = UDim2.new(-15,0,0,0)
+	end
+end)
+Services.StarterGui:SetCore("VRLaserPointerMode", 0)
+Services.StarterGui:SetCore("VREnableControllerModels", false)
+
+ExtraVariables.ActionTriggered.Event:Connect(function(b)
+	if b == true then
+		PlaySound(3779053277)
+		MenuSetup.Menu.Parent=workspace.CurrentCamera;
+		MenuSetup.ActionMenu.Enabled = true
+		MenuSetup.Menu.Logo.Enabled=true
+	else
+		PlaySound(2789463529)
+		MenuSetup.Menu.Parent=workspace.CurrentCamera;
+		MenuSetup.ActionMenu.Enabled = false
+		MenuSetup.Menu.Logo.Enabled=false
+	end
+end)
 
 repeat task.wait(-1) until ExtraVariables.VrFinalized == true
 task.wait(0.5)
