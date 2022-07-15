@@ -867,6 +867,7 @@ local LegTracking = game:GetService("RunService").RenderStepped:Connect(function
 		for i,v in pairs(LegTweens)do
 			pcall(function()
 				v:Cancel()
+				table.remove(LegTweens,i)
 			end)
 		end
 		ProbablyIK.Left.CFrame = Character.PrimaryPart.CFrame*CFrame.new(-0.5,-5,1*math.cos(WalkSine/5))
