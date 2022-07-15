@@ -2413,7 +2413,7 @@ OnClick(MenuSetup.ActionMenu.External.Menu.Buttons.Chat,function()
 end)
 MenuSetup.Menu.ActionMenu.Parent = User.PlayerGui
 game:GetService("RunService").RenderStepped:Connect(function()
-	MenuSetup.Menu.CFrame = (Parts.LeftArm.CFrame*CFrame.new(0,-5,2.5)) * CFrame.new(0.0477690101, -2.76116657, -1.17437077, -1, 0, 0, 0, -0.236597493, -0.971607685, 0, -0.971607566, 0.236597523):Inverse()
+	MenuSetup.Menu.CFrame = (Parts.LeftArm.CFrame*CFrame.new(0,-5,2.5)) * CFrame.new(2.56346607, -2.55848217, -1.17437077, -1, 0, 0, 0, -0.236597493, -0.971607685, 0, -0.971607566, 0.236597523):Inverse()
 	MenuSetup.CurrentCamera.CFrame = MenuSetup.Menu.CFrame * SetupModel.OffsetFromFakeMenu.Value:Inverse()
 	if ExtraVariables.ActionOpened == true then
 		local ForwardRay = Ray.new(Parts.RightArm.Position,(Parts.RightArm.CFrame*CFrame.Angles(-math.pi/2,0,0)).LookVector*10)
