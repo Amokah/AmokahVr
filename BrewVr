@@ -707,17 +707,17 @@ for i,v in pairs(Character:GetDescendants())do
 			local Weld = v
 			if true==true then
 				Handle.Velocity = Vector3.new(math.huge,math.huge,math.huge)
-				task.delay(0,function()
+				task.delay(0.1,function()
 					Handle.Parent = nil
 				end)
-				task.delay(0,function()
+				task.delay(0.15,function()
 					Hat:Destroy()
 				end)
 			end
 		end
 	end
 end
-task.wait(0.1)
+task.wait(0.2)
 
 local FlingPart = {
 	Primary = nil,
