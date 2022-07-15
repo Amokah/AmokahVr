@@ -705,28 +705,13 @@ for i,v in pairs(Character:GetDescendants())do
 			local Hat = v.Parent.Parent
 			local Handle = v.Parent
 			local Weld = v
-			if false==true then
+			if true==true then
 				Handle.Velocity = Vector3.new(math.huge,math.huge,math.huge)
 				task.delay(0,function()
 					Handle.Parent = nil
 				end)
 				task.delay(0,function()
 					Hat:Destroy()
-				end)
-			elseif true==true then
-				local Offset=Weld.Part1.CFrame:ToObjectSpace(Weld.Part0.CFrame)
-				local P1 = Weld.Part0
-				local P2 = Weld.Part1
-				Weld:Destroy()
-				table.insert(OffsettingLimbHats,{
-					Handle,
-					Weld.Part0,
-					Weld.Part1,
-					Offset
-				})
-				game:GetService("RunService").RenderStepped:Connect(function()
-					Maintain(Handle)
-					Handle.CFrame = P1.CFrame*Offset:Inverse()
 				end)
 			end
 		end
