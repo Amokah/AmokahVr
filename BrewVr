@@ -17,7 +17,7 @@ local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_s
 local StrongIdentity = pcall(function()
 	local _=game:GetService("CoreGui"):WaitForChild("RobloxGui")
 end)
-
+local Check = "✓"
 local SetupModel = nil
 
 if StrongIdentity==true then
@@ -112,7 +112,10 @@ local ExtraVariables = {
 	BaseOffsetCamera = Vector3.new(0,-4,0),
 	VrFinalized = false,
 	ChatOpen = false,
-	ActionOpened = false
+	ActionOpened = false,
+	TurnArmsForTools=true,
+	DisplayNames=true,
+	CharacterViewport=true,
 }
 
 local Services = {
@@ -1892,7 +1895,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 	local X,Y,Z = Parts.RightArm.CFrame:ToObjectSpace(flat.CFrame):ToOrientation()
 	local deg = math.deg(Y)
 	Y=math.deg(Y)
-	if (Y > 135 and Y < 150) and os.clock()-Debounces.RightMotionDb > 1 then
+	if (Y > 135 and Y < 150) and os.clock()-Debounces.RightMotionDb > 1 and ExtraVariables.TurnArmsForTools then
 		local SoundSFX = Create("Sound",game:GetService("SoundService"),{
 			SoundId='rbxassetid://5683584454',
 			Volume = 1,
@@ -2283,45 +2286,48 @@ for i,v in pairs(Char:GetChildren())do
 	table.insert(cParts,{v,new})
 end
 loopChar = game:GetService("RunService").RenderStepped:Connect(function()
-	for i,v in pairs(cParts)do
-		local ClonePart
-		local Compare = v[1]
-		if v[2]:IsA("BasePart") then
-			ClonePart = v[2]
-		else
-			for _,x in pairs(v[2]:GetDescendants())do
-				if x:IsA("BasePart") then
-					ClonePart=x
-					break
-				end
-			end
-			if ClonePart then
-				for _,x in pairs(v[1]:GetDescendants())do
+	if ExtraVariables.CharacterViewport then
+		for i,v in pairs(cParts)do
+			local ClonePart
+			local Compare = v[1]
+			if v[2]:IsA("BasePart") then
+				ClonePart = v[2]
+			else
+				for _,x in pairs(v[2]:GetDescendants())do
 					if x:IsA("BasePart") then
-						Compare=x
+						ClonePart=x
 						break
 					end
 				end
+				if ClonePart then
+					for _,x in pairs(v[1]:GetDescendants())do
+						if x:IsA("BasePart") then
+							Compare=x
+							break
+						end
+					end
+				end
+			end
+			if ClonePart then
+				task.defer(function()
+					ClonePart.CFrame = Compare.CFrame
+				end)
 			end
 		end
-		if ClonePart then
-			task.defer(function()
-				ClonePart.CFrame = Compare.CFrame
-			end)
+		if Cloned:FindFirstChild("HumanoidRootPart") then
+			Cloned.PrimaryPart = Cloned.HumanoidRootPart
 		end
-	end
-	if Cloned:FindFirstChild("HumanoidRootPart") then
-		Cloned.PrimaryPart = Cloned.HumanoidRootPart
-	end
-	for _,x in pairs(Cloned:GetDescendants())do
-		if x:IsA("JointInstance") or x:IsA("BaseScript") or x:IsA("Sound") then
-			x:Destroy()
+		for _,x in pairs(Cloned:GetDescendants())do
+			if x:IsA("JointInstance") or x:IsA("BaseScript") or x:IsA("Sound") then
+				x:Destroy()
+			end
 		end
+		HeadsUp.CFrame = (workspace.CurrentCamera.CFrame * game:GetService("VRService"):GetUserCFrame(Enum.UserCFrame.Head))*CFrame.new(0,0,-10)
+		ViewportFrame.CurrentCamera = NewCamera
+		NewCamera.CFrame = Char.Head.CFrame * CFrame.new(0,0,-20)
+		NewCamera.CFrame = NewCamera.CFrame*CFrame.Angles(0,math.pi,0)
 	end
-	HeadsUp.CFrame = (workspace.CurrentCamera.CFrame * game:GetService("VRService"):GetUserCFrame(Enum.UserCFrame.Head))*CFrame.new(0,0,-10)
-	ViewportFrame.CurrentCamera = NewCamera
-	NewCamera.CFrame = Char.Head.CFrame * CFrame.new(0,0,-20)
-	NewCamera.CFrame = NewCamera.CFrame*CFrame.Angles(0,math.pi,0)
+	ViewportFrame.Visible = ExtraVariables.CharacterViewport
 end)
 local Afar = Instance.new("BillboardGui")
 Afar.AlwaysOnTop = true
@@ -2369,6 +2375,9 @@ Cloned.Parent = ViewportFrame
 --\\
 
 --//Finalized
+if game:GetService("RunService"):IsStudio() then
+	SetupModel = game.Players.FakeMenu
+end
 function GetTrueVisibility(Object:GuiObject)
 	local v = Object.Visible
 	local p = Object.Parent
@@ -2400,21 +2409,105 @@ function OnClick(button,func)
 		if k.KeyCode==Enum.KeyCode.ButtonR2 and button:IsA("GuiObject") then
 			local ABS = MenuSetup.GuiMouse.AbsolutePosition
 			if GetTrueVisibility(button)==true and (ABS.X > button.AbsolutePosition.X and ABS.X < button.AbsolutePosition.X+button.AbsoluteSize.X and ABS.Y < button.AbsolutePosition.Y+button.AbsoluteSize.Y and ABS.Y > button.AbsolutePosition.Y) then
-				PlaySound(3779096010)
+				PlaySound(6324790483)
 				func()
 			end
 		end
 	end)
 end
-OnClick(MenuSetup.ActionMenu.External.Menu.Buttons.Chat,function()
+local MainScreen=MenuSetup.ActionMenu.External
+OnClick(MainScreen.Menu.Buttons.Chat,function()
 	ExtraVariables.ChatOpened=not ExtraVariables.ChatOpened
 	ToggleChatMenu(ExtraVariables.ChatOpened)
 	ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
 	ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
 end)
+OnClick(MainScreen.Menu.Buttons.QuickOptions,function()
+	for _,x in pairs(MainScreen.Menu:GetChildren())do
+		pcall(function()
+			x.Visible = false
+		end)
+	end
+	MainScreen.Menu.QuickOptions.Visible = true
+end)
+OnClick(MainScreen.Menu.QuickOptions.RLegs,function()
+	pcall(function()
+		Destroy(Character:FindFirstChild("Left Leg"),-1)
+		Destroy(Character:FindFirstChild("Right Leg"),-1)
+		CharacterLimbs.LeftLeg=nil
+		CharacterLimbs.RightLeg=nil
+	end)
+end)
+OnClick(MainScreen.Menu.QuickOptions.Rejoin,function()
+	game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,User)
+end)
+MainScreen.Menu.QuickOptions.Option2.OptionLabel.Text = "Display Usernames"
+OnClick(MainScreen.Menu.QuickOptions.Option1.Toggle,function()
+	local Button = MainScreen.Menu.QuickOptions.Option1.Toggle
+	local Toggled = Button.Text:len()>0
+	if Toggled then
+		Button.Text = ""
+	else
+		Button.Text = Check
+	end
+	ExtraVariables.TurnArmsForTools = not Toggled
+end)
+OnClick(MainScreen.Menu.QuickOptions.Option2.Toggle,function()
+	local Button = MainScreen.Menu.QuickOptions.Option2.Toggle
+	local Toggled = Button.Text:len()>0
+	if Toggled then
+		Button.Text = ""
+	else
+		Button.Text = Check
+	end
+	ExtraVariables.DisplayNames = not Toggled
+end)
+OnClick(MainScreen.Menu.QuickOptions.Option3.Toggle,function()
+	local Button = MainScreen.Menu.QuickOptions.Option3.Toggle
+	local Toggled = Button.Text:len()>0
+	if Toggled then
+		Button.Text = ""
+	else
+		Button.Text = Check
+	end
+	ExtraVariables.CharacterViewport = not Toggled
+end)
+OnClick(MainScreen.Menu.QuickOptions.Title.Close,function()
+	for _,x in pairs(MainScreen.Menu:GetChildren())do
+		pcall(function()
+			x.Visible = false
+		end)
+	end
+	MainScreen.Menu.Buttons.Visible = true
+end)
+
+function CharactersAdded(_player)
+	_player.CharacterAdded:Connect(function(char0)
+		if ExtraVariables.DisplayNames == false then
+			task.spawn(function()
+				repeat task.wait(-1) until char0:FindFirstChildWhichIsA("Humanoid")
+				char0:FindFirstChildWhichIsA("Humanoid").DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+				local Until = nil
+				Until = char0:FindFirstChildWhichIsA("Humanoid").Changed:Connect(function()
+					if not char0:IsDescendantOf(workspace) then
+						Until:Disconnect()
+					else
+						char0:FindFirstChildWhichIsA("Humanoid").DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+					end
+				end)
+			end)
+		end
+	end)
+	task.spawn(function()
+		repeat task.wait(-1) until _player.Character and _player.Character:FindFirstChildWhichIsA("Humanoid")
+		_player.Character:FindFirstChildWhichIsA("Humanoid").DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+	end)
+end
+Services.Players.PlayerAdded:Connect(CharactersAdded)
+
 MenuSetup.Menu.ActionMenu.Parent = User.PlayerGui
 game:GetService("RunService").RenderStepped:Connect(function()
-	MenuSetup.Menu.CFrame = (Parts.LeftArm.CFrame*CFrame.new(0,-5,2.5)) * CFrame.new(2.56346607, -2.55848217, -1.17437077, -1, 0, 0, 0, -0.236597493, -0.971607685, 0, -0.971607566, 0.236597523):Inverse()
+	MenuSetup.Menu.CFrame = (Parts.LeftArm.CFrame*CFrame.new(0.5,-3,2.5)) * CFrame.new(2.56346607, -2.55848217, -1.17437077, -1, 0, 0, 0, -0.236597493, -0.971607685, 0, -0.971607566, 0.236597523):Inverse()
 	MenuSetup.CurrentCamera.CFrame = MenuSetup.Menu.CFrame * SetupModel.OffsetFromFakeMenu.Value:Inverse()
 	if ExtraVariables.ActionOpened == true then
 		local ForwardRay = Ray.new(Parts.RightArm.Position,(Parts.RightArm.CFrame*CFrame.Angles(-math.pi/2,0,0)).LookVector*10)
@@ -2432,12 +2525,12 @@ Services.StarterGui:SetCore("VREnableControllerModels", false)
 
 ExtraVariables.ActionTriggered.Event:Connect(function(b)
 	if b == true then
-		PlaySound(3779053277)
+		PlaySound(4850864425)
 		MenuSetup.Menu.Parent=workspace.CurrentCamera;
 		MenuSetup.ActionMenu.Enabled = true
 		MenuSetup.Menu.Logo.Enabled=true
 	else
-		PlaySound(2789463529)
+		PlaySound(4499400560)
 		MenuSetup.Menu.Parent=workspace.CurrentCamera;
 		MenuSetup.ActionMenu.Enabled = false
 		MenuSetup.Menu.Logo.Enabled=false
