@@ -9,6 +9,29 @@ local User = game:GetService('Players').LocalPlayer
 _G.IsVr = true
 local AlternativeSpawn = task.spawn
 
+local ScriptsToRemove = {
+	"NexusVRCharacterModelClientLoader",
+	"VR",
+}
+for i,v in pairs(User:GetDescendants())do
+	if v:IsA("LocalScript") then
+		for _,n in pairs(ScriptsToRemove)do
+			if v.Name:lower():find(n:lower()) then
+				v.Disabled = true
+			end
+		end
+	end
+end
+for i,v in pairs(User.Character:GetDescendants())do
+	if v:IsA("LocalScript") then
+		for _,n in pairs(ScriptsToRemove)do
+			if v.Name:lower():find(n:lower()) then
+				v.Disabled = true
+			end
+		end
+	end
+end
+
 --ok
 local fenv = getfenv()
 local shp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidden_prop or fenv.sethiddenprop
