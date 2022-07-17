@@ -2618,6 +2618,7 @@ CreateHatAsTool("Give an L","Big L",CFrame.new(-0.0206413269, -1.05122375, 0.875
 CreateHatAsTool("Pistol","1911 Right",CFrame.new(-0.00897979736, 1.30259275, -0.496437073, -1, 0, 8.74227766e-08, 0, 0.999999881, 0, -8.74227766e-08, 0, -1),true)
 CreateHatAsTool("Knife","Meshes/KnifeFaceAccessory",CFrame.new(-0.88650322, 1.13049304, 0.0296177864, 0, 0, -1, 0, 1, 0, 1, 0, 0),false,CFrame.Angles(0,math.rad(90),0))
 CreateHatAsTool("Big Hammer","MARTILLO",CFrame.new(-0.976185083, -0.770004272, 0.040807724, -9.27258839e-08, -1, 1.1920929e-07, -9.27258839e-08, -2.08616228e-07, -1.00000012, 1.00000036, -9.27258839e-08, -9.27258696e-08),true)
+CreateHatAsTool("Sword","Angel Sword",CFrame.new(-0.00233829999, -0.941128731, -2.9509182, 1.91068547e-15, 4.37113883e-08, 1, 0.999999881, -4.37113847e-08, 0, 4.37113883e-08, 1, -4.37113883e-08),true)
 --//
 
 Services.VR:RecenterUserHeadCFrame()
