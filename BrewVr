@@ -2762,6 +2762,9 @@ OnClick(Main.InnerMain.QuickActions.noLegs,function()
 		Destroy(Character:FindFirstChild("Left Leg"),-1)
 	end
 end)
+OnClick(Main.InnerMain.Buttons.GamesTP,function()
+	VrSurface.VrMain.InnerMain.OtherGames.Visible = true
+end)
 OnClick(Main.InnerMain.QuickActions.rejoin,function()
 	game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,User)
 end)
