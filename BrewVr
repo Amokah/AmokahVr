@@ -8,6 +8,15 @@ local Advanced = {
 		"VR",
 	};
 	RemoveLocals = true;
+	GamesList = {
+		{6708206173,"Rate My Avatar"},
+		{7115420363,"The Booth Plaza"},
+		{155615604,"Prison Life"},
+		{189707,"Natural Disaster"},
+		{192800,"Work at a Pizza Place"},
+		{47324,"Sword Fights"},
+		{12109643,"Fencing"}
+	}
 }
 local User = game:GetService('Players').LocalPlayer
 local AlternativeSpawn = task.spawn
@@ -1502,7 +1511,7 @@ function GetFPS()
 		local Start = os.clock()
 		local FPSC = 0
 		repeat FPSC = FPSC + 1 game:GetService('RunService').RenderStepped:Wait() until os.clock()-Start >= 1
-		ExtraVariables.CalculatingFPS = true
+		ExtraVariables.CalculatingFPS = false
 		ExtraVariables.LastFPS = FPSC
 		return FPSC
 	else
@@ -2441,7 +2450,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 		end
 		CharacterLimbs.RightArm.CFrame = Parts.RightArm.CFrame
 		CharacterLimbs.LeftArm.CFrame = Parts.LeftArm.CFrame
-		
+
 		if GetRigType()=='R6' then
 		end
 		ProbablyIK.Root.CFrame = Character.PrimaryPart.CFrame
@@ -2450,7 +2459,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 			RePositionHeadParts()
 			CharacterLimbs.RightArm.CFrame = Parts.RightArm.CFrame
 			CharacterLimbs.LeftArm.CFrame = Parts.LeftArm.CFrame
-			
+
 			if GetRigType()=='R6' then
 				local LeftStart = Character.Torso.CFrame*CFrame.new(-0.5,-1,0)
 				local RightStart = Character.Torso.CFrame*CFrame.new(0.5,-1,0)
@@ -2766,6 +2775,17 @@ OnClick(Main.InnerMain.PropCreation.Initialize.Tool.No,function()
 	Main.InnerMain.PropCreation.Initialize.Visible = false
 	Main.InnerMain.PropCreation.ToolSelect.Visible = true
 end)
+--~ ~ ~ ~ ~~ ~ ~
+ExtraVariables.GameButton = Main.InnerMain.OtherGames.GameButton
+ExtraVariables.GameButton.Parent=nil
+for i,v in pairs(Advanced.GamesList)do
+	local LocalGameButton = ExtraVariables.GameButton:Clone()
+	LocalGameButton.Text = v[2]
+	LocalGameButton.Parent = Main.InnerMain.OtherGames
+	OnClick(LocalGameButton,function()
+		game:GetService('TeleportService'):Teleport(v[1],User)
+	end)
+end
 --~ ~ ~ ~ ~~ ~ ~
 function SetSettingCheckBox(obj,boolean,func)
 	obj=obj.CheckBox
