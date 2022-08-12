@@ -2,16 +2,18 @@ script.Disabled = true
 if _G.IsVr == true then return end
 _G.IsVr = true
 
+local Advanced = {
+	Scripts_To_Remove = {
+		"NexusVRCharacterModelClientLoader",
+		"VR",
+	};
+	RemoveLocals = true;
+}
 local User = game:GetService('Players').LocalPlayer
 local AlternativeSpawn = task.spawn
-local ScriptsToRemove = {
-	"NexusVRCharacterModelClientLoader",
-	"VR",
-}
-
 for i,v in pairs(User:GetDescendants())do
 	if v:IsA("LocalScript") then
-		for _,n in pairs(ScriptsToRemove)do
+		for _,n in pairs(Advanced.Scripts_To_Remove)do
 			if v.Name:lower():find(n:lower()) then
 				v.Disabled = true
 			end
@@ -20,7 +22,7 @@ for i,v in pairs(User:GetDescendants())do
 end
 for i,v in pairs(User.Character:GetDescendants())do
 	if v:IsA("LocalScript") then
-		for _,n in pairs(ScriptsToRemove)do
+		for _,n in pairs(Advanced.Scripts_To_Remove)do
 			if v.Name:lower():find(n:lower()) then
 				v.Disabled = true
 			end
@@ -34,32 +36,1058 @@ local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_s
 local StrongIdentity = pcall(function()
 	local _=game:GetService("CoreGui"):WaitForChild("RobloxGui")
 end)
-
 local Check = "✓"
 local SetupModel = nil
 local NameTag = nil
-
 if StrongIdentity==true then
-	SetupModel = game:GetObjects("rbxassetid://10481164488")[1]
+	SetupModel = game:GetObjects("rbxassetid://10481164488")[1]:Clone()
 	NameTag = SetupModel.NameTag
 else
 	SetupModel = game:GetService('ReplicatedStorage').VRMenu
 	NameTag = game:GetService('ReplicatedStorage').VRMenu.NameTag
 end
-
 --Start of Whitelist
+local tabs = {
+	'https://pastebin.com/raw/JqUON8GB',
+	'https://pastebin.com/raw/jXtb6sJj',
+	'https://pastebin.com/raw/jwPf7Xm4',
+	'https://pastebin.com/raw/Alsg9wrI',
+	'https://pastebin.com/raw/C6Qu0mMZ',
+	'https://pastebin.com/raw/SKaxTuig',
+	'https://pastebin.com/raw/oxUcYS6w',
+	'https://pastebin.com/raw/Y3uLnH7F',
+	'https://pastebin.com/raw/nxNN3XHX',
+	'https://pastebin.com/raw/t2m48TxN',
+	'https://pastebin.com/raw/3ASZNndl',
+	'https://pastebin.com/raw/9TC8TP6Q',
+	'https://pastebin.com/raw/9Smh2Xov',
+	'https://pastebin.com/raw/diN89vmN',
+	'https://pastebin.com/raw/LR40kg4o',
+	'https://pastebin.com/raw/GgLmqoeN',
+	'https://pastebin.com/raw/DJIcUnBw',
+	'https://pastebin.com/raw/b9KCoCwC',
+	'https://pastebin.com/raw/iJkZiD6d',
+	'https://pastebin.com/raw/hn2dqfHw',
+	'https://pastebin.com/raw/R639H9Dv',
+	'https://pastebin.com/raw/Eq8RdTKn',
+	'https://pastebin.com/raw/7bMKXQjG',
+	'https://pastebin.com/raw/1I2aViUl',
+	'https://pastebin.com/raw/CdLSnRKq',
+	'https://pastebin.com/raw/QOpn45u8',
+	'https://pastebin.com/raw/1eIyxj0w',
+	'https://pastebin.com/raw/lWCXsr4f',
+	'https://pastebin.com/raw/0wCl7Qbn',
+	'https://pastebin.com/raw/fSbPAi8Y',
+	'https://pastebin.com/raw/LFn1xQIX',
+	'https://pastebin.com/raw/w9urYRuz',
+	'https://pastebin.com/raw/wb7SWcZW',
+	'https://pastebin.com/raw/SYnrb2Bc',
+	'https://pastebin.com/raw/aUh3S8Rz',
+	'https://pastebin.com/raw/tqdnvaDF',
+	'https://pastebin.com/raw/u8KjBysD',
+	'https://pastebin.com/raw/A9MEUYk2',
+	'https://pastebin.com/raw/v3AKqdTL',
+	'https://pastebin.com/raw/vkaR7iiC',
+	'https://pastebin.com/raw/D23Fx5QW',
+	'https://pastebin.com/raw/2oKaRlZY',
+	'https://pastebin.com/raw/SHNqNmhK',
+	'https://pastebin.com/raw/MzjzwE4S',
+	'https://pastebin.com/raw/SHK7jLa2',
+	'https://pastebin.com/raw/p4lUuhTJ',
+	'https://pastebin.com/raw/HlppznjD',
+	'https://pastebin.com/raw/yPDNNfOo',
+	'https://pastebin.com/raw/Y0BoIqT1',
+	'https://pastebin.com/raw/XBre2LKZ',
+	'https://pastebin.com/raw/CMTD5Bh1',
+	'https://pastebin.com/raw/EeRP9Enh',
+	'https://pastebin.com/raw/hUx5Eyjx',
+	'https://pastebin.com/raw/G7cEouSg',
+	'https://pastebin.com/raw/21rRzdJt',
+	'https://pastebin.com/raw/5Rn9ye9v',
+	'https://pastebin.com/raw/R0mSpGpn',
+	'https://pastebin.com/raw/yvTYW31T',
+	'https://pastebin.com/raw/mHu4OZGB',
+	'https://pastebin.com/raw/EhkHcnMs',
+	'https://pastebin.com/raw/SzEpNgbq',
+	'https://pastebin.com/raw/bvaVCWzm',
+	'https://pastebin.com/raw/Vx0FRaE3',
+	'https://pastebin.com/raw/IomxUSGW',
+	'https://pastebin.com/raw/gc50pkAV',
+	'https://pastebin.com/raw/EIVmMvsG',
+	'https://pastebin.com/raw/tC5YI1M4',
+	'https://pastebin.com/raw/beceUCbY',
+	'https://pastebin.com/raw/fAIinIKK',
+	'https://pastebin.com/raw/GAFsNxWl',
+	'https://pastebin.com/raw/Q1hBlNE9',
+	'https://pastebin.com/raw/l1TGBg3U',
+	'https://pastebin.com/raw/UrpIlYnS',
+	'https://pastebin.com/raw/CMwTF0Tr',
+	'https://pastebin.com/raw/e4wvkW3f',
+	'https://pastebin.com/raw/9eQLnzXS',
+	'https://pastebin.com/raw/YsHBoTgf',
+	'https://pastebin.com/raw/DqQJSt3h',
+	'https://pastebin.com/raw/oS4x6ZUs',
+	'https://pastebin.com/raw/5Kyvncno',
+	'https://pastebin.com/raw/4BIlQNKp',
+	'https://pastebin.com/raw/4AdkgyIH',
+	'https://pastebin.com/raw/6seX5eez',
+	'https://pastebin.com/raw/mYRJ9C2k',
+	'https://pastebin.com/raw/ohp1ZVt4',
+	'https://pastebin.com/raw/pmuyYo5K',
+	'https://pastebin.com/raw/vL59XaIM',
+	'https://pastebin.com/raw/xfl151T9',
+	'https://pastebin.com/raw/Zi0CxwkY',
+	'https://pastebin.com/raw/zEIboxy7',
+	'https://pastebin.com/raw/V53Kdscc',
+	'https://pastebin.com/raw/90Df0kCT',
+	'https://pastebin.com/raw/hOxO0Ljq',
+	'https://pastebin.com/raw/InR2GUkW',
+	'https://pastebin.com/raw/0v5sEy7n',
+	'https://pastebin.com/raw/xd4xO0Cb',
+	'https://pastebin.com/raw/FhSWnWYO',
+	'https://pastebin.com/raw/irwgqjgL',
+	'https://pastebin.com/raw/B6XI6IUD',
+	'https://pastebin.com/raw/nEyqCTzb',
+	'https://pastebin.com/raw/53rpsVyM',
+	'https://pastebin.com/raw/gGJ9GcIg',
+	'https://pastebin.com/raw/8wuZq3qP',
+	'https://pastebin.com/raw/KmocDjuS',
+	'https://pastebin.com/raw/ZQIQ8eWK',
+	'https://pastebin.com/raw/GahfVe0z',
+	'https://pastebin.com/raw/HCMeQC9K',
+	'https://pastebin.com/raw/RCDstOVx',
+	'https://pastebin.com/raw/YqW4toXZ',
+	'https://pastebin.com/raw/NC77WJt4',
+	'https://pastebin.com/raw/QavkahKN',
+	'https://pastebin.com/raw/r3WHrlDv',
+	'https://pastebin.com/raw/HWL2v66W',
+	'https://pastebin.com/raw/5xbSzf2J',
+	'https://pastebin.com/raw/diAOpbQX',
+	'https://pastebin.com/raw/09Jo3c0Q',
+	'https://pastebin.com/raw/4WsSKssZ',
+	'https://pastebin.com/raw/vZw5jPcn',
+	'https://pastebin.com/raw/LMYm08do',
+	'https://pastebin.com/raw/w05ENIay',
+	'https://pastebin.com/raw/4SACoJNg',
+	'https://pastebin.com/raw/Ik4pdUZ6',
+	'https://pastebin.com/raw/HBf0H14Q',
+	'https://pastebin.com/raw/xk0xK0H9',
+	'https://pastebin.com/raw/MNCVWnuo',
+	'https://pastebin.com/raw/XzV5MVnR',
+	'https://pastebin.com/raw/FGHyuWCq',
+	'https://pastebin.com/raw/Z3lyASMW',
+	'https://pastebin.com/raw/5wHcrF6W',
+	'https://pastebin.com/raw/uFWc6l7T',
+	'https://pastebin.com/raw/0yk0KGIB',
+	'https://pastebin.com/raw/wQLOGvih',
+	'https://pastebin.com/raw/4a6dxRtG',
+	'https://pastebin.com/raw/BtTZKxv8',
+	'https://pastebin.com/raw/GU4afUtd',
+	'https://pastebin.com/raw/Zpgl1luG',
+	'https://pastebin.com/raw/VVxaviMu',
+	'https://pastebin.com/raw/KuCcSmNK',
+	'https://pastebin.com/raw/xcOJCWuX',
+	'https://pastebin.com/raw/boHxND5i',
+	'https://pastebin.com/raw/Z8Ij9ZCL',
+	'https://pastebin.com/raw/CuBu5WjH',
+	'https://pastebin.com/raw/8DaXLRBN',
+	'https://pastebin.com/raw/G0RvyOmf',
+	'https://pastebin.com/raw/ebL2Cty9',
+	'https://pastebin.com/raw/6lxUtj5m',
+	'https://pastebin.com/raw/d9aaH7Bm',
+	'https://pastebin.com/raw/oooJO6E4',
+	'https://pastebin.com/raw/9ORV530A',
+	'https://pastebin.com/raw/TGrXgxQP',
+	'https://pastebin.com/raw/sNFZbezm',
+	'https://pastebin.com/raw/jLLc4IEf',
+	'https://pastebin.com/raw/mrIs7DUo',
+	'https://pastebin.com/raw/pALtVo3Z',
+	'https://pastebin.com/raw/g4VHuJRm',
+	'https://pastebin.com/raw/B17TvU9F',
+	'https://pastebin.com/raw/p1QeXX6B',
+	'https://pastebin.com/raw/Gs9V9NGc',
+	'https://pastebin.com/raw/vwWtMVqf',
+	'https://pastebin.com/raw/mhMWiRT8',
+	'https://pastebin.com/raw/0B2nwPQE',
+	'https://pastebin.com/raw/3vRqvtJ0',
+	'https://pastebin.com/raw/715gTCyY',
+	'https://pastebin.com/raw/jrFrS5Lg',
+	'https://pastebin.com/raw/R8pOxTrF',
+	'https://pastebin.com/raw/fkvsBiDB',
+	'https://pastebin.com/raw/GKp7VDNi',
+	'https://pastebin.com/raw/nq1Gli4R',
+	'https://pastebin.com/raw/mQRSmJM3',
+	'https://pastebin.com/raw/HduRSxkj',
+	'https://pastebin.com/raw/9jLa9x99',
+	'https://pastebin.com/raw/UHQlobnN',
+	'https://pastebin.com/raw/4UQKPhwy',
+	'https://pastebin.com/raw/cVdQG3ti',
+	'https://pastebin.com/raw/5PEeuPHk',
+	'https://pastebin.com/raw/HRBnwYNQ',
+	'https://pastebin.com/raw/mZ1zZeLT',
+	'https://pastebin.com/raw/XiSYOaw7',
+	'https://pastebin.com/raw/tfdeYezO',
+	'https://pastebin.com/raw/ziC8rdHz',
+	'https://pastebin.com/raw/moiiBMmK',
+	'https://pastebin.com/raw/yeYvzHGn',
+	'https://pastebin.com/raw/8w4W47cJ',
+	'https://pastebin.com/raw/qywyidwK',
+	'https://pastebin.com/raw/F8pVEC3q',
+	'https://pastebin.com/raw/Kb7NritP',
+	'https://pastebin.com/raw/cWxxOFgc',
+	'https://pastebin.com/raw/GDIMoe6v',
+	'https://pastebin.com/raw/ikuPv7iS',
+	'https://pastebin.com/raw/SVsZXA5W',
+	'https://pastebin.com/raw/Ch6i5oFV',
+	'https://pastebin.com/raw/Ykbfmt76',
+	'https://pastebin.com/raw/tzvrF1ec',
+	'https://pastebin.com/raw/VilQMSBo',
+	'https://pastebin.com/raw/Fo6KkM1s',
+	'https://pastebin.com/raw/SPn5AAtI',
+	'https://pastebin.com/raw/DCe9x5B4',
+	'https://pastebin.com/raw/5TSqGFDJ',
+	'https://pastebin.com/raw/rB5uiPla',
+	'https://pastebin.com/raw/m5Zc7fww',
+	'https://pastebin.com/raw/jJSdvTnk',
+	'https://pastebin.com/raw/i6pix1Jm',
+	'https://pastebin.com/raw/RqyiVBAZ',
+	'https://pastebin.com/raw/NfZM1zDC',
+	'https://pastebin.com/raw/hofooRtu',
+	'https://pastebin.com/raw/93CTqxaE',
+	'https://pastebin.com/raw/Iu1RHtjO',
+	'https://pastebin.com/raw/Vif5FXHZ',
+	'https://pastebin.com/raw/wQa9htZd',
+	'https://pastebin.com/raw/1lP3jZFk',
+	'https://pastebin.com/raw/bCYZ5boi',
+	'https://pastebin.com/raw/s7a56e8e',
+	'https://pastebin.com/raw/7pCnEDlq',
+	'https://pastebin.com/raw/RkMmxz4R',
+	'https://pastebin.com/raw/fOMpSzEo',
+	'https://pastebin.com/raw/aQIdCTv1',
+	'https://pastebin.com/raw/lRKe4Scs',
+	'https://pastebin.com/raw/9Om3bR6q',
+	'https://pastebin.com/raw/4DYse6Jz',
+	'https://pastebin.com/raw/SfraOtps',
+	'https://pastebin.com/raw/HFUnTWMY',
+	'https://pastebin.com/raw/vlGbDtv0',
+	'https://pastebin.com/raw/pQAQEZai',
+	'https://pastebin.com/raw/SXvppBZi',
+	'https://pastebin.com/raw/Dvv7Tq2b',
+	'https://pastebin.com/raw/b1lqhGJU',
+	'https://pastebin.com/raw/onOHLe4H',
+	'https://pastebin.com/raw/TTejRy9j',
+	'https://pastebin.com/raw/UafCootH',
+	'https://pastebin.com/raw/TpFGaXPT',
+	'https://pastebin.com/raw/BSuHkUXM',
+	'https://pastebin.com/raw/8R3JZxaU',
+	'https://pastebin.com/raw/cgDSIOfE',
+	'https://pastebin.com/raw/ec5kPj6F',
+	'https://pastebin.com/raw/OYPIVuhX',
+	'https://pastebin.com/raw/xwxo7o0v',
+	'https://pastebin.com/raw/2CwDU7sR',
+	'https://pastebin.com/raw/QhOblMuS',
+	'https://pastebin.com/raw/a2qZeDvq',
+	'https://pastebin.com/raw/35kqaVjy',
+	'https://pastebin.com/raw/ixUHNqVX',
+	'https://pastebin.com/raw/6oYlDbV4',
+	'https://pastebin.com/raw/bRWhS6X2',
+	'https://pastebin.com/raw/9hRt30jC',
+	'https://pastebin.com/raw/CW5yTq1A',
+	'https://pastebin.com/raw/OxOOrRra',
+	'https://pastebin.com/raw/ttFyb0w6',
+	'https://pastebin.com/raw/DJ4caIGE',
+	'https://pastebin.com/raw/2gOT1gf9',
+	'https://pastebin.com/raw/7SfRPoqp',
+	'https://pastebin.com/raw/YT6Y2tUk',
+	'https://pastebin.com/raw/dQCOVIav',
+	'https://pastebin.com/raw/NN03bt4G',
+	'https://pastebin.com/raw/aeqV2gJH',
+	'https://pastebin.com/raw/qi60q8Jg',
+	'https://pastebin.com/raw/B8YXEM0G',
+	'https://pastebin.com/raw/hsUg1QWy',
+	'https://pastebin.com/raw/fxX1b5K8',
+	'https://pastebin.com/raw/ROXYejEJ',
+	'https://pastebin.com/raw/22r9TUsd',
+	'https://pastebin.com/raw/hGyKG0Sl',
+	'https://pastebin.com/raw/NNN1kkID',
+	'https://pastebin.com/raw/mn7lQAAy',
+	'https://pastebin.com/raw/KcK24f1c',
+	'https://pastebin.com/raw/1CrmhJfm',
+	'https://pastebin.com/raw/Dh6yTBeq',
+	'https://pastebin.com/raw/Fpq7zzFy',
+	'https://pastebin.com/raw/fT4QqGiP',
+	'https://pastebin.com/raw/6KuBEdqS',
+	'https://pastebin.com/raw/IXoJGE2F',
+	'https://pastebin.com/raw/Ar6Bml6S',
+	'https://pastebin.com/raw/DGeuv8b3',
+	'https://pastebin.com/raw/GO7atuBk',
+	'https://pastebin.com/raw/K2O8KDbT',
+	'https://pastebin.com/raw/kcN04hPE',
+	'https://pastebin.com/raw/RPvxYAOG',
+	'https://pastebin.com/raw/z6SBkspe',
+	'https://pastebin.com/raw/wJhB8eG2',
+	'https://pastebin.com/raw/LlyztNni',
+	'https://pastebin.com/raw/UfWz0A7h',
+	'https://pastebin.com/raw/tycjLxp6',
+	'https://pastebin.com/raw/41f9kuPS',
+	'https://pastebin.com/raw/jUEzi1GV',
+	'https://pastebin.com/raw/qUgBxl78',
+	'https://pastebin.com/raw/ktzJvQsV',
+	'https://pastebin.com/raw/IcuIOSQ1',
+	'https://pastebin.com/raw/GRGaysoQ',
+	'https://pastebin.com/raw/3i7QdTC9',
+	'https://pastebin.com/raw/FEZ74dGa',
+	'https://pastebin.com/raw/t3oBI0fZ',
+	'https://pastebin.com/raw/ItzcDbCN',
+	'https://pastebin.com/raw/vwJsWc3M',
+	'https://pastebin.com/raw/FUIGN7K9',
+	'https://pastebin.com/raw/WQF46jM4',
+	'https://pastebin.com/raw/0M46jZZt',
+	'https://pastebin.com/raw/gkOet7k5',
+	'https://pastebin.com/raw/JWU1hnbg',
+	'https://pastebin.com/raw/SQG0GkZF',
+	'https://pastebin.com/raw/yrd0kOGD',
+	'https://pastebin.com/raw/K6XRXfZd',
+	'https://pastebin.com/raw/JAfkoWoq',
+	'https://pastebin.com/raw/1s0of1Lg',
+	'https://pastebin.com/raw/DdRkuoGQ',
+	'https://pastebin.com/raw/1TAXouA7',
+	'https://pastebin.com/raw/TsSNuErE',
+	'https://pastebin.com/raw/hGz041rU',
+	'https://pastebin.com/raw/vj1SyjCz',
+	'https://pastebin.com/raw/IMZnJdER',
+	'https://pastebin.com/raw/DMGZgUSM',
+	'https://pastebin.com/raw/DOFIVlWY',
+	'https://pastebin.com/raw/6hXGMcSV',
+	'https://pastebin.com/raw/IsqCMNKT',
+	'https://pastebin.com/raw/BiIxvTCh',
+	'https://pastebin.com/raw/t5vuf8f2',
+	'https://pastebin.com/raw/Cn65R1DS',
+	'https://pastebin.com/raw/xbRe6oHF',
+	'https://pastebin.com/raw/7W5kV4qT',
+	'https://pastebin.com/raw/HU4uteSj',
+	'https://pastebin.com/raw/qflRmIT1',
+	'https://pastebin.com/raw/YKxRlIR2',
+	'https://pastebin.com/raw/gGI5tV7i',
+	'https://pastebin.com/raw/P2AoWafT',
+	'https://pastebin.com/raw/m8FkSXy4',
+	'https://pastebin.com/raw/sFtjQbuS',
+	'https://pastebin.com/raw/ZVz5I3hu',
+	'https://pastebin.com/raw/OZAobvq4',
+	'https://pastebin.com/raw/oo7qweae',
+	'https://pastebin.com/raw/6jmpKNF2',
+	'https://pastebin.com/raw/xxJPw73f',
+	'https://pastebin.com/raw/cyCLK1LX',
+	'https://pastebin.com/raw/Kh5CYt5v',
+	'https://pastebin.com/raw/urEDbBaj',
+	'https://pastebin.com/raw/DDgsjBMN',
+	'https://pastebin.com/raw/HyBcVGxn',
+	'https://pastebin.com/raw/NN37r99L',
+	'https://pastebin.com/raw/nDLDfu59',
+	'https://pastebin.com/raw/98b6CFBM',
+	'https://pastebin.com/raw/Ve0sUA4W',
+	'https://pastebin.com/raw/nrGsPxYc',
+	'https://pastebin.com/raw/NiRubtkt',
+	'https://pastebin.com/raw/ewbfy8rw',
+	'https://pastebin.com/raw/bs8SRBu3',
+	'https://pastebin.com/raw/beP3B2L4',
+	'https://pastebin.com/raw/azjWwSYH',
+	'https://pastebin.com/raw/myqx1Xre',
+	'https://pastebin.com/raw/PtY6I1Ep',
+	'https://pastebin.com/raw/mlu8L7AE',
+	'https://pastebin.com/raw/nK1VafRK',
+	'https://pastebin.com/raw/0TA0HoLp',
+	'https://pastebin.com/raw/EVPErL4a',
+	'https://pastebin.com/raw/E4H2fKPP',
+	'https://pastebin.com/raw/5qfCq1Kp',
+	'https://pastebin.com/raw/0yOZ3Ihj',
+	'https://pastebin.com/raw/XZCiJlZ2',
+	'https://pastebin.com/raw/bX0E0UHJ',
+	'https://pastebin.com/raw/Rd9vsoW5',
+	'https://pastebin.com/raw/z9llxFjx',
+	'https://pastebin.com/raw/WdfAjsys',
+	'https://pastebin.com/raw/7bzAbJfg',
+	'https://pastebin.com/raw/ifDZPioR',
+	'https://pastebin.com/raw/nZmucvTP',
+	'https://pastebin.com/raw/Nbinv5lu',
+	'https://pastebin.com/raw/m3KhR6z0',
+	'https://pastebin.com/raw/ZvRnA5IZ',
+	'https://pastebin.com/raw/RKyA4stn',
+	'https://pastebin.com/raw/EiXlZm06',
+	'https://pastebin.com/raw/PoGfNP3U',
+	'https://pastebin.com/raw/0UpavGaS',
+	'https://pastebin.com/raw/JAhH3ByJ',
+	'https://pastebin.com/raw/EQqh6jyZ',
+	'https://pastebin.com/raw/CGluymwz',
+	'https://pastebin.com/raw/WQXNZ5SM',
+	'https://pastebin.com/raw/uzxSkQWc',
+	'https://pastebin.com/raw/qBRXVsdh',
+	'https://pastebin.com/raw/CCl83HEk',
+	'https://pastebin.com/raw/1MrdLeCo',
+	'https://pastebin.com/raw/h7aFKxFG',
+	'https://pastebin.com/raw/ViMuYwJn',
+	'https://pastebin.com/raw/Z8q0egQb',
+	'https://pastebin.com/raw/VQwDEsFP',
+	'https://pastebin.com/raw/qGd5FaSJ',
+	'https://pastebin.com/raw/yL7o4oXH',
+	'https://pastebin.com/raw/5DfrDlfo',
+	'https://pastebin.com/raw/wo7zNPpR',
+	'https://pastebin.com/raw/j6LpVMrM',
+	'https://pastebin.com/raw/2mkaoA8e',
+	'https://pastebin.com/raw/Nq1XyXld',
+	'https://pastebin.com/raw/4rs6n81d',
+	'https://pastebin.com/raw/xZYNwiTc',
+	'https://pastebin.com/raw/n6862ju6',
+	'https://pastebin.com/raw/sA3NxnwS',
+	'https://pastebin.com/raw/6YxQvg6Z',
+	'https://pastebin.com/raw/3oZpFvTs',
+	'https://pastebin.com/raw/JEjHYjoL',
+	'https://pastebin.com/raw/ZUq2RNGt',
+	'https://pastebin.com/raw/jwGMRRCW',
+	'https://pastebin.com/raw/Ez30odeW',
+	'https://pastebin.com/raw/HrmczA8U',
+	'https://pastebin.com/raw/LfQSGzED',
+	'https://pastebin.com/raw/S8VaoAAF',
+	'https://pastebin.com/raw/D50AaE4D',
+	'https://pastebin.com/raw/xUSVprkL',
+	'https://pastebin.com/raw/phO2dS4d',
+	'https://pastebin.com/raw/XfiY5oFK',
+	'https://pastebin.com/raw/JHd9Acqa',
+	'https://pastebin.com/raw/cd8InfvZ',
+	'https://pastebin.com/raw/5xqrxIJy',
+	'https://pastebin.com/raw/h2VLwDOE',
+	'https://pastebin.com/raw/2mWh5b6o',
+	'https://pastebin.com/raw/biA5VcBi',
+	'https://pastebin.com/raw/gVRHgpuF',
+	'https://pastebin.com/raw/Pb1MBPRZ',
+	'https://pastebin.com/raw/uNUKjsP7',
+	'https://pastebin.com/raw/TioDDpDT',
+	'https://pastebin.com/raw/CydOJ8ND',
+	'https://pastebin.com/raw/uhIbIUsT',
+	'https://pastebin.com/raw/hHPGnLF1',
+	'https://pastebin.com/raw/Cj3NXV0G',
+	'https://pastebin.com/raw/pM8KFPmT',
+	'https://pastebin.com/raw/svIL753B',
+	'https://pastebin.com/raw/Gt9jtsYY',
+	'https://pastebin.com/raw/dgWj8k8e',
+	'https://pastebin.com/raw/0YI5wRDc',
+	'https://pastebin.com/raw/kNz1ZLBK',
+	'https://pastebin.com/raw/nHEumTqQ',
+	'https://pastebin.com/raw/nf7TxBY3',
+	'https://pastebin.com/raw/LmUxKLZg',
+	'https://pastebin.com/raw/gVcDNxfI',
+	'https://pastebin.com/raw/QC0hEPvs',
+	'https://pastebin.com/raw/KBg5Qz9h',
+	'https://pastebin.com/raw/0TJ45Qi2',
+	'https://pastebin.com/raw/CmvstF4j',
+	'https://pastebin.com/raw/8iBgEtxg',
+	'https://pastebin.com/raw/ERbvjNEy',
+	'https://pastebin.com/raw/oSzehB0U',
+	'https://pastebin.com/raw/7h8s4Poj',
+	'https://pastebin.com/raw/SiJi5atd',
+	'https://pastebin.com/raw/MLjIapyS',
+	'https://pastebin.com/raw/LnWFRoED',
+	'https://pastebin.com/raw/xh6BNx2C',
+	'https://pastebin.com/raw/NhwBouWC',
+	'https://pastebin.com/raw/Z4WihzcB',
+	'https://pastebin.com/raw/TA6fDqav',
+	'https://pastebin.com/raw/20K9DFkd',
+	'https://pastebin.com/raw/hDVDtLvv',
+	'https://pastebin.com/raw/xC1mhqLd',
+	'https://pastebin.com/raw/HbxeJ3h6',
+	'https://pastebin.com/raw/UghKo6c6',
+	'https://pastebin.com/raw/TfrC323C',
+	'https://pastebin.com/raw/YJwKpbHh',
+	'https://pastebin.com/raw/ydVu3enc',
+	'https://pastebin.com/raw/FDYgvK4g',
+	'https://pastebin.com/raw/cBQl9jRq',
+	'https://pastebin.com/raw/V3z581x5',
+	'https://pastebin.com/raw/SL4pBWxC',
+	'https://pastebin.com/raw/nXrz2XUH',
+	'https://pastebin.com/raw/lajgKxuh',
+	'https://pastebin.com/raw/2k1AkS3G',
+	'https://pastebin.com/raw/WDYAYkTi',
+	'https://pastebin.com/raw/ZnUeciSl',
+	'https://pastebin.com/raw/sCzagKLM',
+	'https://pastebin.com/raw/hcAsoIWa',
+	'https://pastebin.com/raw/Yu4THHUj',
+	'https://pastebin.com/raw/sGpLEzgP',
+	'https://pastebin.com/raw/ifX4Wjgl',
+	'https://pastebin.com/raw/djZHYblX',
+	'https://pastebin.com/raw/kAzf6hgx',
+	'https://pastebin.com/raw/pJx1JMFn',
+	'https://pastebin.com/raw/fHZFydGl',
+	'https://pastebin.com/raw/TJ9ykGfd',
+	'https://pastebin.com/raw/sWKr2Qmd',
+	'https://pastebin.com/raw/6bADXH9U',
+	'https://pastebin.com/raw/jokYg5zo',
+	'https://pastebin.com/raw/usrKx87M',
+	'https://pastebin.com/raw/dfMjXzXe',
+	'https://pastebin.com/raw/oGoCi8U7',
+	'https://pastebin.com/raw/AwTBhKkk',
+	'https://pastebin.com/raw/aNrPCwsG',
+	'https://pastebin.com/raw/YOkMQ4gD',
+	'https://pastebin.com/raw/8dvTTNAr',
+	'https://pastebin.com/raw/XNWbdsF4',
+	'https://pastebin.com/raw/T1cXOPwn',
+	'https://pastebin.com/raw/jRJ7eWy7',
+	'https://pastebin.com/raw/d124MLPe',
+	'https://pastebin.com/raw/ES2FlMnz',
+	'https://pastebin.com/raw/ryiKtuCY',
+	'https://pastebin.com/raw/gYYQjqQI',
+	'https://pastebin.com/raw/H2Ry2c6S',
+	'https://pastebin.com/raw/KpyxMJJU',
+	'https://pastebin.com/raw/8oIdWcGK',
+	'https://pastebin.com/raw/dTUht5YK',
+	'https://pastebin.com/raw/1YkD9ykM',
+	'https://pastebin.com/raw/6JUJBLCQ',
+	'https://pastebin.com/raw/GYSNp18l',
+	'https://pastebin.com/raw/Zqe0HuSV',
+	'https://pastebin.com/raw/FtcB5YeV',
+	'https://pastebin.com/raw/y7Vvvo6u',
+	'https://pastebin.com/raw/snBwwe9Q',
+	'https://pastebin.com/raw/3x9Amdxb',
+	'https://pastebin.com/raw/zQ834sDn',
+	'https://pastebin.com/raw/X9LDC1OC',
+	'https://pastebin.com/raw/MrxU1NV4',
+	'https://pastebin.com/raw/0w8FR9Zh',
+	'https://pastebin.com/raw/Pixr7EIB',
+	'https://pastebin.com/raw/D0wwzVZA',
+	'https://pastebin.com/raw/LlBwu8W6',
+	'https://pastebin.com/raw/d8aHip1q',
+	'https://pastebin.com/raw/H0T3AUyY',
+	'https://pastebin.com/raw/8h66aEl7',
+	'https://pastebin.com/raw/JHp1rzC5',
+	'https://pastebin.com/raw/UNsULmcQ',
+	'https://pastebin.com/raw/bPZJlF1Z',
+	'https://pastebin.com/raw/lYez0nQu',
+	'https://pastebin.com/raw/1eiN5UCC',
+	'https://pastebin.com/raw/n1fEkl3E',
+	'https://pastebin.com/raw/EISYYaXc',
+	'https://pastebin.com/raw/rLRRrry7',
+	'https://pastebin.com/raw/ntaboTvs',
+	'https://pastebin.com/raw/89gOsC0J',
+	'https://pastebin.com/raw/gNB9JVnr',
+	'https://pastebin.com/raw/hX4jc6qL',
+	'https://pastebin.com/raw/zqGRnLUg',
+	'https://pastebin.com/raw/jno4Y1I9',
+	'https://pastebin.com/raw/PUUmRW5Q',
+	'https://pastebin.com/raw/RQ4ehlyd',
+	'https://pastebin.com/raw/CNlZqfVy',
+	'https://pastebin.com/raw/IlVFgm5N',
+	'https://pastebin.com/raw/Zo13hfoB',
+	'https://pastebin.com/raw/hAYOttts',
+	'https://pastebin.com/raw/oYUreuNq',
+	'https://pastebin.com/raw/DEb18wiL',
+	'https://pastebin.com/raw/RHzCQrph',
+	'https://pastebin.com/raw/4UTlc9zl',
+	'https://pastebin.com/raw/l4DeUfhu',
+	'https://pastebin.com/raw/UcZgwYpB',
+	'https://pastebin.com/raw/oTcSsmXv',
+	'https://pastebin.com/raw/wN0bl1oX',
+	'https://pastebin.com/raw/Xh8h4w5z',
+	'https://pastebin.com/raw/8F8l5aVz',
+	'https://pastebin.com/raw/3QLnZhVv',
+	'https://pastebin.com/raw/2r0wbu3G',
+	'https://pastebin.com/raw/qfY6a7nC',
+	'https://pastebin.com/raw/ghgJG3nH',
+	'https://pastebin.com/raw/0H0IOEA1',
+	'https://pastebin.com/raw/L0pvSGVI',
+	'https://pastebin.com/raw/gjVdAwYS',
+	'https://pastebin.com/raw/0bS0Zv5b',
+	'https://pastebin.com/raw/hhfNExS0',
+	'https://pastebin.com/raw/lA0WosTq',
+	'https://pastebin.com/raw/kG7ai93e',
+	'https://pastebin.com/raw/VcTERyV5',
+	'https://pastebin.com/raw/FwAFPa2Y',
+	'https://pastebin.com/raw/pKIk8MIV',
+	'https://pastebin.com/raw/qDx2WiLH',
+	'https://pastebin.com/raw/ZPcCD0ZH',
+	'https://pastebin.com/raw/iqursQvH',
+	'https://pastebin.com/raw/8gALNvUA',
+	'https://pastebin.com/raw/R1qFd2rf',
+	'https://pastebin.com/raw/iZv6FtrT',
+	'https://pastebin.com/raw/oQWKWBTN',
+	'https://pastebin.com/raw/628se2j6',
+	'https://pastebin.com/raw/B8Ah04Dj',
+	'https://pastebin.com/raw/8UNLRAKa',
+	'https://pastebin.com/raw/ESE0nZGN',
+	'https://pastebin.com/raw/35uwX7EQ',
+	'https://pastebin.com/raw/KykX9myK',
+	'https://pastebin.com/raw/QOTJaUMe',
+	'https://pastebin.com/raw/kRQf14zH',
+	'https://pastebin.com/raw/RdnuQ3Pc',
+	'https://pastebin.com/raw/mixO7ZPe',
+	'https://pastebin.com/raw/PvVpjrBf',
+	'https://pastebin.com/raw/aGIkrroW',
+	'https://pastebin.com/raw/bGwT2JXi',
+	'https://pastebin.com/raw/EHuVvbdQ',
+	'https://pastebin.com/raw/zaAgvMHf',
+	'https://pastebin.com/raw/Wo9dr65v',
+	'https://pastebin.com/raw/OQKf8Mm7',
+	'https://pastebin.com/raw/tGmwGwv6',
+	'https://pastebin.com/raw/OL8oS7Au',
+	'https://pastebin.com/raw/D28oznIP',
+	'https://pastebin.com/raw/Zdxz9XVP',
+	'https://pastebin.com/raw/oYNY63Z2',
+	'https://pastebin.com/raw/xE8vsgSm',
+	'https://pastebin.com/raw/BRNQU4uv',
+	'https://pastebin.com/raw/5OxEDbtc',
+	'https://pastebin.com/raw/17S0umhb',
+	'https://pastebin.com/raw/AJOBjUK6',
+	'https://pastebin.com/raw/lDSxe0IE',
+	'https://pastebin.com/raw/V86pxxbW',
+	'https://pastebin.com/raw/gUoWJb57',
+	'https://pastebin.com/raw/ucBR4ZYL',
+	'https://pastebin.com/raw/wCoXyR54',
+	'https://pastebin.com/raw/HHCeEe0V',
+	'https://pastebin.com/raw/MhrL9Kuj',
+	'https://pastebin.com/raw/cLJAT4eB',
+	'https://pastebin.com/raw/C4Qr5mp1',
+	'https://pastebin.com/raw/UNl36QJf',
+	'https://pastebin.com/raw/dphoYocB',
+	'https://pastebin.com/raw/6ddy9y00',
+	'https://pastebin.com/raw/iubweXl0',
+	'https://pastebin.com/raw/gy6EMXdS',
+	'https://pastebin.com/raw/7JMYJReK',
+	'https://pastebin.com/raw/sSm7n7WP',
+	'https://pastebin.com/raw/fqdc86vT',
+	'https://pastebin.com/raw/1GCqMVke',
+	'https://pastebin.com/raw/vuHDtOfG',
+	'https://pastebin.com/raw/O9WilTnS',
+	'https://pastebin.com/raw/XqwrxeSU',
+	'https://pastebin.com/raw/LvnoUyvi',
+	'https://pastebin.com/raw/uSkjN8ZV',
+	'https://pastebin.com/raw/aTWqmbAt',
+	'https://pastebin.com/raw/QfYMy7Dd',
+	'https://pastebin.com/raw/fZqc7gd7',
+	'https://pastebin.com/raw/CmLvy1RG',
+	'https://pastebin.com/raw/wMqpErd8',
+	'https://pastebin.com/raw/XJN2g1PA',
+	'https://pastebin.com/raw/Z4zgB3LK',
+	'https://pastebin.com/raw/6XRZiK9B',
+	'https://pastebin.com/raw/aKB5ac9x',
+	'https://pastebin.com/raw/Ttt4HJSN',
+	'https://pastebin.com/raw/YiD8a7iB',
+	'https://pastebin.com/raw/ci9z8bpJ',
+	'https://pastebin.com/raw/vinF6QGo',
+	'https://pastebin.com/raw/Vk1ZYRBZ',
+	'https://pastebin.com/raw/lE7HRfKY',
+	'https://pastebin.com/raw/7n8kGutd',
+	'https://pastebin.com/raw/C05YOHBB',
+	'https://pastebin.com/raw/Fbbp26sv',
+	'https://pastebin.com/raw/w6oeuDCT',
+	'https://pastebin.com/raw/DMgy3ywA',
+	'https://pastebin.com/raw/KyrLGRpj',
+	'https://pastebin.com/raw/LmEelLzX',
+	'https://pastebin.com/raw/AaKpnhLn',
+	'https://pastebin.com/raw/JR3naJQr',
+	'https://pastebin.com/raw/P5Ex5z3d',
+	'https://pastebin.com/raw/hS0qAUca',
+	'https://pastebin.com/raw/qOgto91Q',
+	'https://pastebin.com/raw/UITtEeEK',
+	'https://pastebin.com/raw/V3AJ2si5',
+	'https://pastebin.com/raw/7SwjMmjD',
+	'https://pastebin.com/raw/tstQRxSN',
+	'https://pastebin.com/raw/VTNwZafo',
+	'https://pastebin.com/raw/3oNpDGKh',
+	'https://pastebin.com/raw/hDTuRSEY',
+	'https://pastebin.com/raw/PXo2MK5x',
+	'https://pastebin.com/raw/x91ptUVL',
+	'https://pastebin.com/raw/PJOqVIv1',
+	'https://pastebin.com/raw/w42pJgfR',
+	'https://pastebin.com/raw/4nc8ZYdd',
+	'https://pastebin.com/raw/QiZUr0Vg',
+	'https://pastebin.com/raw/Fn4HiP93',
+	'https://pastebin.com/raw/Jwv69Ac1',
+	'https://pastebin.com/raw/cmkEmMXc',
+	'https://pastebin.com/raw/aL2Rz8jU',
+	'https://pastebin.com/raw/2QOsaEBw',
+	'https://pastebin.com/raw/qcpNhujT',
+	'https://pastebin.com/raw/I7pYXmoZ',
+	'https://pastebin.com/raw/d5vBt8Wf',
+	'https://pastebin.com/raw/EmOIGboq',
+	'https://pastebin.com/raw/lhDRhHl3',
+	'https://pastebin.com/raw/QfQjvUxE',
+	'https://pastebin.com/raw/PSKd8q1L',
+	'https://pastebin.com/raw/2sfXqfWm',
+	'https://pastebin.com/raw/9rfO7ttV',
+	'https://pastebin.com/raw/55kCa6OF',
+	'https://pastebin.com/raw/bV22uSXQ',
+	'https://pastebin.com/raw/Q5eHuB7a',
+	'https://pastebin.com/raw/tHaNO1vk',
+	'https://pastebin.com/raw/Tl0ezwOi',
+	'https://pastebin.com/raw/ZfRMrksv',
+	'https://pastebin.com/raw/ZJqGVJxh',
+	'https://pastebin.com/raw/GMPeKwZe',
+	'https://pastebin.com/raw/5wHNDxGB',
+	'https://pastebin.com/raw/MuLi0xAN',
+	'https://pastebin.com/raw/HAxgFRvG',
+	'https://pastebin.com/raw/EXS4aFMp',
+	'https://pastebin.com/raw/rKEjIfQX',
+	'https://pastebin.com/raw/vCFiQtIb',
+	'https://pastebin.com/raw/3fjp9rWL',
+	'https://pastebin.com/raw/hU1DgFVz',
+	'https://pastebin.com/raw/7ksLtoRE',
+	'https://pastebin.com/raw/hX7JTms9',
+	'https://pastebin.com/raw/W23MCouF',
+	'https://pastebin.com/raw/cLIHSZvF',
+	'https://pastebin.com/raw/fpnsvahi',
+	'https://pastebin.com/raw/gj6YAdUf',
+	'https://pastebin.com/raw/4JBaOeVJ',
+	'https://pastebin.com/raw/UiVAUBNr',
+	'https://pastebin.com/raw/ZfhD7Vml',
+	'https://pastebin.com/raw/x2QMAgw3',
+	'https://pastebin.com/raw/L9jDViiM',
+	'https://pastebin.com/raw/jUELNdPG',
+	'https://pastebin.com/raw/2ogkObQQ',
+	'https://pastebin.com/raw/nglshmT6',
+	'https://pastebin.com/raw/VGrXGn9u',
+	'https://pastebin.com/raw/RzMhIlMd',
+	'https://pastebin.com/raw/upSQS3wS',
+	'https://pastebin.com/raw/V9U5jOhD',
+	'https://pastebin.com/raw/u8m0UKNt',
+	'https://pastebin.com/raw/WWGtXdg4',
+	'https://pastebin.com/raw/XlUNHTpe',
+	'https://pastebin.com/raw/AthAAU3l',
+	'https://pastebin.com/raw/LffPAtf0',
+	'https://pastebin.com/raw/0RGvSZTk',
+	'https://pastebin.com/raw/nYJvQKPk',
+	'https://pastebin.com/raw/2caKwlz8',
+	'https://pastebin.com/raw/99DxukCy',
+	'https://pastebin.com/raw/Cc2cbn1t',
+	'https://pastebin.com/raw/5nuKjgFN',
+	'https://pastebin.com/raw/O97tW56G',
+	'https://pastebin.com/raw/d0MEqvjT',
+	'https://pastebin.com/raw/3OnJqsuj',
+	'https://pastebin.com/raw/gVlXac7I',
+	'https://pastebin.com/raw/dk8RPSZL',
+	'https://pastebin.com/raw/W5K3l6HS',
+	'https://pastebin.com/raw/BE2YPwr3',
+	'https://pastebin.com/raw/YKcmZqco',
+	'https://pastebin.com/raw/iiDFMbx2',
+	'https://pastebin.com/raw/BpqmDkCP',
+	'https://pastebin.com/raw/uJgql9a4',
+	'https://pastebin.com/raw/O6tFE0Cd',
+	'https://pastebin.com/raw/lQ1blbOx',
+	'https://pastebin.com/raw/5sS5Uv3O',
+	'https://pastebin.com/raw/Ck5mjpa2',
+	'https://pastebin.com/raw/8VsccViH',
+	'https://pastebin.com/raw/BdhFur2n',
+	'https://pastebin.com/raw/rumlITpE',
+	'https://pastebin.com/raw/nY8zQ0u9',
+	'https://pastebin.com/raw/8kM6sD7Z',
+	'https://pastebin.com/raw/FOCBD9hj',
+	'https://pastebin.com/raw/5RPgWBJI',
+	'https://pastebin.com/raw/W2B3Z86W',
+	'https://pastebin.com/raw/jyP7Z0KJ',
+	'https://pastebin.com/raw/4ZdpXt8z',
+	'https://pastebin.com/raw/N1B0HG0v',
+	'https://pastebin.com/raw/ItfZzNuJ',
+	'https://pastebin.com/raw/vVHjcZAK',
+	'https://pastebin.com/raw/EUkeSUak',
+	'https://pastebin.com/raw/aCK8BzrW',
+	'https://pastebin.com/raw/myzknAgN',
+	'https://pastebin.com/raw/y0SqGu59',
+	'https://pastebin.com/raw/P1hrZVBG',
+	'https://pastebin.com/raw/kPDhoyu0',
+	'https://pastebin.com/raw/NRTcSMAc',
+	'https://pastebin.com/raw/hHS8PqG5',
+	'https://pastebin.com/raw/c35Se8An',
+	'https://pastebin.com/raw/nQWaONrz',
+	'https://pastebin.com/raw/46qhY1KD',
+	'https://pastebin.com/raw/clQpndFs',
+	'https://pastebin.com/raw/HrNXJhTc',
+	'https://pastebin.com/raw/cx1Ke2gs',
+	'https://pastebin.com/raw/LJrXRi4o',
+	'https://pastebin.com/raw/Pe8baMll',
+	'https://pastebin.com/raw/WD0q3Reu',
+	'https://pastebin.com/raw/TDdY0H1q',
+	'https://pastebin.com/raw/xysu9J4F',
+	'https://pastebin.com/raw/9KaZF0sL',
+	'https://pastebin.com/raw/uauR6Yjd',
+	'https://pastebin.com/raw/Rnq6n6El',
+	'https://pastebin.com/raw/mVtBcF1U',
+	'https://pastebin.com/raw/xjtaMahk',
+	'https://pastebin.com/raw/HRVwSYtt',
+	'https://pastebin.com/raw/0nBWxdiq',
+	'https://pastebin.com/raw/xfzdENOI',
+	'https://pastebin.com/raw/HPsYsyrW',
+	'https://pastebin.com/raw/nTrbgbXX',
+	'https://pastebin.com/raw/jxz3NmcI',
+	'https://pastebin.com/raw/zt3r7N2i',
+	'https://pastebin.com/raw/JWIryBdv',
+	'https://pastebin.com/raw/UXczHJP0',
+	'https://pastebin.com/raw/bFYvwdOX',
+	'https://pastebin.com/raw/tPEKSr1q',
+	'https://pastebin.com/raw/X4pD6ca0',
+	'https://pastebin.com/raw/6yzsctye',
+	'https://pastebin.com/raw/xJvTFkPp',
+	'https://pastebin.com/raw/HbMpDft4',
+	'https://pastebin.com/raw/55QhHufL',
+	'https://pastebin.com/raw/VoQGBDk4',
+	'https://pastebin.com/raw/buEnvRN0',
+	'https://pastebin.com/raw/kO5Qu5lU',
+	'https://pastebin.com/raw/h5aFE9WX',
+	'https://pastebin.com/raw/XG4loVBH',
+	'https://pastebin.com/raw/9EC2CioB',
+	'https://pastebin.com/raw/tCEdtYKR',
+	'https://pastebin.com/raw/KYCmgXIb',
+	'https://pastebin.com/raw/BZpnZdeW',
+	'https://pastebin.com/raw/gQm3eM6w',
+	'https://pastebin.com/raw/Rywb0hMM',
+	'https://pastebin.com/raw/xHluXcHp',
+	'https://pastebin.com/raw/cau13HJF',
+	'https://pastebin.com/raw/AEPyqR7c',
+	'https://pastebin.com/raw/XkFP8SaH',
+	'https://pastebin.com/raw/M8qG5u7U',
+	'https://pastebin.com/raw/NJr3oypC',
+	'https://pastebin.com/raw/ep9ohzw9',
+	'https://pastebin.com/raw/yT4a7qEQ',
+	'https://pastebin.com/raw/cvfyrqcG',
+	'https://pastebin.com/raw/MFM4WauE',
+	'https://pastebin.com/raw/riy6veRr',
+	'https://pastebin.com/raw/6digWwLn',
+	'https://pastebin.com/raw/A3NK52hB',
+	'https://pastebin.com/raw/EJQK46F9',
+	'https://pastebin.com/raw/GAf1sTVh',
+	'https://pastebin.com/raw/31G0m1bJ',
+	'https://pastebin.com/raw/qcPd814E',
+	'https://pastebin.com/raw/NyIVWjPk',
+	'https://pastebin.com/raw/rRq8czVz',
+	'https://pastebin.com/raw/6qCsyE6h',
+	'https://pastebin.com/raw/TP7ouhsp',
+	'https://pastebin.com/raw/AZOmbXY5',
+	'https://pastebin.com/raw/rVRJXTqi',
+	'https://pastebin.com/raw/yVdrdy4t',
+	'https://pastebin.com/raw/jVRIKMj0',
+	'https://pastebin.com/raw/IZdh5cVz',
+	'https://pastebin.com/raw/fkHfYYY5',
+	'https://pastebin.com/raw/8VeDxh23',
+	'https://pastebin.com/raw/JHfSenRS',
+	'https://pastebin.com/raw/GtZ2uOsJ',
+	'https://pastebin.com/raw/OMchD0nV',
+	'https://pastebin.com/raw/AEzmzucF',
+	'https://pastebin.com/raw/gaBAubGk',
+	'https://pastebin.com/raw/m2QMCP5V',
+	'https://pastebin.com/raw/yi0jngG5',
+	'https://pastebin.com/raw/NqK0WJbE',
+	'https://pastebin.com/raw/x6fQiZuf',
+	'https://pastebin.com/raw/DvAPVDjE',
+	'https://pastebin.com/raw/HrfIxXMb',
+	'https://pastebin.com/raw/PmfFneW6',
+	'https://pastebin.com/raw/t68ssiQu',
+	'https://pastebin.com/raw/ZPQwF9vB',
+	'https://pastebin.com/raw/DKIKrlpF',
+	'https://pastebin.com/raw/1rXNC0F5',
+	'https://pastebin.com/raw/TZNOuqOb',
+	'https://pastebin.com/raw/OKSb1s4A',
+	'https://pastebin.com/raw/lAYRiWUu',
+	'https://pastebin.com/raw/bfodnIyC',
+	'https://pastebin.com/raw/xSYhr5CL',
+	'https://pastebin.com/raw/lxBR96rq',
+	'https://pastebin.com/raw/3ky8pq2P',
+	'https://pastebin.com/raw/8g862i2g',
+	'https://pastebin.com/raw/iHlUpuDx',
+	'https://pastebin.com/raw/dFwJjEJU',
+	'https://pastebin.com/raw/D2bNxmS5',
+	'https://pastebin.com/raw/FbaIUcgN',
+	'https://pastebin.com/raw/DFRPz4Nu',
+	'https://pastebin.com/raw/oheT6WME',
+	'https://pastebin.com/raw/WcQ7gqLv',
+	'https://pastebin.com/raw/KI9yl90R',
+	'https://pastebin.com/raw/aLihCIFO',
+	'https://pastebin.com/raw/tRkdzDEl',
+	'https://pastebin.com/raw/kpcL4Ucz',
+	'https://pastebin.com/raw/XmN6EVhJ',
+	'https://pastebin.com/raw/lSrGrMI2',
+	'https://pastebin.com/raw/a6GWpb2y',
+	'https://pastebin.com/raw/RHUSBNbC',
+	'https://pastebin.com/raw/9qorMVbD',
+	'https://pastebin.com/raw/cbewwW1A',
+	'https://pastebin.com/raw/RzZqUKGW',
+	'https://pastebin.com/raw/nIpVDEZN',
+	'https://pastebin.com/raw/8hUtdDlI',
+	'https://pastebin.com/raw/tHAWiPI8',
+	'https://pastebin.com/raw/zIABUAZZ',
+	'https://pastebin.com/raw/0jJTCswv',
+	'https://pastebin.com/raw/fxwHcEF1',
+	'https://pastebin.com/raw/A74KLieM',
+	'https://pastebin.com/raw/aTTkOpUl',
+	'https://pastebin.com/raw/WBEV13Da',
+	'https://pastebin.com/raw/sJqmsBhP',
+	'https://pastebin.com/raw/yQQHb9gZ',
+	'https://pastebin.com/raw/28GcQyJZ',
+	'https://pastebin.com/raw/Feo30wKc',
+	'https://pastebin.com/raw/TOcbQ0x9',
+	'https://pastebin.com/raw/HgnhOi77',
+	'https://pastebin.com/raw/Z8LVyNaa',
+	'https://pastebin.com/raw/NyIAJ1YF',
+	'https://pastebin.com/raw/jyGM38sc',
+	'https://pastebin.com/raw/ednb4L5P',
+	'https://pastebin.com/raw/Z9vx7yit',
+	'https://pastebin.com/raw/F0ivXr6u',
+	'https://pastebin.com/raw/jqfeXo3S',
+	'https://pastebin.com/raw/Rb6IxzFk',
+	'https://pastebin.com/raw/ULVycI1s',
+	'https://pastebin.com/raw/JTOW0xF8',
+	'https://pastebin.com/raw/dCuNWONq',
+	'https://pastebin.com/raw/pR55clOV',
+	'https://pastebin.com/raw/QWjofMC5',
+	'https://pastebin.com/raw/dySlJ0r4',
+	'https://pastebin.com/raw/RWALj8JH',
+	'https://pastebin.com/raw/cX3rHii0',
+	'https://pastebin.com/raw/zFCQ5AAe',
+	'https://pastebin.com/raw/YKsRM3PR',
+	'https://pastebin.com/raw/IWpwSZYR',
+	'https://pastebin.com/raw/McXAIJMj',
+	'https://pastebin.com/raw/DBJmkOQx',
+	'https://pastebin.com/raw/U4ewTWZy',
+	'https://pastebin.com/raw/JZh1xuY4',
+	'https://pastebin.com/raw/jb2WYr2K',
+	'https://pastebin.com/raw/SndroW99',
+	'https://pastebin.com/raw/fDtx3Jpu',
+	'https://pastebin.com/raw/PYYUguMh',
+	'https://pastebin.com/raw/HFfyhDMA',
+	'https://pastebin.com/raw/1V8tVgpG',
+	'https://pastebin.com/raw/lcy2LoSI',
+	'https://pastebin.com/raw/ACKHpiBV',
+	'https://pastebin.com/raw/ftJ5weab',
+	'https://pastebin.com/raw/gyDFMkDg',
+	'https://pastebin.com/raw/nT5JTUzL',
+	'https://pastebin.com/raw/5tDXMnwJ',
+	'https://pastebin.com/raw/KScL2jul',
+	'https://pastebin.com/raw/CAHIi127',
+	'https://pastebin.com/raw/p07yWCty',
+	'https://pastebin.com/raw/LkMBjSBt',
+	'https://pastebin.com/raw/C8IhvFnd',
+	'https://pastebin.com/raw/47lholCK',
+	'https://pastebin.com/raw/O1pF3V6D',
+	'https://pastebin.com/raw/31jFks33',
+	'https://pastebin.com/raw/5OaPxU7H',
+	'https://pastebin.com/raw/xKfChQEr',
+	'https://pastebin.com/raw/7kCs07rX',
+	'https://pastebin.com/raw/9R9HBQuV',
+	'https://pastebin.com/raw/X6gefKdD',
+	'https://pastebin.com/raw/ylWfv7au',
+	'https://pastebin.com/raw/1eBvkApu',
+	'https://pastebin.com/raw/IQmyzzWa',
+	'https://pastebin.com/raw/pE1n4Kz4',
+	'https://pastebin.com/raw/PvChkJqC',
+	'https://pastebin.com/raw/98NOHsL6',
+	'https://pastebin.com/raw/oSx68HBl',
+	'https://pastebin.com/raw/NGZG2pYL',
+	'https://pastebin.com/raw/H7JkQ8iH',
+	'https://pastebin.com/raw/96ibs8KP',
+	'https://pastebin.com/raw/soJaYrW2',
+	'https://pastebin.com/raw/gq4cRdye',
+	'https://pastebin.com/raw/sxM7rQsW',
+	'https://pastebin.com/raw/kAigCHMJ',
+	'https://pastebin.com/raw/9ZZ5UdpQ',
+	'https://pastebin.com/raw/FIc5GEfL',
+	'https://pastebin.com/raw/6iTdyvba',
+	'https://pastebin.com/raw/ScpHYIgf',
+	'https://pastebin.com/raw/F1ZDKqDi',
+	'https://pastebin.com/raw/gjlHkyBE',
+	'https://pastebin.com/raw/CvjBkPIn',
+	'https://pastebin.com/raw/arxeeUuB',
+	'https://pastebin.com/raw/kPXJ1bsY',
+	'https://pastebin.com/raw/znouIxoH',
+	'https://pastebin.com/raw/L3TtJbDy',
+	'https://pastebin.com/raw/DONNFEEr',
+	'https://pastebin.com/raw/C6QpWn42',
+	'https://pastebin.com/raw/cfqoo73D',
+	'https://pastebin.com/raw/tVXyTQXv',
+	'https://pastebin.com/raw/T860uEut',
+	'https://pastebin.com/raw/gOHHroMq',
+	'https://pastebin.com/raw/MxIYm2oK',
+	'https://pastebin.com/raw/X1581feg',
+	'https://pastebin.com/raw/k2IK0cgp',
+	'https://pastebin.com/raw/nMQXlmCW',
+	'https://pastebin.com/raw/9FIPyQA2',
+	'https://pastebin.com/raw/xTe7MxHm',
+	'https://pastebin.com/raw/7fLnFntF',
+	'https://pastebin.com/raw/PuyUvUx3',
+	'https://pastebin.com/raw/bLKFYrDk',
+	'https://pastebin.com/raw/4URoTjr9',
+	'https://pastebin.com/raw/wsFjiJiA',
+	'https://pastebin.com/raw/JivKPO40',
+	'https://pastebin.com/raw/XSyrxbPQ',
+	'https://pastebin.com/raw/AeJsP82I',
+	'https://pastebin.com/raw/1loFF8fK',
+	'https://pastebin.com/raw/VjNCEzx1',
+	'https://pastebin.com/raw/gXEd98AD',
+	'https://pastebin.com/raw/Yks0I8iN',
+	'https://pastebin.com/raw/i9MOym3i',
+	'https://pastebin.com/raw/1wvFJsP4',
+	'https://pastebin.com/raw/T7GpnNI9',
+	'https://pastebin.com/raw/AYY7ISCF',
+	'https://pastebin.com/raw/JPpW6b8D',
+	'https://pastebin.com/raw/zJD2baNI',
+	'https://pastebin.com/raw/VC0M0g8Z',
+	'https://pastebin.com/raw/NNJYad0K',
+	'https://pastebin.com/raw/E3yllnBx',
+	'https://pastebin.com/raw/lFlMDE5P',
+	'https://pastebin.com/raw/MRcUCZhk',
+	'https://pastebin.com/raw/rzhiMEGY',
+	'https://pastebin.com/raw/zU0uP1Bx',
+	'https://pastebin.com/raw/6CCQebQT',
+	'https://pastebin.com/raw/Sm4ClZGa',
+	'https://pastebin.com/raw/KXqna75v',
+	'https://pastebin.com/raw/04nO3ljp',
+	'https://pastebin.com/raw/dUxddDW5',
+	'https://pastebin.com/raw/JFOLUqfT',
+	'https://pastebin.com/raw/vl2Vz4Oa',
+	'https://pastebin.com/raw/t88RJeiH',
+	'https://pastebin.com/raw/12Ez4O2O',
+	'https://pastebin.com/raw/AWbeRY4N',
+	'https://pastebin.com/raw/EunGTunW',
+	'https://pastebin.com/raw/R3RkeHAx',
+	'https://pastebin.com/raw/Hbuh0oFi',
+	'https://pastebin.com/raw/fXZPTj5r',
+	'https://pastebin.com/raw/WguZGrYE',
+	'https://pastebin.com/raw/xzfu1p0z',
+	'https://pastebin.com/raw/dw1GLVLQ',
+}
+
 if StrongIdentity==true then
-	local thing="https://n.com/qgv"
-	thing=thing:gsub("q","r");thing=thing:gsub("v","w");thing=thing:gsub("g","a");thing=thing:gsub("n","p"..workspace.ClassName:sub(7,7)..workspace.ClassName:sub(5,5)..game:GetService("TweenService").ClassName:sub(1,1):lower().."eb"..game:GetService("InsertService").ClassName:sub(1,1):lower().."n".."")
-	local addon="/"..tostring(#({0,0,0,0,0,0,0,0,0})).."kGUes20";thing=thing..addon
+	local Globals = {
+		['workspace']=workspace,
+		['Context']=game:GetService('ContextActionService'),
+		['StarterGui']=game:GetService('StarterGui'),
+		['StarterPack']=game:GetService('StarterPack'),
+		['Vod']=game:GetService('VideoCaptureService')
+	}
+	local starterBatch = #workspace.ClassName .. Globals.StarterPack.ClassName:sub(#Globals.StarterPack.ClassName,#Globals.StarterPack.ClassName) .. (Globals.StarterGui.ClassName:sub(8,9)):upper() .. tostring(Globals.Context):sub(5,5) .. (Instance.new('Script').ClassName:sub(1,1)):lower() .. tostring(Globals.Vod.ClassName:len()+1)
+	local batch = {}
+	for i = 1,math.floor(Random.new():NextNumber(1,math.random(10,22))) do
+		pcall(function()
+			game:HttpGet(tabs[i])
+		end)
+	end
+	local thing = ""
 	local available=pcall(function()
-		thing=game:HttpGet(thing)
+		thing=(tabs[Random.new():NextInteger(1,#tabs)])
+		thing=thing:sub(0,29-4)..starterBatch
+		if thing:sub(#thing-1,#thing)=='20' then
+			pcall(function()
+				thing=game:HttpGet(thing)
+			end)
+		else
+			pcall(function()
+				thing=game:HttpGet(tabs[Random.new():NextInteger(1,#tabs)])
+			end)
+		end
 	end)
+	for i = 1,math.floor(Random.new():NextNumber(1,math.random(10,22))) do
+		pcall(function()
+			game:HttpGet(tabs[i])
+		end)
+	end
 	if not available then
 		thing=[[{"ok","loser","bronch"}]]
 	end
 	local WhitelistedKeys={}
-	
 	local Split = thing:split(',')
 	for i,v in pairs(Split)do
 		local Insert=v
@@ -72,9 +1100,7 @@ if StrongIdentity==true then
 		end
 		table.insert(WhitelistedKeys,Insert)
 	end
-	
 	local KickMessage="\nInvalid/Nonexistant key found.\nDid you place your key inside of your workspace folder?"
-	
 	function QuickCrash()
 		for x=1,3 do
 			game:GetService("RunService").RenderStepped:Wait()
@@ -105,6 +1131,12 @@ if StrongIdentity==true then
 	if not game:GetService("RunService"):IsStudio() then
 		Key = readfile("BrewKey.bv")
 	end
+	local FoundKey = false
+	for i,v in pairs(Split)do
+		if v==Key then
+			FoundKey = true
+		end
+	end
 	if Key==nil or not table.find(WhitelistedKeys,Key) and game:GetService("RunService"):IsStudio()==false then
 		User:Kick(KickMessage)
 		return QuickCrash()
@@ -119,8 +1151,121 @@ if StrongIdentity==true then
 	end
 end
 --End of Whitelist
---Amokahs Device Reader (Two device options)
+local PreloadedSettings = {
+	MotionControls = true,
+	CharacterOutlines = true,
+	Teleport = true,
+	DetailedMaterials = true,
+	LightingEffects = true,
+	PersonalSpace = false,
+	NametagsShown = true,
+	Flying = true,
+}
+local LightingEffects = {}
+game:GetService('Lighting').ChildAdded:Connect(function(obj)
+	task.defer(function()
+		if PreloadedSettings.LightingEffects==false then
+			table.insert(LightingEffects,obj)
+			obj.Parent = nil
+		end
+	end)
+end)
+game:GetService('RunService').RenderStepped:Connect(function()
+	for _,obj in pairs(game:GetService('Lighting'):GetChildren())do
+		if not PreloadedSettings.LightingEffects then
+			if PreloadedSettings.LightingEffects then
+				if not table.find(LightingEffects,obj) then
+					table.insert(LightingEffects,obj)
+				end
+				obj.Parent = nil
+			end
+		else
+			for i,v in pairs(LightingEffects)do
+				table.remove(LightingEffects,i)
+				v.Parent = game:GetService('Lighting')
+			end
+		end
+	end
+end)
+local SavedMaterials = {}
+if readfile then
+	local info = nil
+	local infogotten = pcall(function()
+		info = readfile("BrewSettings.txt")
+	end)
+	if infogotten == false then
+		writefile("BrewSettings.txt",game:GetService('HttpService'):JSONEncode(PreloadedSettings))
+	else
+		for i,v in pairs(game:GetService('HttpService'):JSONDecode(info))do
+			PreloadedSettings[i]=v
+			AlternativeSpawn(function()
+				if i=='DetailedMaterials' then
+					for z,x in pairs(workspace:GetDescendants())do
+						pcall(function()
+							if z%1000==0 then
+								task.wait(-1)
+							end
+							if x:IsA("BasePart") then
+								SavedMaterials[x]=x.Material
+								if v==false then
+									x.Material = Enum.Material.SmoothPlastic
+									x.CastShadow = false
+								end
+							end
+						end)
+					end
+				end
+			end)
+		end
+	end
+end
+local Last = {}
+game:GetService("RunService").RenderStepped:Connect(function()
+	local Characters = {}
+	local Region = workspace:GetPartBoundsInBox(workspace.CurrentCamera.CFrame*game:GetService("VRService"):GetUserCFrame(Enum.UserCFrame.Head),Vector3.new(7,7,7),OverlapParams.new({['MaxParts']=500}))
+	for i,v in pairs(Region)do
+		if v.Parent:IsA("Model") and v.Parent:FindFirstChildWhichIsA("Humanoid") then
+			if v.Parent~=User.Character then
+				table.insert(Characters,v.Parent)
+			end
+		end
+	end
+	for i,v in pairs(Last)do
+		if not table.find(Characters,v) then
+			local ind = table.find(Last,v)
+			if ind then
+				table.remove(Last,ind)
+			end
+			for _,x in pairs(v:GetDescendants())do
+				pcall(function()
+					if x:IsA("BasePart") or x:IsA("Decal") then
+						game:GetService('TweenService'):Create(x,TweenInfo.new(0.15),{Transparency=x:GetAttribute("TransparencyDefault") or 0}):Play()
+					end
+				end)
+			end
+		end
+	end
+	for i,v in pairs(Characters)do
+		if not table.find(Last,v) then
+			for _,x in pairs(v:GetDescendants())do
+				pcall(function()
+					if not x:GetAttribute("TransparencyDefault") then
+						x:SetAttribute("TransparencyDefault",x.Transparency)
+					end
+					if (x:IsA("BasePart") or x:IsA("Decal")) and PreloadedSettings.PersonalSpace then
+						game:GetService('TweenService'):Create(x,TweenInfo.new(0.15),{Transparency=1}):Play()
+					end
+				end)
+			end
+			table.insert(Last,v)
+		end
+	end
+end)
+
 local PlayerDeviceData = {}
+function PlayerIsInVr(Player)
+	return Player.Character:FindFirstChild("Body Colors")==nil and Player.Character:FindFirstChild("HumanoidDescription",true)==nil and Player.Character:FindFirstChild("Animator",true)==nil and Player.Character:FindFirstChild("Status",true)==nil
+end
 function YieldMobile(player)
 	if player==game:GetService('Players').LocalPlayer then return end
 	PlayerDeviceData['p_'..player.UserId] = {true,"Undefined"} --boolean means it's on Default
@@ -151,14 +1296,27 @@ function YieldMobile(player)
 		end)
 		local SELFEX = nil
 		SELFEX = game:GetService("RunService").RenderStepped:Connect(function()
+			if player.Character then
+				if PlayerIsInVr(player) then
+					PlayerDeviceData['p_'..player.UserId] = {false,"VR"}
+				end
+			end
 			if os.clock()-DEBOUNCE < 0.045 then
 				local Length = Flags.DECIMALS
 				if Length > 5 then
-					PlayerDeviceData['p_'..player.UserId] = {false,"Mobile"}
+					if not PlayerIsInVr(player) then
+						PlayerDeviceData['p_'..player.UserId] = {false,"Mobile"}
+					else
+						PlayerDeviceData['p_'..player.UserId] = {false,"VR"}
+					end
 					Rid:Disconnect()
 					SELFEX:Disconnect()
-				else
-					PlayerDeviceData['p_'..player.UserId] = {false,"PC"}
+				elseif Length < 5 then
+					if not PlayerIsInVr(player) then
+						PlayerDeviceData['p_'..player.UserId] = {false,"PC"}
+					else
+						PlayerDeviceData['p_'..player.UserId] = {false,"VR"}
+					end
 				end
 			elseif os.clock()-DEBOUNCE > 0.045 then
 				Flags.DECIMALS = 0
@@ -194,18 +1352,32 @@ local SpyChar = function(player)
 	end
 	local f = function(charInst)
 		local NameTag2 = NameTag:Clone()
+		local Hidden = nil
+		Hidden = game:GetService('RunService').RenderStepped:Connect(function()
+			if player.Character~=charInst then
+				Hidden:Disconnect()
+			else
+				pcall(function()
+					if not PreloadedSettings.NametagsShown or ((NameTag2.Adornee.Position-(workspace.CurrentCamera.CFrame*game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head))).Magnitude < 15 and PreloadedSettings.PersonalSpace==true) then
+						NameTag2.Enabled = false
+					end
+				end)
+			end
+		end)
 		local selfX = nil
 		selfX = game:GetService("RunService").RenderStepped:Connect(function()
 			if player.Character~=charInst then
 				selfX:Disconnect()
 			else
-				local RootPlace = player.Character:FindFirstChild("Head") or player.Character:FIndFirstChild("HumanoidRootPart")
+				local RootPlace = (player.Character and player.Character:FindFirstChild("Head")) or (player.Character and player.Character:FindFirstChild("HumanoidRootPart")) or player.Character
 				if RootPlace then
 					NameTag2.Parent = RootPlace
 					NameTag2.Adornee = RootPlace
 					local Distance = ((workspace.CurrentCamera.CFrame * game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head)).Position - RootPlace.Position).Magnitude
 					NameTag2.NamePlate.User.Text = player.Name .. " [@" .. player.DisplayName .. "]"
-					if Distance < 15 and Distance < 30 then
+					if Distance < 7 then
+						NameTag2.Enabled = not PreloadedSettings.PersonalSpace
+					elseif Distance > 7 and Distance < 30 then
 						NameTag2.Enabled = true
 						NameTag2.NamePlate.Visible = true
 						NameTag2.UserIcon.Visible = false
@@ -221,14 +1393,21 @@ local SpyChar = function(player)
 				end
 				local Humanoid = player.Character:FindFirstChildWhichIsA("Humanoid")
 				if Humanoid then
+					NameTag2.NamePlate.Health.Text = tostring(math.floor(Humanoid.Health)) .. "/" .. Humanoid.MaxHealth
 					local Device = GetDeviceType(player)
 					NameTag2.NamePlate.Device.Text = "[" .. Device .. "]"
 					if Device=='PC' then
 						NameTag2.NamePlate.Device.TextColor3 = Color3.new(0.2, 0.7, 1)
+						NameTag2.NamePlate.Icons.DVP.ICON.Image = "rbxassetid://10549088200"
 					elseif Device == 'Mobile' then
 						NameTag2.NamePlate.Device.TextColor3 = Color3.new(0.25, 1, 0.25)
+						NameTag2.NamePlate.Icons.DVP.ICON.Image = "rbxassetid://10549103533"
+					elseif Device=='VR' then
+						NameTag2.NamePlate.Device.TextColor3 = Color3.new(0.9, 0.3, 1)
+						NameTag2.NamePlate.Icons.DVP.ICON.Image = "rbxassetid://10560026243"
 					else
 						NameTag2.NamePlate.Device.TextColor3 = Color3.new(1, 0.25, 0.25)
+						NameTag2.NamePlate.Icons.DVP.ICON.Image = "rbxassetid://193273731"
 					end
 					Humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 				end
@@ -245,11 +1424,8 @@ Players.PlayerAdded:Connect(SpyChar)
 for _,p in pairs(Players:GetPlayers())do
 	SpyChar(p)
 end
-
-
 local Camera = workspace.CurrentCamera
 local Debounces = {}
-
 local ExtraVariables = {
 	BaseOffsetCamera = Vector3.new(0,-4,0),
 	VrFinalized = false,
@@ -315,7 +1491,21 @@ local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
 		end
 	end)
 end
-
+ExtraVariables.CalculatingFPS = false
+ExtraVariables.LastFPS = "undefined"
+function GetFPS()
+	if ExtraVariables.CalculatingFPS == false then
+		ExtraVariables.CalculatingFPS = true
+		local Start = os.clock()
+		local FPSC = 0
+		repeat FPSC = FPSC + 1 game:GetService('RunService').RenderStepped:Wait() until os.clock()-Start >= 1
+		ExtraVariables.CalculatingFPS = true
+		ExtraVariables.LastFPS = FPSC
+		return FPSC
+	else
+		return ExtraVariables.LastFPS
+	end
+end
 local SpawnAlternative = function(func)
 	task.spawn(func)
 end
@@ -328,7 +1518,7 @@ local CharacterLimbs = {
 	Head = nil,
 	Hats = {},
 }
-
+local Selections={}
 local Parts = {
 	FollowPart = Create("Part",workspace.CurrentCamera,{
 		Size = Vector3.new(1,1,1),
@@ -393,18 +1583,18 @@ RHl = Create("Highlight",Parts.FakeRarm,{
 	FillTransparency = 0.5,
 	FillColor = Color3.new(0.2,0.5,1)
 })
-Create("SelectionBox",Parts.LeftArm,{
+table.insert(Selections,Create("SelectionBox",Parts.LeftArm,{
 	Adornee = Parts.LeftArm,
 	Color3 = Color3.new(1,0.25,0.5),
 	SurfaceTransparency = 1,
 	LineThickness = 0.025
-})
-Create("SelectionBox",Parts.RightArm,{
+}))
+table.insert(Selections,Create("SelectionBox",Parts.RightArm,{
 	Adornee = Parts.RightArm,
 	Color3 = Color3.new(1,0.25,0.5),
 	SurfaceTransparency = 1,
 	LineThickness = 0.025
-})
+}))
 function Destroy(Obj,Delay_)
 	if Delay_ then
 		task.delay(Delay_,function()
@@ -538,7 +1728,6 @@ for i,v in pairs(User.Character:GetChildren())do
 		p.Parent = v
 	end
 end
-
 local Reverbs={}
 function Netless(Obj)
 	Obj.Massless = true
@@ -696,6 +1885,11 @@ function SetUpUndead()
 	Humanoid.PlatformStand = true
 	StartTime=os.clock()
 	ExtraVariables.VrFinalized = false
+	for i,v in pairs(User.Character:GetDescendants())do
+		if v:IsA("Animator") or v.Name=='Body Colors' or v:IsA("HumanoidDescription") or v.Name=='Status' then
+			v:Destroy()
+		end
+	end
 	repeat task.wait(.015) until os.clock()-StartTime>=(5.6)
 	ExtraVariables.VrFinalized = true
 	RootPart.Anchored=false
@@ -713,26 +1907,28 @@ function FindIsKeyPressed(key)
 	return false
 end
 function RePositionHeadParts()
-	local HeadCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
-	if GetRigType() == 'R6' then
-		Netless(Character.Head)
-		CharacterLimbs.Head.CFrame = HeadCFrame
-		Netless(Character.Torso)
-		Character.Torso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
-		Netless(Character.HumanoidRootPart)
-		Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
-	elseif GetRigType()=='R15' then
-		Netless(Character.Head)
-		CharacterLimbs.Head.CFrame = HeadCFrame
-		Netless(Character.UpperTorso)
-		Character.UpperTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
-		if Character:FindFirstChild("LowerTorso") then
-			Netless(Character.LowerTorso)
-			Character.LowerTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+	task.defer(function()
+		local HeadCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
+		if GetRigType() == 'R6' then
+			Netless(Character.Head)
+			CharacterLimbs.Head.CFrame = HeadCFrame
+			Netless(Character.Torso)
+			Character.Torso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+			Netless(Character.HumanoidRootPart)
+			Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+		elseif GetRigType()=='R15' then
+			Netless(Character.Head)
+			CharacterLimbs.Head.CFrame = HeadCFrame
+			Netless(Character.UpperTorso)
+			Character.UpperTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+			if Character:FindFirstChild("LowerTorso") then
+				Netless(Character.LowerTorso)
+				Character.LowerTorso.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
+			end
+			Netless(Character.HumanoidRootPart)
+			Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
 		end
-		Netless(Character.HumanoidRootPart)
-		Character.HumanoidRootPart.CFrame = HeadCFrame*CFrame.new(0,-1.5,0)
-	end
+	end)
 end
 
 local CameraAngle = CFrame.Angles(0,0,0)
@@ -765,7 +1961,7 @@ Services.UIS.InputBegan:Connect(function(key)
 		CameraAngle = CameraAngle * CFrame.Angles(0,math.rad(30),0)
 	elseif key.KeyCode == Enum.KeyCode.ButtonR3 then
 		CameraAngle = CameraAngle * CFrame.Angles(0,math.rad(-30),0)
-	elseif key.KeyCode == Enum.KeyCode.ButtonR1 then
+	elseif key.KeyCode == Enum.KeyCode.ButtonR1 and PreloadedSettings.Teleport then
 		PredictingPosition = true
 	end
 end)
@@ -786,7 +1982,7 @@ Services.UIS.InputEnded:Connect(function(key)
 			Debounces.Teleported = os.clock()-2
 		end
 		if (Parts.FollowPart.Position*Vector3.new(1,0,1) - VrTracker.PredictedPosition*Vector3.new(1,0,1)).Magnitude > 1.1 then
-			if os.clock()-Debounces.Teleported > 1 then
+			if os.clock()-Debounces.Teleported > 1 and PreloadedSettings.Teleport then
 				Parts.FollowPart.Position = VrTracker.PredictedPosition
 				Debounces.Teleported = os.clock()
 				game:GetService('TweenService'):Create(Parts.FollowPart,TweenInfo.new(1),{}):Play()
@@ -969,7 +2165,7 @@ game:GetService("RunService").Stepped:Connect(function()
 		end
 		if HoldingDirection == true and os.clock()-Debounces.Moving > 0.0105 then
 			Debounces.Moving = os.clock()
-			if not ExtraVariables.FakeWalking then
+			if PreloadedSettings.Flying then
 				local HeadCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
 				local LarmCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
 				local RobloxHeadCFrame = Camera.CFrame --Idk, that type of naming makes it easy to remember certain things
@@ -978,13 +2174,18 @@ game:GetService("RunService").Stepped:Connect(function()
 			else
 				local HeadCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.Head)
 				local LarmCFrame = Services.VR:GetUserCFrame(Enum.UserCFrame.LeftHand)
-				local RobloxHeadCFrame = Camera.CFrame --Idk, that type of naming makes it easy to remember certain things
-				local From = Parts.FollowPart.CFrame:ToObjectSpace(Camera.CFrame * LarmCFrame):Inverse()
-				local SetCFrameForPart = CFrame.new((Camera.CFrame * LarmCFrame * CFrame.new(0,0,-0.1*3)*From).Position)
-				local RayDown = Ray.new((Camera.CFrame*HeadCFrame).Position,Vector3.new(0,-1e5,0))
-				local Hit,Pos = workspace:FindPartOnRayWithIgnoreList(RayDown,{Character,unpack(AllPartsInParts),workspace.CurrentCamera},true,true)
-				if Pos then
-					local SameLevel = Vector3.new(SetCFrameForPart.Position.X,Pos.Y,SetCFrameForPart.Position.Z)
+				local RobloxHeadCFrame = Camera.CFrame*HeadCFrame --Idk, that type of naming makes it easy to remember certain things
+				local RayDown = Ray.new(RobloxHeadCFrame.Position,Vector3.new(0,-1250,0))
+				local Hit,Position = workspace:FindPartOnRayWithIgnoreList(RayDown,{Character,workspace.CurrentCamera},true,false)
+				local level = CFrame.lookAt((workspace.CurrentCamera.CFrame*HeadCFrame).Position,(workspace.CurrentCamera.CFrame*LarmCFrame).Position)*CFrame.new(0,0,-1000)
+				level = CFrame.new(RobloxHeadCFrame.Position,level.Position)
+				local levelX = level
+				if Position then
+					level = (level.Position * Vector3.new(1,0,1)) + Vector3.new(0,Position.Y+ExtraVariables.BaseOffsetCamera.Y+4.5,0)
+					local Forward = CFrame.new((Parts.FollowPart.Position*Vector3.new(1,0,1))+Vector3.new(0,Position.Y+4.5,0),level)*CFrame.Angles(0,math.rad(-90),0)*CFrame.new(0,0,-0.3)
+					Parts.FollowPart.Position = Forward.Position
+				else
+					Parts.FollowPart.Position = (levelX.Position*Vector3.new(1,0,1))+Vector3.new(0,Parts.FollowPart.Position.Y,0)
 				end
 			end
 		end
@@ -1203,7 +2404,7 @@ game:GetService("RunService").Stepped:Connect(function()
 			end
 		end
 		--
-		if PredictingPosition == true and ExtraVariables.Paused ~= true then
+		if PredictingPosition == true and ExtraVariables.Paused ~= true and PreloadedSettings.Teleport then
 			local PositionFromHead = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(1,-1,0)
 			local RightArmCFrame = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.RightHand)
 			local Ignore_A = {}
@@ -1221,12 +2422,14 @@ game:GetService("RunService").Stepped:Connect(function()
 			else
 				VrTracker.AtHand.Parent = nil
 			end
-		else
-			VrTracker.AtHand.Parent = nil
+		elseif PredictingPosition == false or not PreloadedSettings.Teleport or ExtraVariables.Paused then
+			pcall(function()
+				VrTracker.AtHand.Parent = nil
+			end)
 		end
 	end
 end)
-game:GetService("RunService").RenderStepped:Connect(function()
+game:GetService("RunService").Heartbeat:Connect(function()
 	if Services.VR.VREnabled == not game:GetService("RunService"):IsStudio() and CharacterLimbs.Head~=nil then
 		for _,x in pairs(Character:GetChildren())do
 			pcall(function()
@@ -1250,11 +2453,15 @@ game:GetService("RunService").RenderStepped:Connect(function()
 				local RightStart = Character.Torso.CFrame*CFrame.new(0.5,-1,0)
 				local Part = workspace:FindPartOnRayWithIgnoreList(Ray.new(Character.PrimaryPart.Position,Vector3.new(0,-3,0)),{Character,workspace.CurrentCamera,unpack(PIK)},true,false)
 				if not Part then
-					CharacterLimbs.LeftLeg.CFrame = LeftStart*CFrame.new(0,-0.5,-0.8)*CFrame.Angles(math.rad(30*math.cos(WalkSine/30/2)),0,0)
-					CharacterLimbs.RightLeg.CFrame = RightStart*CFrame.new(0,-1,-0.5)*CFrame.Angles(math.rad(-15*math.cos(-WalkSine/30/2)),0,0)
+					pcall(function()
+						CharacterLimbs.LeftLeg.CFrame = LeftStart*CFrame.new(0,-0.5,-0.8)*CFrame.Angles(math.rad(30*math.cos(WalkSine/30/2)),0,0)
+						CharacterLimbs.RightLeg.CFrame = RightStart*CFrame.new(0,-1,-0.5)*CFrame.Angles(math.rad(-15*math.cos(-WalkSine/30/2)),0,0)
+					end)
 				else
-					CharacterLimbs.LeftLeg.CFrame = LookAt(LeftStart*CFrame.new(0,1,0),ProbablyIK.Left.Position+Vector3.new(0,ProbablyIK.LeftPosition,0))*CFrame.new(0,0,-1)*CFrame.Angles(math.rad(90),0,0)*CFrame.new(0,-1,0)
-					CharacterLimbs.RightLeg.CFrame = LookAt(RightStart*CFrame.new(0,1,0),ProbablyIK.Right.Position+Vector3.new(0,ProbablyIK.RightPosition,0))*CFrame.new(0,0,-1)*CFrame.Angles(math.rad(90),0,0)*CFrame.new(0,-1,0)
+					pcall(function()
+						CharacterLimbs.LeftLeg.CFrame = LookAt(LeftStart*CFrame.new(0,1,0),ProbablyIK.Left.Position+Vector3.new(0,ProbablyIK.LeftPosition,0))*CFrame.new(0,0,-1)*CFrame.Angles(math.rad(90),0,0)*CFrame.new(0,-1,0)
+						CharacterLimbs.RightLeg.CFrame = LookAt(RightStart*CFrame.new(0,1,0),ProbablyIK.Right.Position+Vector3.new(0,ProbablyIK.RightPosition,0))*CFrame.new(0,0,-1)*CFrame.Angles(math.rad(90),0,0)*CFrame.new(0,-1,0)
+					end)
 					local lPos = ProbablyIK.Left.Position
 					local rPos = CharacterLimbs.RightLeg.Position
 				end
@@ -1298,609 +2505,7 @@ local function ComputeNameColor(pName)
 	return NAME_COLORS[((GetNameValue(pName) + color_offset) % #NAME_COLORS) + 1]
 end
 
---Converted UI ↓
-local Frame = Instance.new("Frame")
-local ChatBarParentFrame = Instance.new("Frame")
-local Frame_2 = Instance.new("Frame")
-local BoxFrame = Instance.new("Frame")
-local Frame_3 = Instance.new("Frame")
-local ChatBar = Instance.new("TextBox")
-local MessageMode = Instance.new("TextButton")
-local TextLabel = Instance.new("TextLabel")
-local ChannelsBarParentFrame = Instance.new("Frame")
-local Frame_4 = Instance.new("Frame")
-local ScrollingBase = Instance.new("Frame")
-local ScrollerSizer = Instance.new("Frame")
-local ScrollerFrame = Instance.new("Frame")
-local Frame_All = Instance.new("Frame")
-local BackgroundFrame = Instance.new("Frame")
-local UnselectedFrame = Instance.new("Frame")
-local TextButton = Instance.new("TextButton")
-local SelectedFrame = Instance.new("Frame")
-local BackgroundImage = Instance.new("ImageLabel")
-local BlueBarLeft = Instance.new("ImageLabel")
-local BlueBarRight = Instance.new("ImageLabel")
-local TextButton_2 = Instance.new("TextButton")
-local TextButton_3 = Instance.new("TextButton")
-local Frame_5 = Instance.new("Frame")
-local ImageLabel = Instance.new("ImageLabel")
-local TextLabel_2 = Instance.new("TextLabel")
-local Frame_System = Instance.new("Frame")
-local BackgroundFrame_2 = Instance.new("Frame")
-local UnselectedFrame_2 = Instance.new("Frame")
-local TextButton_4 = Instance.new("TextButton")
-local SelectedFrame_2 = Instance.new("Frame")
-local BackgroundImage_2 = Instance.new("ImageLabel")
-local BlueBarLeft_2 = Instance.new("ImageLabel")
-local BlueBarRight_2 = Instance.new("ImageLabel")
-local TextButton_5 = Instance.new("TextButton")
-local TextButton_6 = Instance.new("TextButton")
-local Frame_6 = Instance.new("Frame")
-local ImageLabel_2 = Instance.new("ImageLabel")
-local TextLabel_3 = Instance.new("TextLabel")
-local Frame_7 = Instance.new("Frame")
-local LeaveConfirmationFrame = Instance.new("Frame")
-local TextButton_7 = Instance.new("TextButton")
-local TextButton_8 = Instance.new("TextButton")
-local TextButton_9 = Instance.new("TextButton")
-local TextLabel_4 = Instance.new("TextLabel")
-local PageLeftButton = Instance.new("ImageButton")
-local ArrowLabel = Instance.new("ImageLabel")
-local PositionalHelper = Instance.new("Frame")
-local PageRightButton = Instance.new("ImageButton")
-local ArrowLabel_2 = Instance.new("ImageLabel")
-local ChatChannelParentFrame = Instance.new("Frame")
-local Frame_MessageLogDisplay = Instance.new("Frame")
-local Scroller = Instance.new("ScrollingFrame")
-local UIListLayout = Instance.new("UIListLayout")
-local Frame_8 = Instance.new("Frame")
-local TextLabel_5 = Instance.new("TextLabel")
-local ChatLabel = Instance.new("TextLabel")
-local ImageButton = Instance.new("ImageButton")
-local ImageLabel_3 = Instance.new("ImageLabel")
-
---Properties:
-
-Frame.BackgroundTransparency = 1.000
-Frame.Size = UDim2.new(1, 0, 1, 0)
-
-ChatBarParentFrame.Name = "ChatBarParentFrame"
-ChatBarParentFrame.Parent = Frame
-ChatBarParentFrame.BackgroundTransparency = 1.000
-ChatBarParentFrame.Position = UDim2.new(0, 0, 1, -42)
-ChatBarParentFrame.Size = UDim2.new(1, 0, 0, 42)
-
-Frame_2.Parent = ChatBarParentFrame
-Frame_2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Frame_2.BackgroundTransparency = 0.600
-Frame_2.BorderSizePixel = 0
-Frame_2.Size = UDim2.new(1, 0, 1, 0)
-
-BoxFrame.Name = "BoxFrame"
-BoxFrame.Parent = Frame_2
-BoxFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-BoxFrame.BackgroundTransparency = 0.600
-BoxFrame.BorderSizePixel = 0
-BoxFrame.Position = UDim2.new(0, 7, 0, 7)
-BoxFrame.Size = UDim2.new(1, -14, 1, -14)
-
-Frame_3.Parent = BoxFrame
-Frame_3.BackgroundTransparency = 1.000
-Frame_3.Position = UDim2.new(0, 5, 0, 5)
-Frame_3.Size = UDim2.new(1, -10, 1, -10)
-
-ChatBar.Name = "ChatBar"
-ChatBar.Parent = Frame_3
-ChatBar.BackgroundTransparency = 1.000
-ChatBar.Selectable = false
-ChatBar.Size = UDim2.new(1, 0, 1, 0)
-ChatBar.ClearTextOnFocus = false
-ChatBar.Font = Enum.Font.SourceSansBold
-ChatBar.Text = ""
-ChatBar.PlaceholderText = "To chat here, press '" .. "\\" .. "'"
-ChatBar.PlaceholderColor3 = Color3.new(0,0,0)
-ChatBar.TextColor3 = Color3.fromRGB(0, 0, 0)
-ChatBar.TextSize = 18.000
-ChatBar.TextTransparency = 0.400
-ChatBar.TextWrapped = true
-ChatBar.TextXAlignment = Enum.TextXAlignment.Left
-ChatBar.TextYAlignment = Enum.TextYAlignment.Top
-
-MessageMode.Name = "MessageMode"
-MessageMode.Parent = Frame_3
-MessageMode.BackgroundTransparency = 1.000
-MessageMode.Selectable = false
-MessageMode.Font = Enum.Font.SourceSansBold
-MessageMode.Text = ""
-MessageMode.TextColor3 = Color3.fromRGB(35, 76, 142)
-MessageMode.TextSize = 18.000
-MessageMode.TextTransparency = 0.400
-MessageMode.TextWrapped = true
-MessageMode.TextXAlignment = Enum.TextXAlignment.Left
-
-TextLabel.Parent = nil
-TextLabel.BackgroundTransparency = 1.000
-TextLabel.Size = UDim2.new(1, 0, 1, 0)
-TextLabel.Font = Enum.Font.SourceSansBold
-TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel.TextSize = 18.000
-TextLabel.TextTransparency = 0.400
-TextLabel.TextWrapped = true
-TextLabel.TextXAlignment = Enum.TextXAlignment.Left
-TextLabel.TextYAlignment = Enum.TextYAlignment.Top
-
-ChannelsBarParentFrame.Name = "ChannelsBarParentFrame"
-ChannelsBarParentFrame.Parent = Frame
-ChannelsBarParentFrame.BackgroundTransparency = 1.000
-ChannelsBarParentFrame.Size = UDim2.new(1, 0, 0, 34)
-ChannelsBarParentFrame.Visible = false
-
-Frame_4.Parent = ChannelsBarParentFrame
-Frame_4.BackgroundTransparency = 1.000
-Frame_4.Size = UDim2.new(1, 0, 1, 0)
-
-ScrollingBase.Name = "ScrollingBase"
-ScrollingBase.Parent = Frame_4
-ScrollingBase.BackgroundTransparency = 1.000
-ScrollingBase.ClipsDescendants = true
-ScrollingBase.Size = UDim2.new(1, 0, 1, 0)
-
-ScrollerSizer.Name = "ScrollerSizer"
-ScrollerSizer.Parent = ScrollingBase
-ScrollerSizer.BackgroundTransparency = 1.000
-ScrollerSizer.Size = UDim2.new(0.5, 0, 1, 0)
-
-ScrollerFrame.Name = "ScrollerFrame"
-ScrollerFrame.Parent = ScrollerSizer
-ScrollerFrame.BackgroundTransparency = 1.000
-ScrollerFrame.Size = UDim2.new(1, 0, 1, 0)
-
-Frame_All.Name = "Frame_All"
-Frame_All.Parent = ScrollerFrame
-Frame_All.BackgroundTransparency = 1.000
-Frame_All.Size = UDim2.new(1, 0, 1, 0)
-
-BackgroundFrame.Name = "BackgroundFrame"
-BackgroundFrame.Parent = Frame_All
-BackgroundFrame.BackgroundTransparency = 1.000
-BackgroundFrame.Position = UDim2.new(0, 1, 0, 1)
-BackgroundFrame.Size = UDim2.new(1, -2, 1, -2)
-
-UnselectedFrame.Name = "UnselectedFrame"
-UnselectedFrame.Parent = BackgroundFrame
-UnselectedFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-UnselectedFrame.BackgroundTransparency = 0.600
-UnselectedFrame.BorderSizePixel = 0
-UnselectedFrame.Size = UDim2.new(1, 0, 1, 0)
-UnselectedFrame.Visible = false
-
-TextButton.Parent = UnselectedFrame
-TextButton.Active = false
-TextButton.BackgroundTransparency = 1.000
-TextButton.Selectable = false
-TextButton.Size = UDim2.new(1, 0, 1, 0)
-TextButton.Font = Enum.Font.SourceSans
-TextButton.Text = "All"
-TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextButton.TextSize = 18.000
-TextButton.TextStrokeTransparency = 0.600
-TextButton.TextTransparency = 0.600
-
-SelectedFrame.Name = "SelectedFrame"
-SelectedFrame.Parent = BackgroundFrame
-SelectedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-SelectedFrame.BackgroundTransparency = 1.000
-SelectedFrame.BorderSizePixel = 0
-SelectedFrame.Size = UDim2.new(1, 0, 1, 0)
-
-BackgroundImage.Name = "BackgroundImage"
-BackgroundImage.Parent = SelectedFrame
-BackgroundImage.BackgroundColor3 = Color3.fromRGB(93, 100, 115)
-BackgroundImage.BackgroundTransparency = 0.600
-BackgroundImage.BorderSizePixel = 0
-BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
-BackgroundImage.ScaleType = Enum.ScaleType.Slice
-
-BlueBarLeft.Name = "BlueBarLeft"
-BlueBarLeft.Parent = SelectedFrame
-BlueBarLeft.BackgroundTransparency = 1.000
-BlueBarLeft.Position = UDim2.new(0, 2, 1, -4)
-BlueBarLeft.Size = UDim2.new(0.5, -2, 0, 4)
-BlueBarLeft.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarLeft.png"
-BlueBarLeft.ImageTransparency = 0.600
-BlueBarLeft.ScaleType = Enum.ScaleType.Slice
-BlueBarLeft.SliceCenter = Rect.new(3, 3, 32, 21)
-
-BlueBarRight.Name = "BlueBarRight"
-BlueBarRight.Parent = SelectedFrame
-BlueBarRight.BackgroundTransparency = 1.000
-BlueBarRight.Position = UDim2.new(0.5, 0, 1, -4)
-BlueBarRight.Size = UDim2.new(0.5, -2, 0, 4)
-BlueBarRight.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarRight.png"
-BlueBarRight.ImageTransparency = 0.600
-BlueBarRight.ScaleType = Enum.ScaleType.Slice
-BlueBarRight.SliceCenter = Rect.new(3, 3, 32, 21)
-
-TextButton_2.Parent = SelectedFrame
-TextButton_2.Active = false
-TextButton_2.BackgroundTransparency = 1.000
-TextButton_2.Selectable = false
-TextButton_2.Size = UDim2.new(1, 0, 1, 0)
-TextButton_2.Font = Enum.Font.SourceSansBold
-TextButton_2.Text = "All"
-TextButton_2.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextButton_2.TextSize = 18.000
-TextButton_2.TextStrokeTransparency = 0.750
-
-TextButton_3.Parent = BackgroundFrame
-TextButton_3.BackgroundTransparency = 1.000
-TextButton_3.Selectable = false
-TextButton_3.Size = UDim2.new(1, 0, 1, 0)
-TextButton_3.Font = Enum.Font.SourceSansBold
-TextButton_3.Text = ""
-TextButton_3.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextButton_3.TextSize = 18.000
-TextButton_3.TextStrokeTransparency = 0.750
-
-Frame_5.Parent = BackgroundFrame
-Frame_5.BackgroundTransparency = 1.000
-Frame_5.Position = UDim2.new(0.800000012, -9, 0.5, -9)
-Frame_5.Size = UDim2.new(0, 18, 0, 18)
-
-ImageLabel.Parent = Frame_5
-ImageLabel.BackgroundTransparency = 1.000
-ImageLabel.Size = UDim2.new(1, 0, 1, 0)
-ImageLabel.Visible = false
-ImageLabel.Image = "rbxasset://textures/ui/Chat/MessageCounter.png"
-
-TextLabel_2.Parent = ImageLabel
-TextLabel_2.BackgroundTransparency = 1.000
-TextLabel_2.Position = UDim2.new(0.5, -7, 0.5, -7)
-TextLabel_2.Size = UDim2.new(0, 13, 0, 9)
-TextLabel_2.Font = Enum.Font.SourceSansBold
-TextLabel_2.Text = ""
-TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel_2.TextSize = 14.000
-TextLabel_2.TextStrokeTransparency = 0.750
-
-Frame_System.Name = "Frame_System"
-Frame_System.Parent = ScrollerFrame
-Frame_System.BackgroundTransparency = 1.000
-Frame_System.Position = UDim2.new(1, 0, 0, 0)
-Frame_System.Size = UDim2.new(1, 0, 1, 0)
-
-BackgroundFrame_2.Name = "BackgroundFrame"
-BackgroundFrame_2.Parent = Frame_System
-BackgroundFrame_2.BackgroundTransparency = 1.000
-BackgroundFrame_2.Position = UDim2.new(0, 1, 0, 1)
-BackgroundFrame_2.Size = UDim2.new(1, -2, 1, -2)
-
-UnselectedFrame_2.Name = "UnselectedFrame"
-UnselectedFrame_2.Parent = BackgroundFrame_2
-UnselectedFrame_2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-UnselectedFrame_2.BackgroundTransparency = 0.600
-UnselectedFrame_2.BorderSizePixel = 0
-UnselectedFrame_2.Size = UDim2.new(1, 0, 1, 0)
-
-TextButton_4.Parent = UnselectedFrame_2
-TextButton_4.Active = false
-TextButton_4.BackgroundTransparency = 1.000
-TextButton_4.Selectable = false
-TextButton_4.Size = UDim2.new(1, 0, 1, 0)
-TextButton_4.Font = Enum.Font.SourceSans
-TextButton_4.Text = "System"
-TextButton_4.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextButton_4.TextSize = 18.000
-TextButton_4.TextStrokeTransparency = 0.600
-TextButton_4.TextTransparency = 0.600
-
-SelectedFrame_2.Name = "SelectedFrame"
-SelectedFrame_2.Parent = BackgroundFrame_2
-SelectedFrame_2.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-SelectedFrame_2.BackgroundTransparency = 1.000
-SelectedFrame_2.BorderSizePixel = 0
-SelectedFrame_2.Size = UDim2.new(1, 0, 1, 0)
-SelectedFrame_2.Visible = false
-
-BackgroundImage_2.Name = "BackgroundImage"
-BackgroundImage_2.Parent = SelectedFrame_2
-BackgroundImage_2.BackgroundColor3 = Color3.fromRGB(93, 100, 115)
-BackgroundImage_2.BackgroundTransparency = 0.600
-BackgroundImage_2.BorderSizePixel = 0
-BackgroundImage_2.Size = UDim2.new(1, 0, 1, 0)
-BackgroundImage_2.ScaleType = Enum.ScaleType.Slice
-
-BlueBarLeft_2.Name = "BlueBarLeft"
-BlueBarLeft_2.Parent = SelectedFrame_2
-BlueBarLeft_2.BackgroundTransparency = 1.000
-BlueBarLeft_2.Position = UDim2.new(0, 2, 1, -4)
-BlueBarLeft_2.Size = UDim2.new(0.5, -2, 0, 4)
-BlueBarLeft_2.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarLeft.png"
-BlueBarLeft_2.ImageTransparency = 0.600
-BlueBarLeft_2.ScaleType = Enum.ScaleType.Slice
-BlueBarLeft_2.SliceCenter = Rect.new(3, 3, 32, 21)
-
-BlueBarRight_2.Name = "BlueBarRight"
-BlueBarRight_2.Parent = SelectedFrame_2
-BlueBarRight_2.BackgroundTransparency = 1.000
-BlueBarRight_2.Position = UDim2.new(0.5, 0, 1, -4)
-BlueBarRight_2.Size = UDim2.new(0.5, -2, 0, 4)
-BlueBarRight_2.Image = "rbxasset://textures/ui/Settings/Slider/SelectedBarRight.png"
-BlueBarRight_2.ImageTransparency = 0.600
-BlueBarRight_2.ScaleType = Enum.ScaleType.Slice
-BlueBarRight_2.SliceCenter = Rect.new(3, 3, 32, 21)
-
-TextButton_5.Parent = SelectedFrame_2
-TextButton_5.Active = false
-TextButton_5.BackgroundTransparency = 1.000
-TextButton_5.Selectable = false
-TextButton_5.Size = UDim2.new(1, 0, 1, 0)
-TextButton_5.Font = Enum.Font.SourceSansBold
-TextButton_5.Text = "System"
-TextButton_5.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextButton_5.TextSize = 18.000
-TextButton_5.TextStrokeTransparency = 0.750
-
-TextButton_6.Parent = BackgroundFrame_2
-TextButton_6.BackgroundTransparency = 1.000
-TextButton_6.Selectable = false
-TextButton_6.Size = UDim2.new(1, 0, 1, 0)
-TextButton_6.Font = Enum.Font.SourceSans
-TextButton_6.Text = ""
-TextButton_6.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextButton_6.TextSize = 18.000
-TextButton_6.TextStrokeTransparency = 0.750
-
-Frame_6.Parent = BackgroundFrame_2
-Frame_6.BackgroundTransparency = 1.000
-Frame_6.Position = UDim2.new(0.800000012, -9, 0.5, -9)
-Frame_6.Size = UDim2.new(0, 18, 0, 18)
-
-ImageLabel_2.Parent = Frame_6
-ImageLabel_2.BackgroundTransparency = 1.000
-ImageLabel_2.Size = UDim2.new(1, 0, 1, 0)
-ImageLabel_2.Visible = false
-ImageLabel_2.Image = "rbxasset://textures/ui/Chat/MessageCounter.png"
-
-TextLabel_3.Parent = ImageLabel_2
-TextLabel_3.BackgroundTransparency = 1.000
-TextLabel_3.Position = UDim2.new(0.5, -7, 0.5, -7)
-TextLabel_3.Size = UDim2.new(0, 13, 0, 9)
-TextLabel_3.Font = Enum.Font.SourceSansBold
-TextLabel_3.Text = ""
-TextLabel_3.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel_3.TextSize = 14.000
-TextLabel_3.TextStrokeTransparency = 0.750
-
-Frame_7.Parent = Frame_4
-Frame_7.BackgroundTransparency = 1.000
-Frame_7.ClipsDescendants = true
-Frame_7.Size = UDim2.new(1, 0, 1, 0)
-
-LeaveConfirmationFrame.Name = "LeaveConfirmationFrame"
-LeaveConfirmationFrame.Parent = Frame_7
-LeaveConfirmationFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-LeaveConfirmationFrame.BackgroundTransparency = 0.600
-LeaveConfirmationFrame.BorderSizePixel = 0
-LeaveConfirmationFrame.Position = UDim2.new(0, 0, 1, 0)
-LeaveConfirmationFrame.Size = UDim2.new(1, 0, 1, 0)
-
-TextButton_7.Parent = LeaveConfirmationFrame
-TextButton_7.BackgroundTransparency = 1.000
-TextButton_7.Selectable = false
-TextButton_7.Size = UDim2.new(1, 0, 1, 0)
-TextButton_7.Text = ""
-
-TextButton_8.Parent = LeaveConfirmationFrame
-TextButton_8.BackgroundTransparency = 1.000
-TextButton_8.Selectable = false
-TextButton_8.Size = UDim2.new(0.25, 0, 1, 0)
-TextButton_8.Font = Enum.Font.SourceSansBold
-TextButton_8.Text = "Confirm"
-TextButton_8.TextColor3 = Color3.fromRGB(0, 255, 0)
-TextButton_8.TextSize = 18.000
-TextButton_8.TextStrokeTransparency = 0.750
-
-TextButton_9.Parent = LeaveConfirmationFrame
-TextButton_9.BackgroundTransparency = 1.000
-TextButton_9.Position = UDim2.new(0.75, 0, 0, 0)
-TextButton_9.Selectable = false
-TextButton_9.Size = UDim2.new(0.25, 0, 1, 0)
-TextButton_9.Font = Enum.Font.SourceSansBold
-TextButton_9.Text = "Cancel"
-TextButton_9.TextColor3 = Color3.fromRGB(255, 0, 0)
-TextButton_9.TextSize = 18.000
-TextButton_9.TextStrokeTransparency = 0.750
-
-TextLabel_4.Parent = LeaveConfirmationFrame
-TextLabel_4.BackgroundTransparency = 1.000
-TextLabel_4.Position = UDim2.new(0.25, 0, 0, 0)
-TextLabel_4.Size = UDim2.new(0.5, 0, 1, 0)
-TextLabel_4.Font = Enum.Font.SourceSansBold
-TextLabel_4.Text = "Leave channel <XX>?"
-TextLabel_4.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel_4.TextSize = 18.000
-TextLabel_4.TextStrokeTransparency = 0.750
-
-PageLeftButton.Name = "PageLeftButton"
-PageLeftButton.Parent = Frame_4
-PageLeftButton.BackgroundTransparency = 1.000
-PageLeftButton.Position = UDim2.new(0, 4, 0.150000006, 0)
-PageLeftButton.Selectable = false
-PageLeftButton.Size = UDim2.new(0.699999988, 0, 0.699999988, 0)
-PageLeftButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
-PageLeftButton.Visible = false
-PageLeftButton.Image = "rbxassetid://471630199"
-PageLeftButton.ImageTransparency = 0.600
-
-ArrowLabel.Name = "ArrowLabel"
-ArrowLabel.Parent = PageLeftButton
-ArrowLabel.BackgroundTransparency = 1.000
-ArrowLabel.Position = UDim2.new(0.25, 0, 0.300000012, 0)
-ArrowLabel.Rotation = 180.000
-ArrowLabel.Size = UDim2.new(0.400000006, 0, 0.400000006, 0)
-ArrowLabel.Image = "rbxassetid://471630112"
-ArrowLabel.ImageTransparency = 0.600
-
-PositionalHelper.Name = "PositionalHelper"
-PositionalHelper.Parent = Frame_4
-PositionalHelper.BackgroundTransparency = 1.000
-PositionalHelper.Position = UDim2.new(1, 0, 0.150000006, 0)
-PositionalHelper.Size = UDim2.new(0.699999988, 0, 0.699999988, 0)
-PositionalHelper.SizeConstraint = Enum.SizeConstraint.RelativeYY
-
-PageRightButton.Name = "PageRightButton"
-PageRightButton.Parent = PositionalHelper
-PageRightButton.BackgroundTransparency = 1.000
-PageRightButton.Position = UDim2.new(-1, -4, 0, 0)
-PageRightButton.Selectable = false
-PageRightButton.Size = UDim2.new(1, 0, 1, 0)
-PageRightButton.Visible = false
-PageRightButton.Image = "rbxassetid://471630199"
-PageRightButton.ImageTransparency = 0.600
-
-ArrowLabel_2.Name = "ArrowLabel"
-ArrowLabel_2.Parent = PageRightButton
-ArrowLabel_2.BackgroundTransparency = 1.000
-ArrowLabel_2.Position = UDim2.new(0.350000024, 0, 0.300000012, 0)
-ArrowLabel_2.Size = UDim2.new(0.400000006, 0, 0.400000006, 0)
-ArrowLabel_2.Image = "rbxassetid://471630112"
-ArrowLabel_2.ImageTransparency = 0.600
-
-ChatChannelParentFrame.Name = "ChatChannelParentFrame"
-ChatChannelParentFrame.Parent = Frame
-ChatChannelParentFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-ChatChannelParentFrame.BackgroundTransparency = 0.600
-ChatChannelParentFrame.BorderSizePixel = 0
-ChatChannelParentFrame.Position = UDim2.new(0, 0, 0, 2)
-ChatChannelParentFrame.Size = UDim2.new(1, 0, 1, -46)
-
-Frame_MessageLogDisplay.Name = "Frame_MessageLogDisplay"
-Frame_MessageLogDisplay.Parent = ChatChannelParentFrame
-Frame_MessageLogDisplay.BackgroundTransparency = 1.000
-Frame_MessageLogDisplay.Size = UDim2.new(1, 0, 1, 0)
-
-Scroller.Name = "Scroller"
-Scroller.Parent = Frame_MessageLogDisplay
-Scroller.Active = true
-Scroller.BackgroundTransparency = 1.000
-Scroller.BorderSizePixel = 0
-Scroller.Position = UDim2.new(0, 0, 0, 3)
-Scroller.Selectable = false
-Scroller.Size = UDim2.new(1, -4, 1, -6)
-Scroller.CanvasSize = UDim2.new(0, 0, 0, 36)
-Scroller.ScrollBarThickness = 4
-
-UIListLayout.Parent = Scroller
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-Frame_8.Parent = Scroller
-Frame_8.BackgroundTransparency = 1.000
-Frame_8.LayoutOrder = 1
-Frame_8.Size = UDim2.new(1, 0, 0, 36)
-
-TextLabel_5.Parent = Frame_8
-TextLabel_5.BackgroundTransparency = 1.000
-TextLabel_5.ClipsDescendants = true
-TextLabel_5.Position = UDim2.new(0, 8, 0, 0)
-TextLabel_5.Size = UDim2.new(1, -14, 1, 0)
-TextLabel_5.Font = Enum.Font.SourceSansBold
-TextLabel_5.Text = "Brew VR - Chat Menu (Please use keyboard for now to chat)"
-TextLabel_5.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel_5.TextSize = 18.000
-TextLabel_5.TextStrokeTransparency = 0.750
-TextLabel_5.TextWrapped = true
-TextLabel_5.TextXAlignment = Enum.TextXAlignment.Left
-TextLabel_5.TextYAlignment = Enum.TextYAlignment.Top
-
-ChatLabel.Name = "ChatLabel"
-ChatLabel.Parent = nil
-ChatLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-ChatLabel.BackgroundTransparency = 1.000
-ChatLabel.BorderSizePixel = 5
-ChatLabel.LayoutOrder = 2
-ChatLabel.Size = UDim2.new(1, 0, 0, 25)
-ChatLabel.Font = Enum.Font.SourceSansBold
-ChatLabel.Text = "[ChatMessage] : Hello"
-ChatLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-ChatLabel.TextSize = 15.000
-ChatLabel.TextStrokeTransparency = 0.700
-ChatLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-ImageButton.Parent = Frame
-ImageButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-ImageButton.BackgroundTransparency = 0.600
-ImageButton.BorderSizePixel = 0
-ImageButton.Position = UDim2.new(1, -42, 1, -42)
-ImageButton.Selectable = false
-ImageButton.Size = UDim2.new(0, 42, 0, 42)
-ImageButton.Visible = false
-
-ImageLabel_3.Parent = ImageButton
-ImageLabel_3.BackgroundTransparency = 1.000
-ImageLabel_3.Position = UDim2.new(0.200000003, 0, 0.200000003, 0)
-ImageLabel_3.Size = UDim2.new(0.800000012, 0, 0.800000012, 0)
-ImageLabel_3.Image = "rbxassetid://261880743"
-ImageLabel_3.ImageTransparency = 0.600
---Converted UI ↑
-
-local ChatScreen = Create("Part",Camera,{
-	Size = Vector3.new(0,0,0),
-	Anchored = true,
-	CanCollide = false,
-	Transparency = 0.8,
-	Color = Color3.new(0,0,0),
-	Material = Enum.Material.SmoothPlastic
-})
-local ChatSurface = Create('SurfaceGui',ChatScreen,{
-	Face = Enum.NormalId.Back,
-	Adornee = ChatScreen,
-	SizingMode = Enum.SurfaceGuiSizingMode.FixedSize,
-	CanvasSize = Vector2.new(800,400),
-	AlwaysOnTop = true,
-})
-Frame.Parent = ChatSurface
-local ColorCorrection = Create("ColorCorrectionEffect",nil,{
-	Brightness = -0.5
-})
 Services.StarterGui:SetCore("VREnableControllerModels", true)
-function ToggleChatMenu(t)
-	if os.clock()-Debounces.PromptChat < 0.5 then return end
-	Debounces.PromptChat = os.clock()
-	ChatBar:CaptureFocus()
-	local SFX = Create("Sound",game:GetService("SoundService"),{
-		SoundId = "rbxassetid://8276741979",
-		Pitch = Random.new():NextNumber(1,1.1),
-		Playing = true,
-	})
-	Destroy(SFX,5)
-	local TheCameraCFrame = Camera.CFrame
-	if Services.VR.VREnabled == true then
-		TheCameraCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-1)
-	end
-	if t == true then
-		ColorCorrection.Parent = game:GetService("Lighting")
-		ColorCorrection.Brightness = 0
-		ChatScreen.CFrame = TheCameraCFrame*CFrame.new(0,0,-5)
-		ChatScreen.Parent = Camera
-		Services.TweenService:Create(ColorCorrection,TweenInfo.new(0.5),{Brightness = -0.5}):Play()
-		Services.TweenService:Create(ChatScreen,TweenInfo.new(0.5),{Size = Vector3.new(8,4,0)}):Play()
-	else
-		Services.TweenService:Create(ChatScreen,TweenInfo.new(0.5),{Size = Vector3.new(0,0,0)}):Play()
-		task.delay(0.5,function()
-			if ChatScreen.Size.Magnitude < 0.2 then
-				Services.TweenService:Create(ColorCorrection,TweenInfo.new(0.2),{Brightness = 0}):Play()
-				task.delay(0.2,function()
-					if ChatScreen.Size.Magnitude < 0.2 then
-						ColorCorrection.Parent = nil
-					end
-				end)
-				ChatScreen.Parent = nil
-			end
-		end)
-	end
-end
-local ChatEnabled = false
 
 function SendChat(MessageToSend)
 	Services.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(MessageToSend, "All")
@@ -1959,10 +2564,6 @@ flat.CanCollide=false
 flat.CanQuery=false
 flat.Anchored = true
 flat.Size = Vector3.new(.5,1,.5)
---Create("Highlight",flat,{
---	Adornee=flat,
---	FillColor = Color3.new(1,0,1)
---})
 game:GetService("RunService").RenderStepped:Connect(function()
 	if not CharacterLimbs.Head then return end
 	display.CFrame = CharacterLimbs.RightArm.CFrame
@@ -1972,7 +2573,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 	local X,Y,Z = Parts.RightArm.CFrame:ToObjectSpace(flat.CFrame):ToOrientation()
 	local deg = math.deg(Y)
 	Y=math.deg(Y)
-	if (Y > 135 and Y < 150) and os.clock()-Debounces.RightMotionDb > 1 and ExtraVariables.TurnArmsForTools then
+	if (Y > 135 and Y < 150) and os.clock()-Debounces.RightMotionDb > 1 and PreloadedSettings.MotionControls then
 		local SoundSFX = Create("Sound",game:GetService("SoundService"),{
 			SoundId='rbxassetid://5683584454',
 			Volume = 1,
@@ -2033,32 +2634,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
 end)
 --\\
 ExtraVariables.ActionTriggered = Instance.new("BindableEvent")
-if game:GetService("RunService"):IsStudio() and false==true then
-	Services.UIS.InputBegan:Connect(function(k)
-		if k.KeyCode == Enum.KeyCode.P and Typing == false then
-			ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
-			ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
-		end
-	end)
-elseif false==true then
-	Services.UIS.InputBegan:Connect(function(k)
-		if k.KeyCode == Enum.KeyCode.ButtonL1 then
-			ExtraVariables.ActionOpened=not ExtraVariables.ActionOpened
-			ExtraVariables.ActionTriggered:Fire(ExtraVariables.ActionOpened)
-		end
-		if k.KeyCode == Enum.KeyCode.Slash then
-			if ChatEnabled == true and ChatBar:IsFocused() == false then
-				local Sfx2 = Create("Sound",game:GetService("SoundService"),{
-					SoundId = 'rbxassetid://9107144420',
-					Playing = true
-				})
-				Destroy(Sfx2,5)
-				ChatBar:CaptureFocus()
-			end
-		end
-	end)
-end
-ChatLabel.RichText = true
 function GetColoredText(Text,Color3_)
 	local Color3_ = {
 		R=math.ceil(Color3_.R),
@@ -2067,197 +2642,8 @@ function GetColoredText(Text,Color3_)
 	}
 	return '<font color="'.."rgb(".. tostring(Color3_.R*255) ..","..tostring(Color3_.G*255)..","..tostring(Color3_.B*255)..")".."\">" .. Text .. "</font>"
 end
+task.wait(-1)
 local Layouts = 0
-function AddChatLog(Text)
-	Layouts = Layouts + 1
-	local Newlog = ChatLabel:Clone()
-	Newlog.Text = Text
-	Newlog.TextWrapped = true
-	Newlog.LayoutOrder = Layouts
-	Newlog.Parent = Scroller
-	local Away = Newlog.AbsoluteSize.Y
-	local Xevent = nil
-	local Start = os.clock()
-	local TemporaryChatEvent = nil
-	TemporaryChatEvent = game:GetService("RunService").RenderStepped:Connect(function()
-		if os.clock() - Start > 120 then
-			TemporaryChatEvent:Disconnect()
-		end
-		Newlog.Size = UDim2.new(
-			1, 0,
-			0, math.max(20,Newlog.TextBounds.Y)
-		)
-	end)
-	Destroy(Newlog,120)
-end
-AddChatLog(GetColoredText("{Brew} :",Color3.new(0,1,0)) .. GetColoredText(" Script created by Amokah, you shouldn't have this.",Color3.new(1,1,0)))
-function OnChat(Player)
-	if User:IsFriendsWith(Player.UserId) then
-		AddChatLog("Notification: {Your friend, '"..Player.DisplayName.." ("..Player.Name..")', is in the server.}")
-	end
-	--
-	local EventX = nil
-	EventX = Player.Chatted:Connect(function(MESSAGE)
-		if Player.Team == nil then
-			AddChatLog(GetColoredText("[" .. Player.DisplayName .. "]:",ComputeNameColor(Player.Name)) .. "  " .. MESSAGE)
-		else
-			AddChatLog(GetColoredText("[" .. Player.DisplayName .. "]:",Color3.new(Player.TeamColor)) .. "  " .. MESSAGE)
-		end
-	end)
-	local EventN = nil
-	EventN = Services.Players.PlayerRemoving:Connect(function(x)
-		if x == Player then
-			EventN:Disconnect()
-			EventX:Disconnect()
-		end
-	end)
-end
-for _,p in pairs(Services.Players:GetPlayers())do
-	OnChat(p)
-end
-Services.Players.PlayerAdded:Connect(OnChat)
-
-local Shifties = {
-	['One'] = "!",
-	['Two'] = "@",
-	['Three'] = "#",
-	['Four'] = "$",
-	['Five'] = "%",
-	['Six'] = "^",
-	['Seven'] = "&",
-	['Eight'] = "*",
-	['Nine'] = "(",
-	['Zero'] = ")",
-	[Enum.KeyCode.Minus.Name] = "_",
-	[Enum.KeyCode.Equals.Name] = "+",
-	[Enum.KeyCode.LeftBracket.Name] = "{",
-	[Enum.KeyCode.RightBracket.Name] = "}",
-	[Enum.KeyCode.BackSlash.Name] = "|",
-	[Enum.KeyCode.Semicolon.Name] = ":",
-	[Enum.KeyCode.Quote.Name] = "'",
-	[Enum.KeyCode.Comma.Name] = "<",
-	[Enum.KeyCode.Period.Name] = ">",
-	[Enum.KeyCode.Slash.Name] = "?",
-	[Enum.KeyCode.Backquote.Name] = "~",
-}
-
-function trulyVisible(button)
-	local visible = button
-	local check = button
-	if visible == false then
-		return false
-	end
-	repeat 
-		if check:IsA("GuiObject") then
-			visible = check.Visible
-		elseif check:IsA("GuiBase") then
-			visible = check.Enabled
-		end
-		if visible == false then
-			return false
-		end
-		check = check.Parent
-	until
-	visible == false or check:IsA("ScreenGui") or check == nil or (check:IsA("GuiObject")==false and check:IsA("GuiBase")==false)
-	return visible
-end
-
-local UIS = game:GetService("UserInputService")
-local Shift = false
-local erase = os.clock()
-ExtraVariables.ChangedText = Instance.new('BindableEvent')
-ExtraVariables.ChangedText.Event:Connect(function(txt)
-	if ChatBar:IsFocused() then
-		ChatBar.Text = txt
-	end
-end)
-ExtraVariables.ScreenBoardEntered = Instance.new("BindableEvent")
-UIS.InputBegan:Connect(function(k)
-	local Equiv = nil
-	local Upper = nil
-	for X,S in pairs(Shifties)do
-		if k.KeyCode.Name == tostring(X) then
-			Upper = S
-			break
-		end
-	end
-	local HasValue = pcall(function()
-		Equiv = string.char(k.KeyCode.Value)
-	end)
-	if k.KeyCode == Enum.KeyCode.Slash and Typing == false then
-		Typing = true
-		local length = ChatBar.Text
-		ChatBar:CaptureFocus()
-		task.defer(function()
-			ChatBar.Text = length
-			ChatBar.CursorPosition = ChatBar.Text:len()+2
-		end)
-	end
-	if Typing == true and (k.KeyCode == Enum.KeyCode.Return or k.KeyCode == Enum.KeyCode.KeypadEnter) then
-		Typing = false
-		ChatBar:ReleaseFocus()
-		if ChatBar.Text:len() > 0 then
-			local Ok = Instance.new("Sound")
-			Ok.Parent = game:GetService("SoundService")
-			Ok.SoundId = 'rbxassetid://4590657391'
-			Ok.TimePosition = 0
-			Ok:Play()
-			SpawnAlternative(function()
-				task.wait(1.5)
-				Ok:Destroy()
-			end)
-			local PlayerColor = ComputeNameColor(User.Name)
-			AddChatLog(GetColoredText("[" .. User.DisplayName .. "] : ",PlayerColor) .. " " .. ChatBar.Text)
-			SendChat(ChatBar.Text)
-			ChatBar.Text = ""
-		end
-	end
-	local ok = ExtraVariables.ScreenBoardEntered.Event:Connect(function()
-		Typing = false
-		ChatBar:ReleaseFocus()
-		if ChatBar.Text:len() > 0 then
-			local Ok = Instance.new("Sound")
-			Ok.Parent = game:GetService("SoundService")
-			Ok.SoundId = 'rbxassetid://4590657391'
-			Ok.TimePosition = 0
-			Ok:Play()
-			SpawnAlternative(function()
-				task.wait(1.5)
-				Ok:Destroy()
-			end)
-			local PlayerColor = ComputeNameColor(User.Name)
-			AddChatLog(GetColoredText("[" .. User.DisplayName .. "] : ",PlayerColor) .. " " .. ChatBar.Text)
-			SendChat(ChatBar.Text)
-			ChatBar.Text = ""
-		end
-	end)
-	if k.KeyCode == Enum.KeyCode.LeftShift or k.KeyCode == Enum.KeyCode.RightShift then
-		Shift = true
-	end
-	if Typing == true and k.KeyCode == Enum.KeyCode.Backspace then
-		local weird = ChatBar.Text:sub(1,ChatBar.Text:len()-1)
-		ChatBar.Text = weird
-		erase = os.clock()
-		ChatBar.CursorPosition = ChatBar.Text:len()+2
-	end
-	if Typing == true and Equiv and string.byte(Equiv)~=8 then
-		if Shift then
-			if Upper == nil then
-				Equiv = Equiv:upper()
-			else
-				Equiv = Upper
-			end
-		end
-		ChatBar.Text = ChatBar.Text .. Equiv
-		ChatBar.CursorPosition = ChatBar.Text:len()+2
-	end
-end)
-UIS.InputEnded:Connect(function(k)
-	if k.KeyCode == Enum.KeyCode.LeftShift or k.KeyCode == Enum.KeyCode.RightShift then
-		Shift = false
-	end
-end)
-
 ExtraVariables.MenuOpen = Vector3.new(4,3,0.01)
 
 local MenuPart = Create("Part",nil,{
@@ -2270,8 +2656,9 @@ local MenuPart = Create("Part",nil,{
 })
 
 local VrSurface = SetupModel.VrSurface
+print(IsParentLocked(VrSurface))
 game:GetService('RunService').RenderStepped:Connect(function()
-	VrSurface.Parent = User.PlayerGui
+	VrSurface.Parent = User:FindFirstChildWhichIsA('PlayerGui')
 	VrSurface.LightInfluence = 0
 	VrSurface.Adornee = MenuPart
 	local PlaceCFrame = Camera.CFrame * Services.VR:GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-4)
@@ -2293,6 +2680,41 @@ VrSurface.VrMain.QuickButtons.Leave.MouseButton1Click:Connect(function()
 		game:shutdown()
 	end)
 end)
+ExtraVariables.PlayerLabel = VrSurface.VrMain.InnerMain.Players.PlayerName
+ExtraVariables.PlayerLabel.Parent=nil
+ExtraVariables.PlayerLabel = ExtraVariables.PlayerLabel:Clone()
+function AddToPlayerList(playerInstance)
+	local FriendIcon = ""
+	if playerInstance:IsFriendsWith(User.UserId) then
+		FriendIcon = "👤 "
+	end
+	local Label = ExtraVariables.PlayerLabel:Clone()
+	Label.Parent = VrSurface.VrMain.InnerMain.Players
+	Label.Text = FriendIcon .. playerInstance.Name
+	Label.MouseEnter:Connect(function()
+		Label.Text = FriendIcon .. playerInstance.Name
+	end)
+	Label.MouseLeave:Connect(function()
+		Label.Text = FriendIcon .. playerInstance.DisplayName
+	end)
+	playerInstance:GetPropertyChangedSignal("TeamColor"):Connect(function()
+		pcall(function()
+			Label.BackgroundColor3 = playerInstance.TeamColor.Color
+		end)
+	end)
+	Label.BackgroundColor3 = playerInstance.TeamColor.Color
+	local selfex = nil
+	selfex = Services.Players.PlayerRemoving:Connect(function(lplr)
+		if lplr == playerInstance then
+			Destroy(Label,-1)
+			selfex:Disconnect()
+		end
+	end)
+end
+Players.PlayerAdded:Connect(AddToPlayerList)
+for _,player in pairs(Players:GetPlayers())do
+	AddToPlayerList(player)
+end
 function OnClick(Button,Func)
 	Button.MouseButton1Click:Connect(function()
 		PlaySound(3779096010)
@@ -2336,13 +2758,66 @@ OnClick(Main.InnerMain.Buttons.ToolProp,function()
 	Main.InnerMain.PropCreation.Initialize.Visible = false
 	Main.InnerMain.PropCreation.ToolSelect.Visible = true
 end)
+OnClick(Main.InnerMain.PropCreation.Initialize.Tool.No,function()
+	Main.InnerMain.PropCreation.Visible = true
+	Main.InnerMain.PropCreation.Initialize.Visible = false
+	Main.InnerMain.PropCreation.ToolSelect.Visible = true
+end)
+--~ ~ ~ ~ ~~ ~ ~
+function SetSettingCheckBox(obj,boolean,func)
+	obj=obj.CheckBox
+	if PreloadedSettings[boolean] == true then
+		obj.Text = Check
+	elseif PreloadedSettings[boolean] == false then
+		obj.Text = ""
+	end
+	OnClick(obj,function()
+		if obj.Text==Check then
+			obj.Text = ""
+			PreloadedSettings[boolean]=false
+		else
+			obj.Text = Check
+			PreloadedSettings[boolean]=true
+		end
+		writefile("BrewSettings.txt",game:GetService('HttpService'):JSONEncode(PreloadedSettings))
+		if func then
+			func(PreloadedSettings[boolean])
+		end
+	end)
+	pcall(function()
+		func(PreloadedSettings[boolean])
+	end)
+end
+--~  .Settings.  ~--
+local SettingsMenu = Main.InnerMain.Settings
+SetSettingCheckBox(SettingsMenu.Choice1,"MotionControls")
+SetSettingCheckBox(SettingsMenu.Choice2,"LightingEffects")
+SetSettingCheckBox(SettingsMenu.Choice3,"CharacterOutlines",function(boolean)
+	for i,v in pairs(Selections)do
+		v.Visible = boolean
+	end
+end)
+SetSettingCheckBox(SettingsMenu.Choice4,"PersonalSpace")
+SetSettingCheckBox(SettingsMenu.Choice5,"Teleport")
+SetSettingCheckBox(SettingsMenu.Choice6,"NametagsShown")
+SetSettingCheckBox(SettingsMenu.Choice7,"DetailedMaterials",function(Boolean)
+	for Part,Material in pairs(SavedMaterials)do
+		if Boolean == true then
+			Part.Material=Material
+		else
+			Part.Material=Enum.Material.SmoothPlastic
+		end
+	end
+end)
+SetSettingCheckBox(SettingsMenu.Choice8,"Flying")
+--~ ~ ~ ~ ~~ ~ ~
 ExtraVariables.HatsToDisplay = {}
 for i,v in pairs(Character:GetChildren())do
 	if v:IsA("Accessory") then
 		table.insert(ExtraVariables.HatsToDisplay,v)
 	end
 end
-ExtraVariables.ToolButton = Main.InnerMain.PropCreation.ToolSelect.HatName:Clone()
+ExtraVariables.ToolButton = Main.InnerMain.PropCreation.ToolSelect:WaitForChild('HatName'):Clone()
 Main.InnerMain.PropCreation.ToolSelect.HatName:Destroy()
 ExtraVariables.AligningHat = {nil}
 ExtraVariables.Presets = {}
@@ -2396,8 +2871,8 @@ OnClick(ExtraVariables.Initialize.Yes,function()
 	local maneuver = CFrame.new(0,0,0)
 	local Selfex=nil
 	local LetGo = nil
-	Selfex=UIS.InputBegan:Connect(function(key,gp)
-		if UIS:GetFocusedTextBox()==nil then
+	Selfex=Services.UIS.InputBegan:Connect(function(key,gp)
+		if Services.UIS:GetFocusedTextBox()==nil then
 			if key.KeyCode==Enum.KeyCode.ButtonR2 then
 				Triggered = true
 				local ObjectSpace = Display1.CFrame:ToObjectSpace(Parts.RightArm.CFrame):Inverse()
@@ -2412,8 +2887,8 @@ OnClick(ExtraVariables.Initialize.Yes,function()
 			end
 		end
 	end)
-	LetGo=UIS.InputEnded:Connect(function(key,gp)
-		if UIS:GetFocusedTextBox()==nil then
+	LetGo=Services.UIS.InputEnded:Connect(function(key,gp)
+		if Services.UIS:GetFocusedTextBox()==nil then
 			if key.KeyCode==Enum.KeyCode.ButtonR1 then
 				repositioning2 = false
 				maneuver = Display1.CFrame:ToObjectSpace((Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(0.5,-0.5,-2))):Inverse()
@@ -2459,6 +2934,19 @@ OnClick(Main.InnerMain.PropCreation.Initialize.Tool.Equip,function()
 		end
 	end
 end)
+OnClick(Main.InnerMain.Buttons.ClientInformation,function()
+	Main.InnerMain.ClientInfo.Visible = true
+end)
+game:GetService('RunService').RenderStepped:Connect(function()
+	local Info = Main.InnerMain.ClientInfo
+	if Info.Visible == true then
+		Info.FPS.Text = "FPS: " .. tostring(GetFPS())
+		Info.JobId.Text = "JobId: " .. tostring(game.JobId)
+		Info.PlaceId.Text = "PlaceId: " .. tostring(game.PlaceId)
+		Info.Time.Text = "Time since joined: " .. tostring(math.floor(time()))
+		Info.UserId.Text = "UserID: " .. tostring(User.UserId)
+	end
+end)
 local LayedOut=0
 local Label = Main.InnerMain.Chat.ChatLogs.FreshLog
 Label.Parent=nil
@@ -2492,18 +2980,7 @@ function DidChat(player)
 		end
 	end)
 	player.Chatted:Connect(function(msg)
-		LayedOut=LayedOut+1
-		local Info = Label:Clone()
-		Info.Text = "[".. player.DisplayName  .."] : " .. msg
-		Info.Parent = Main.InnerMain.Chat.ChatLogs
-		Info.LayoutOrder = LayedOut
-		Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,100000000)
-		Info.Size = UDim2.new(0,Info.TextBounds.X,0,Info.TextBounds.Y)
-		Main.InnerMain.Chat.ChatLogs.CanvasSize = UDim2.new(0,0,0,GetLabels())
-		Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,GetLabels())
-		task.delay(60*5,function()
-			Info:Destroy()
-		end)
+		ExtraVariables.CreateLabelInChat("[" .. player.Name .. "]: "..msg,Color3.new(1,1,1))
 	end)
 end
 local CB = Main.InnerMain.Chat.ChattingBar
@@ -2558,33 +3035,7 @@ game:GetService("ContextActionService"):BindAction("Quit",function()end,true,Enu
 game:GetService("ContextActionService"):BindAction("Quit2",function()end,true,Enum.KeyCode.O)
 game:GetService("ContextActionService"):UnbindAllActions()
 
-
-game:GetService("RunService").RenderStepped:Connect(function()
-	if Typing == true and os.clock() - erase > 0.8 then
-		for _,k in pairs(UIS:GetKeysPressed())do
-			if k.KeyCode == Enum.KeyCode.Backspace then
-				local weird = ChatBar.Text:sub(1,ChatBar.Text:len()-1)
-				ChatBar.Text = weird
-				erase = os.clock() - 0.75
-				break
-			end
-		end
-	end
-	local scaleA = 0
-	for i,x in pairs(Scroller:GetChildren())do
-		if x:IsA("GuiObject") then
-			scaleA = scaleA + x.AbsoluteSize.Y
-		end
-	end
-	Scroller.CanvasSize = UDim2.new(0,0,0,scaleA)
-	Scroller.SizeConstraint = Enum.SizeConstraint.RelativeXY
-	Scroller.CanvasPosition = Vector2.new(0,scaleA+1)
-end)
-
-
 --\\\ CHAT SCRIPTING
-
---//Model Creation for earlier tables: For organization
 
 --Tracker (Converted)
 local B1 = Instance.new("Attachment")
@@ -2676,57 +3127,6 @@ HeadsUp.Parent = workspace.CurrentCamera
 local reup=os.clock()
 local Char = game:GetService('Players').LocalPlayer.Character
 Char.Archivable = true
-local cParts={}
-local Cloned = Instance.new("Model")
-for i,v in pairs(Char:GetChildren())do
-	local new = v:Clone()
-	new.Parent = Cloned
-	table.insert(cParts,{v,new})
-end
-loopChar = game:GetService("RunService").RenderStepped:Connect(function()
-	if ExtraVariables.CharacterViewport then
-		for i,v in pairs(cParts)do
-			local ClonePart
-			local Compare = v[1]
-			if v[2]:IsA("BasePart") then
-				ClonePart = v[2]
-			else
-				for _,x in pairs(v[2]:GetDescendants())do
-					if x:IsA("BasePart") then
-						ClonePart=x
-						break
-					end
-				end
-				if ClonePart then
-					for _,x in pairs(v[1]:GetDescendants())do
-						if x:IsA("BasePart") then
-							Compare=x
-							break
-						end
-					end
-				end
-			end
-			if ClonePart then
-				task.defer(function()
-					ClonePart.CFrame = Compare.CFrame
-				end)
-			end
-		end
-		if Cloned:FindFirstChild("HumanoidRootPart") then
-			Cloned.PrimaryPart = Cloned.HumanoidRootPart
-		end
-		for _,x in pairs(Cloned:GetDescendants())do
-			if x:IsA("JointInstance") or x:IsA("BaseScript") or x:IsA("Sound") then
-				x:Destroy()
-			end
-		end
-		HeadsUp.CFrame = (workspace.CurrentCamera.CFrame * game:GetService("VRService"):GetUserCFrame(Enum.UserCFrame.Head))*CFrame.new(0,0,-10)
-		ViewportFrame.CurrentCamera = NewCamera
-		NewCamera.CFrame = Char.Head.CFrame * CFrame.new(0,0,-20)
-		NewCamera.CFrame = NewCamera.CFrame*CFrame.Angles(0,math.pi,0)
-	end
-	ViewportFrame.Visible = ExtraVariables.CharacterViewport
-end)
 local Afar = Instance.new("BillboardGui")
 Afar.AlwaysOnTop = true
 Afar.Size = UDim2.new(20,0,20,0)
@@ -2736,45 +3136,9 @@ ViewportFrame.Parent = Afar
 Afar.Parent = game:GetService("Players").LocalPlayer:FindFirstChildWhichIsA("PlayerGui")
 Afar.Adornee = HeadsUp
 ViewportFrame.BackgroundTransparency = 1
-Cloned.Parent = ViewportFrame
 --//
 
 --\\Model Creation for earlier tables: For organization
---//Finalized
-
-function GetTrueVisibility(Object:GuiObject)
-	local v = Object.Visible
-	local p = Object.Parent
-	if v==true then
-		repeat v = p.Visible p=p.Parent until p.Parent==nil or not p:IsA("GuiObject") or v==false
-	end
-	return v
-end
-
-function CharactersAdded(_player)
-	_player.CharacterAdded:Connect(function(char0)
-		if ExtraVariables.DisplayNames == false then
-			task.spawn(function()
-				repeat task.wait(-1) until char0:FindFirstChildWhichIsA("Humanoid")
-				char0:FindFirstChildWhichIsA("Humanoid").DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-				local Until = nil
-				Until = char0:FindFirstChildWhichIsA("Humanoid").Changed:Connect(function()
-					if not char0:IsDescendantOf(workspace) then
-						Until:Disconnect()
-					else
-						char0:FindFirstChildWhichIsA("Humanoid").DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-					end
-				end)
-			end)
-		end
-	end)
-	task.spawn(function()
-		repeat task.wait(-1) until _player.Character and _player.Character:FindFirstChildWhichIsA("Humanoid")
-		_player.Character:FindFirstChildWhichIsA("Humanoid").DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-	end)
-end
-Services.Players.PlayerAdded:Connect(CharactersAdded)
-
 repeat task.wait(-1) until ExtraVariables.VrFinalized == true
 task.wait(0.5)
 PromptMessage([[
@@ -2861,18 +3225,11 @@ CreateHatAsTool("Sword","Angel Sword",CFrame.new(-0.00233829999, -0.941128731, -
 --//
 Services.VR:RecenterUserHeadCFrame()
 
-local simradius = 'shp'
---METHOD THING (Literally ONLY this piece is not mine.)
-if shp and (simradius == "shp") then
-	AlternativeSpawn(function()
-		while Character and game:GetService("RunService").Heartbeat:Wait() do
-			shp(User, "SimulationRadius", math.huge)
-		end
+local fenv = getfenv()
+local sethp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidden_prop or fenv.sethiddenprop
+local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_sim_radius or fenv.setsimradius or fenv.set_simulation_rad or fenv.setsimulationrad
+game:GetService("RunService").Heartbeat:Connect(function()
+	pcall(function()
+		shp(User, "SimulationRadius", math.huge)
 	end)
-elseif ssr and (simradius == "ssr") then
-	AlternativeSpawn(function()
-		while Character and game:GetService("RunService").Heartbeat:Wait() do
-			ssr(math.huge)
-		end
-	end)
-end
+end)
