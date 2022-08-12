@@ -1,4 +1,7 @@
 script.Disabled = true
+
+_G.BrewVersion = "v1.3"
+
 if _G.IsVr == true then return end
 _G.IsVr = true
 
@@ -20,6 +23,86 @@ local Advanced = {
 }
 local User = game:GetService('Players').LocalPlayer
 local AlternativeSpawn = task.spawn
+
+local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
+	local Type = game:GetService("RunService")[Type]
+	local Start = os.clock()
+	if not Seconds then return warn("Please put a length in argument 2.") end
+	local X = nil
+	X = Type:Connect(function()
+		if os.clock()-Start >= Seconds then
+			X:Disconnect()
+			return
+		else
+			func()
+		end
+	end)
+end
+local Create = function(Class,Parent,Properties)
+	local A = Instance.new(Class)
+	for i,v in pairs(Properties)do
+		A[i]=v
+	end
+	A.Parent = Parent
+	return A
+end
+local LastMessageInstances = {}
+function PromptMessage(Message,lasts,BackgroundTransparency)
+	if game:GetService("RunService"):IsStudio() then
+		local H = Instance.new("Hint")
+		H.Text = Message
+		H.Parent = workspace
+		task.delay(lasts,function()
+			H.Parent=nil
+		end)
+		table.insert(LastMessageInstances,H)
+		return
+	end
+	for _,x in pairs(LastMessageInstances)do
+		Destroy(x,-1)
+	end
+	local Init_Message = Create("TextLabel",nil,{
+		Text = Message,
+		TextSize = 30,
+		Font = Enum.Font.SourceSansBold,
+		TextColor3 = Color3.new(1,1,1),
+		BackgroundTransparency=1,
+		Size = UDim2.new(1,0,1,0),
+	})
+	local Splash = Create("Part",workspace.CurrentCamera,{
+		Size = Vector3.new(0,0,0),
+		Anchored = true,
+		CanCollide = false,
+	})
+	local BillboardGui = Create("BillboardGui",Splash,{
+		Size = UDim2.new(20,0,20,0),
+		AlwaysOnTop = true
+	})
+	local Darken = Create("ColorCorrectionEffect",game:GetService("Lighting"),{
+		Brightness = -(1-BackgroundTransparency),
+	})
+	LastMessageInstances = {
+		Init_Message,Splash,BillboardGui,Darken
+	}
+	Init_Message.Parent = BillboardGui
+	CreateTemporaryLoopWithRunServiceType("RenderStepped",lasts,function()
+		Splash.CFrame = workspace.CurrentCamera.Camera.CFrame*game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-10)
+	end)
+	task.wait(lasts)
+	game:GetService('TweenService'):Create(Init_Message,TweenInfo.new(0.5),{
+		Transparency=1,
+		TextTransparency=1,
+		TextStrokeTransparency=1,
+	}):Play()
+	game:GetService('TweenService'):Create(Darken,TweenInfo.new(0.5),{
+		Brightness = 0,
+	}):Play()
+	Destroy(Init_Message,0.5)
+	Destroy(BillboardGui,0.5)
+	Destroy(Splash,0.5)
+	Destroy(Darken,0.5)
+end
+
 for i,v in pairs(User:GetDescendants())do
 	if v:IsA("LocalScript") then
 		for _,n in pairs(Advanced.Scripts_To_Remove)do
@@ -38,6 +121,12 @@ for i,v in pairs(User.Character:GetDescendants())do
 		end
 	end
 end
+
+PromptMessage([[
+...Checking your whitelist...
+
+(Please do not spam execute)
+]],30,0.5)
 
 local fenv = getfenv()
 local shp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidden_prop or fenv.sethiddenprop
@@ -1160,6 +1249,12 @@ if StrongIdentity==true then
 	end
 end
 --End of Whitelist
+
+PromptMessage([[
+Valid whitelist
+]],0.5,0.5)
+task.wait(0.5)
+
 local PreloadedSettings = {
 	MotionControls = true,
 	CharacterOutlines = true,
@@ -1463,15 +1558,6 @@ local VrTracker = {}
 
 if game:GetService("RunService"):IsStudio() == false and Services.VR.VREnabled == false then return end
 
-local Create = function(Class,Parent,Properties)
-	local A = Instance.new(Class)
-	for i,v in pairs(Properties)do
-		A[i]=v
-	end
-	A.Parent = Parent
-	return A
-end
-
 local FrameYield = function(Seconds)
 	local Start = os.clock()
 	repeat game:GetService("RunService").RenderStepped:Wait() until os.clock()-Start >= Seconds
@@ -1485,21 +1571,6 @@ local ConnectFunctionUntil = function(Event,funcToLoop)
 		if funcToLoop() == true then
 			Temp:Disconnect()
 			Hmm:Disconnect()
-		end
-	end)
-end
-
-local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
-	local Type = game:GetService("RunService")[Type]
-	local Start = os.clock()
-	if not Seconds then return warn("Please put a length in argument 2.") end
-	local X = nil
-	X = Type:Connect(function()
-		if os.clock()-Start >= Seconds then
-			X:Disconnect()
-			return
-		else
-			func()
 		end
 	end)
 end
@@ -1619,62 +1690,6 @@ function Destroy(Obj,Delay_)
 			Obj:Destroy()
 		end)
 	end
-end
-local LastMessageInstances = {}
-function PromptMessage(Message,lasts,BackgroundTransparency)
-	if game:GetService("RunService"):IsStudio() then
-		local H = Instance.new("Hint")
-		H.Text = Message
-		H.Parent = workspace
-		task.delay(lasts,function()
-			H.Parent=nil
-		end)
-		table.insert(LastMessageInstances,H)
-		return
-	end
-	for _,x in pairs(LastMessageInstances)do
-		Destroy(x,-1)
-	end
-	local Init_Message = Create("TextLabel",nil,{
-		Text = Message,
-		TextSize = 30,
-		Font = Enum.Font.SourceSansBold,
-		TextColor3 = Color3.new(1,1,1),
-		BackgroundTransparency=1,
-		Size = UDim2.new(1,0,1,0),
-	})
-	local Splash = Create("Part",workspace.CurrentCamera,{
-		Size = Vector3.new(0,0,0),
-		Anchored = true,
-		CanCollide = false,
-	})
-	local BillboardGui = Create("BillboardGui",Splash,{
-		Size = UDim2.new(20,0,20,0),
-		AlwaysOnTop = true
-	})
-	local Darken = Create("ColorCorrectionEffect",game:GetService("Lighting"),{
-		Brightness = -(1-BackgroundTransparency),
-	})
-	LastMessageInstances = {
-		Init_Message,Splash,BillboardGui,Darken
-	}
-	Init_Message.Parent = BillboardGui
-	CreateTemporaryLoopWithRunServiceType("RenderStepped",lasts,function()
-		Splash.CFrame = Camera.CFrame*Services.VR:GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-10)
-	end)
-	task.wait(lasts)
-	Services.TweenService:Create(Init_Message,TweenInfo.new(0.5),{
-		Transparency=1,
-		TextTransparency=1,
-		TextStrokeTransparency=1,
-	}):Play()
-	Services.TweenService:Create(Darken,TweenInfo.new(0.5),{
-		Brightness = 0,
-	}):Play()
-	Destroy(Init_Message,0.5)
-	Destroy(BillboardGui,0.5)
-	Destroy(Splash,0.5)
-	Destroy(Darken,0.5)
 end
 function GetHatsAsUsefulTable(CharArg)
 	if true then return end
@@ -1846,9 +1861,15 @@ end
 
 local Character = game:GetService('Players').LocalPlayer.Character or game:GetService("Players").LocalPlayer.Character:Wait()
 Character:WaitForChild("Humanoid",100)
+local Msg1 = [[
+...Initializing...
 
+If you cannot interact with the menu, tab out and tab back in to Roblox.
+
+(If you happen to break, just rejoin)
+]]
 SpawnAlternative(function()
-	PromptMessage("Initializing...\nBrew VR script by Amokah.\n(Try not to tab out, won't hurt, but try not to)",7,0.3)
+	PromptMessage(Msg1,7,0.3)
 end)
 
 local SpawnInCFrame = Character.PrimaryPart.CFrame
@@ -2668,8 +2689,14 @@ local MenuPart = Create("Part",nil,{
 })
 
 local VrSurface = SetupModel.VrSurface
-print(IsParentLocked(VrSurface))
+ExtraVariables.Clock = VrSurface.VrMain.Time
+VrSurface.VrMain.Version.Text = _G.BrewVersion
 game:GetService('RunService').RenderStepped:Connect(function()
+	local Hour = os.date("%I")
+	if Hour:sub(1,1)=="0" then
+		Hour = Hour:sub(2,#Hour)
+	end
+	ExtraVariables.Clock.Text = Hour .. ":" .. os.date("%M") .. ":" .. os.date("%S") .. " " .. os.date("%p")
 	VrSurface.Parent = User:FindFirstChildWhichIsA('PlayerGui')
 	VrSurface.LightInfluence = 0
 	VrSurface.Adornee = MenuPart
@@ -2686,11 +2713,6 @@ game:GetService('RunService').RenderStepped:Connect(function()
 		end
 		MenuPart.Parent = nil
 	end
-end)
-VrSurface.VrMain.QuickButtons.Leave.MouseButton1Click:Connect(function()
-	pcall(function()
-		game:shutdown()
-	end)
 end)
 ExtraVariables.PlayerLabel = VrSurface.VrMain.InnerMain.Players.PlayerName
 ExtraVariables.PlayerLabel.Parent=nil
@@ -2727,19 +2749,32 @@ Players.PlayerAdded:Connect(AddToPlayerList)
 for _,player in pairs(Players:GetPlayers())do
 	AddToPlayerList(player)
 end
+local Main = VrSurface.VrMain
 function OnClick(Button,Func)
 	Button.MouseButton1Click:Connect(function()
 		PlaySound(3779096010)
-		VrSurface.VrMain.InnerMain.Buttons.Visible = false
+		for i,v in pairs(Main.InnerMain:GetChildren()) do
+			v.Visible = false
+		end
 		Func()
 	end)
 end
-local Main = VrSurface.VrMain
 OnClick(Main.QuickButtons.Home,function()
 	for i,v in pairs(VrSurface.VrMain.InnerMain:GetChildren())do
 		v.Visible = false
 	end
 	VrSurface.VrMain.InnerMain.Buttons.Visible = true
+end)
+OnClick(Main.QuickButtons.Leave,function()
+	VrSurface.VrMain.InnerMain.LeavePrompt.Visible = true
+end)
+OnClick(	VrSurface.VrMain.InnerMain.LeavePrompt.Yes,function()
+	pcall(function()
+		game:Shutdown()
+	end)
+end)
+OnClick(	VrSurface.VrMain.InnerMain.LeavePrompt.No,function()
+	Main.InnerMain.Buttons.Visible = true
 end)
 OnClick(Main.InnerMain.Buttons.AdvancedSettings,function()
 	VrSurface.VrMain.InnerMain.Settings.Visible = true
@@ -2984,12 +3019,20 @@ ExtraVariables.CreateLabelInChat=function(Text,Color)
 	Info.TextColor3=Color
 	Info.Parent = Main.InnerMain.Chat.ChatLogs
 	Info.LayoutOrder = LayedOut
-	Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,100000000)
-	Info.Size = UDim2.new(0,Info.TextBounds.X,0,Info.TextBounds.Y)
 	task.delay(60*5,function()
 		Info:Destroy()
 	end)
 end
+game:GetService('RunService').RenderStepped:Connect(function()
+	local Abc = 0
+	for i,v in pairs(Main.InnerMain.Chat.ChatLogs:GetChildren())do
+		if v:IsA("TextLabel") then
+			Abc=Abc+v.AbsoluteSize.Y
+		end
+	end
+	Main.InnerMain.Chat.ChatLogs.CanvasPosition = Vector2.new(0,Abc)
+	Main.InnerMain.Chat.ChatLogs.CanvasSize = UDim2.new(0,0,0,Abc)
+end)
 function DidChat(player)
 	if player:IsFriendsWith(User.UserId) then
 		ExtraVariables.CreateLabelInChat("Your friend, '"..player.Name .. " (@" ..player.DisplayName ..")' joined your game.",Color3.new(0,1,0))
@@ -3171,15 +3214,12 @@ PromptMessage([[
 → Controls
 
 LEFT TRIGGER : Move
-LEFT BUTTON 1 : Chat
-RIGHT TRIGGER : Toggles flinging arm
-RIGHT BUTTON 1 : Movement teleport
-TWIST RIGHT ARM : Change tools left to right
+LEFT BUTTON 1 : Menu
+RIGHT TRIGGER : Arm flinger
+RIGHT BUTTON 1 : Teleport control
+TWIST RIGHT ARM : Unequip
 
-→
-
-(Hats will turn into tools after this prompt)
-
+→ Enjoy
 ]],8,0.8)
 
 --//Tools
