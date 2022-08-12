@@ -1373,7 +1373,10 @@ local SpyChar = function(player)
 				if RootPlace then
 					NameTag2.Parent = RootPlace
 					NameTag2.Adornee = RootPlace
-					local Distance = ((workspace.CurrentCamera.CFrame * game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head)).Position - RootPlace.Position).Magnitude
+					local Distance = 0
+					pcall(function()
+						Distance=((workspace.CurrentCamera.CFrame * game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head)).Position - RootPlace.Position).Magnitude
+					end)
 					NameTag2.NamePlate.User.Text = player.Name .. " [@" .. player.DisplayName .. "]"
 					if Distance < 7 then
 						NameTag2.Enabled = not PreloadedSettings.PersonalSpace
