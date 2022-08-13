@@ -7,7 +7,7 @@ if not game:GetService('RunService'):IsStudio() and VR.VREnabled == false then
 	return
 end
 
-_G.BrewVersion = "v1.3"
+_G.BrewVersion = "v1.32"
 local Advanced = {
 	Scripts_To_Remove = {
 		"NexusVRCharacterModelClientLoader",
