@@ -3,11 +3,13 @@ local VR = game:GetService('VRService')
 if _G.IsVr == true then return end
 _G.IsVr = true
 repeat _G.IsVr = true task.wait(-1) until game.Loaded == true
+repeat task.wait(-1) until game:GetService('Players').LocalPlayer.Character ~= nil
+task.wait(1)
 if not game:GetService('RunService'):IsStudio() and VR.VREnabled == false then
 	return
 end
 
-_G.BrewVersion = "v1.31"
+_G.BrewVersion = "v1.3"
 local Advanced = {
 	Scripts_To_Remove = {
 		"NexusVRCharacterModelClientLoader",
