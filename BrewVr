@@ -1,10 +1,13 @@
 script.Disabled = true
-
-_G.BrewVersion = "v1.3"
-
+local VR = game:GetService('VRService')
 if _G.IsVr == true then return end
 _G.IsVr = true
+repeat _G.IsVr = true task.wait(-1) until game.Loaded == true
+if not game:GetService('RunService'):IsStudio() and VR.VREnabled == false then
+	return
+end
 
+_G.BrewVersion = "v1.31"
 local Advanced = {
 	Scripts_To_Remove = {
 		"NexusVRCharacterModelClientLoader",
@@ -24,6 +27,104 @@ local Advanced = {
 local User = game:GetService('Players').LocalPlayer
 local AlternativeSpawn = task.spawn
 
+local Part0 = Instance.new("Part")
+local Highlight0 = Instance.new("Highlight",Part0)
+local BillboardGui1 = Instance.new("BillboardGui")
+local TextLabel2 = Instance.new("TextLabel")
+Part0.Name = "ClickToInitiate"
+Part0.CFrame = CFrame.new(7.5, 2, 24.125, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+Part0.Position = Vector3.new(7.5, 2, 24.125)
+Part0.Color = Color3.new(0.972549, 0.972549, 0.972549)
+Part0.Size = Vector3.new(0.5,0.5,0.5)
+Part0.BottomSurface = Enum.SurfaceType.Smooth
+Part0.BrickColor = BrickColor.new("Institutional white")
+Part0.Material = Enum.Material.SmoothPlastic
+Part0.TopSurface = Enum.SurfaceType.Smooth
+Part0.brickColor = BrickColor.new("Institutional white")
+BillboardGui1.Name = "InitiateBillboard"
+BillboardGui1.Parent = Part0
+BillboardGui1.LightInfluence = 1
+BillboardGui1.Size = UDim2.new(8, 0, 0.5, 0)
+BillboardGui1.Active = true
+BillboardGui1.ClipsDescendants = true
+BillboardGui1.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+BillboardGui1.Adornee = Part0
+BillboardGui1.AlwaysOnTop = true
+BillboardGui1.StudsOffset = Vector3.new(0, 1.2000000476837158, 0)
+TextLabel2.Name = "InitiateLabel"
+TextLabel2.Parent = BillboardGui1
+TextLabel2.Size = UDim2.new(1, 0, 1, 0)
+TextLabel2.BackgroundColor = BrickColor.new("Institutional white")
+TextLabel2.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel2.BackgroundTransparency = 1
+TextLabel2.Font = Enum.Font.TitilliumWeb
+TextLabel2.FontSize = Enum.FontSize.Size14
+TextLabel2.Text = "Click to initiate script"
+TextLabel2.TextColor = BrickColor.new("Institutional white")
+TextLabel2.TextColor3 = Color3.new(1, 1, 1)
+TextLabel2.TextScaled = true
+TextLabel2.TextSize = 14
+TextLabel2.TextStrokeColor3 = Color3.new(0, 0.6, 1)
+TextLabel2.TextStrokeTransparency = 0.5
+TextLabel2.TextWrap = true
+TextLabel2.TextWrapped = true
+Highlight0.FillTransparency = 1
+Highlight0.OutlineColor = Color3.fromRGB(0,150,255)
+Highlight0.Adornee = Part0
+local  ClickedInit = false
+local CanClick = false
+local SelfClick = nil
+SelfClick = game:GetService('RunService').RenderStepped:Connect(function()
+	Part0.Position = (workspace.CurrentCamera.CFrame*VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(-0.5,-0.5,-2.5)).Position
+	Part0.Anchored = true
+	Part0.Velocity = Vector3.new(0,0,0)
+	local yeah = workspace:GetPartBoundsInBox(workspace.CurrentCamera.CFrame*VR:GetUserCFrame(Enum.UserCFrame.LeftHand),Vector3.new(1,1,1),OverlapParams.new({['MaxParts']=100}))
+	local yeah2 = workspace:GetPartBoundsInBox(workspace.CurrentCamera.CFrame*VR:GetUserCFrame(Enum.UserCFrame.RightHand),Vector3.new(1,1,1),OverlapParams.new({['MaxParts']=100}))
+	if table.find(yeah,Part0) or table.find(yeah2,Part0) then
+		CanClick = true
+		BillboardGui1.Enabled = true
+		Highlight0.Enabled = false
+	else
+		BillboardGui1.Enabled = false
+		Highlight0.Enabled = false
+		CanClick = false
+	end
+end)
+Part0.Parent = workspace.CurrentCamera
+local TempInput = nil
+TempInput = game:GetService('UserInputService').InputBegan:Connect(function(key)
+	if CanClick and (key.KeyCode == Enum.KeyCode.ButtonL2 or key.KeyCode == Enum.KeyCode.ButtonR2) then
+		ClickedInit = true
+		Highlight0.Enabled = false
+		Highlight0:Destroy()
+		Part0:Destroy()
+		TempInput:Disconnect()
+		SelfClick:Disconnect()
+	end
+end)
+if game:GetService("RunService"):IsStudio() then
+	ClickedInit = true
+	Highlight0.Enabled = false
+	Highlight0:Destroy()
+	Part0:Destroy()
+	TempInput:Disconnect()
+	SelfClick:Disconnect()
+end
+
+repeat task.wait(-1) until ClickedInit==true
+function Destroy(Obj,Delay_)
+	if Delay_ then
+		task.delay(Delay_,function()
+			pcall(function()
+				Obj:Destroy()
+			end)
+		end)
+	else
+		pcall(function()
+			Obj:Destroy()
+		end)
+	end
+end
 local CreateTemporaryLoopWithRunServiceType = function(Type,Seconds,func)
 	local Type = game:GetService("RunService")[Type]
 	local Start = os.clock()
@@ -48,6 +149,9 @@ local Create = function(Class,Parent,Properties)
 end
 local LastMessageInstances = {}
 function PromptMessage(Message,lasts,BackgroundTransparency)
+	for _,x in pairs(LastMessageInstances)do
+		Destroy(x,-1)
+	end
 	if game:GetService("RunService"):IsStudio() then
 		local H = Instance.new("Hint")
 		H.Text = Message
@@ -57,9 +161,6 @@ function PromptMessage(Message,lasts,BackgroundTransparency)
 		end)
 		table.insert(LastMessageInstances,H)
 		return
-	end
-	for _,x in pairs(LastMessageInstances)do
-		Destroy(x,-1)
 	end
 	local Init_Message = Create("TextLabel",nil,{
 		Text = Message,
@@ -86,7 +187,7 @@ function PromptMessage(Message,lasts,BackgroundTransparency)
 	}
 	Init_Message.Parent = BillboardGui
 	CreateTemporaryLoopWithRunServiceType("RenderStepped",lasts,function()
-		Splash.CFrame = workspace.CurrentCamera.Camera.CFrame*game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-10)
+		Splash.CFrame = workspace.CurrentCamera.CFrame*game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head) * CFrame.new(0,0,-10)
 	end)
 	task.wait(lasts)
 	game:GetService('TweenService'):Create(Init_Message,TweenInfo.new(0.5),{
@@ -121,13 +222,14 @@ for i,v in pairs(User.Character:GetDescendants())do
 		end
 	end
 end
-
+AlternativeSpawn(function()
 PromptMessage([[
 ...Checking your whitelist...
 
 (Please do not spam execute)
 ]],30,0.5)
-
+end)
+	
 local fenv = getfenv()
 local shp = fenv.sethiddenproperty or fenv.set_hidden_property or fenv.set_hidden_prop or fenv.sethiddenprop
 local ssr = fenv.setsimulationradius or fenv.set_simulation_radius or fenv.set_sim_radius or fenv.setsimradius or fenv.set_simulation_rad or fenv.setsimulationrad
@@ -1678,19 +1780,6 @@ table.insert(Selections,Create("SelectionBox",Parts.RightArm,{
 	SurfaceTransparency = 1,
 	LineThickness = 0.025
 }))
-function Destroy(Obj,Delay_)
-	if Delay_ then
-		task.delay(Delay_,function()
-			pcall(function()
-				Obj:Destroy()
-			end)
-		end)
-	else
-		pcall(function()
-			Obj:Destroy()
-		end)
-	end
-end
 function GetHatsAsUsefulTable(CharArg)
 	if true then return end
 	local X = {}
@@ -2753,9 +2842,7 @@ local Main = VrSurface.VrMain
 function OnClick(Button,Func)
 	Button.MouseButton1Click:Connect(function()
 		PlaySound(3779096010)
-		for i,v in pairs(Main.InnerMain:GetChildren()) do
-			v.Visible = false
-		end
+		VrSurface.VrMain.InnerMain.Buttons.Visible = false
 		Func()
 	end)
 end
@@ -2766,6 +2853,9 @@ OnClick(Main.QuickButtons.Home,function()
 	VrSurface.VrMain.InnerMain.Buttons.Visible = true
 end)
 OnClick(Main.QuickButtons.Leave,function()
+	for i,v in pairs(Main.InnerMain:GetChildren()) do
+		v.Visible = false
+	end
 	VrSurface.VrMain.InnerMain.LeavePrompt.Visible = true
 end)
 OnClick(	VrSurface.VrMain.InnerMain.LeavePrompt.Yes,function()
@@ -2775,11 +2865,15 @@ OnClick(	VrSurface.VrMain.InnerMain.LeavePrompt.Yes,function()
 end)
 OnClick(	VrSurface.VrMain.InnerMain.LeavePrompt.No,function()
 	Main.InnerMain.Buttons.Visible = true
+	VrSurface.VrMain.InnerMain.LeavePrompt.Visible = false
 end)
 OnClick(Main.InnerMain.Buttons.AdvancedSettings,function()
 	VrSurface.VrMain.InnerMain.Settings.Visible = true
 end)
 OnClick(Main.QuickButtons.Chat,function()
+	for i,v in pairs(Main.InnerMain:GetChildren()) do
+		v.Visible = false
+	end
 	VrSurface.VrMain.InnerMain.Chat.Visible = true
 end)
 OnClick(Main.InnerMain.Buttons.GameExploits,function()
