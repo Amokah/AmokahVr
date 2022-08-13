@@ -1,12 +1,6 @@
-if _G.IsVr == true then return end
-_G.IsVr = true
-repeat task.wait(-1) until game:GetService('Players').LocalPlayer.Character ~= nil
-local VR = game:GetService('VRService')
-task.wait(10)
-if not game:GetService('RunService'):IsStudio() and VR.VREnabled == false then
-	return
+if 	_G.IsVr == true then
+	 return
 end
-
 _G.BrewVersion = "v1.32"
 local Advanced = {
 	Scripts_To_Remove = {
@@ -110,6 +104,13 @@ if game:GetService("RunService"):IsStudio() then
 	Part0:Destroy()
 	TempInput:Disconnect()
 	SelfClick:Disconnect()
+end
+if game:GetService("VRService").VREnabled == false then
+	Part0:Destroy()
+	_G.IsVr = false
+	return
+else
+	_G.IsVr = false
 end
 
 repeat task.wait(-1) until ClickedInit==true
