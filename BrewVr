@@ -68,6 +68,7 @@ Highlight0.Adornee = Part0
 local  ClickedInit = false
 local CanClick = false
 local SelfClick = nil
+local VR = game:GetService('VRService')
 SelfClick = game:GetService('RunService').RenderStepped:Connect(function()
 	Part0.Position = (workspace.CurrentCamera.CFrame*VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(-0.5,-0.5,-2.5)).Position
 	Part0.Anchored = true
