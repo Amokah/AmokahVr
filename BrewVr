@@ -1,7 +1,12 @@
-if 	_G.IsVr == true then
-	 return
-end
-_G.BrewVersion = "v1.331"
+script.Disabled = true
+local VR = game:GetService('VRService')
+
+if _G.IsVr == true then return end
+_G.IsVr = true
+
+repeat _G.IsVr = true task.wait(-1) until game:GetService('Players').LocalPlayer and game:GetService('Players').LocalPlayer.Character and game:GetService('Players').LocalPlayer.Character:FindFirstChild('Head')
+
+_G.BrewVersion = "v1.332"
 local Advanced = {
 	Scripts_To_Remove = {
 		"NexusVRCharacterModelClientLoader",
@@ -26,6 +31,8 @@ local Highlight0 = Instance.new("Highlight",Part0)
 local BillboardGui1 = Instance.new("BillboardGui")
 local TextLabel2 = Instance.new("TextLabel")
 Part0.Name = "ClickToInitiate"
+Part0.CFrame = CFrame.new(7.5, 2, 24.125, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+Part0.Position = Vector3.new(7.5, 2, 24.125)
 Part0.Color = Color3.new(0.972549, 0.972549, 0.972549)
 Part0.Size = Vector3.new(0.5,0.5,0.5)
 Part0.BottomSurface = Enum.SurfaceType.Smooth
@@ -66,12 +73,10 @@ Highlight0.Adornee = Part0
 local  ClickedInit = false
 local CanClick = false
 local SelfClick = nil
-local VR = game:GetService('VRService')
 SelfClick = game:GetService('RunService').RenderStepped:Connect(function()
 	Part0.Position = (workspace.CurrentCamera.CFrame*VR:GetUserCFrame(Enum.UserCFrame.Head)*CFrame.new(-0.5,-0.5,-2.5)).Position
 	Part0.Anchored = true
 	Part0.Velocity = Vector3.new(0,0,0)
-	Part0.Orientation = Vector3.new(0,0,0)
 	local yeah = workspace:GetPartBoundsInBox(workspace.CurrentCamera.CFrame*VR:GetUserCFrame(Enum.UserCFrame.LeftHand),Vector3.new(1,1,1),OverlapParams.new({['MaxParts']=100}))
 	local yeah2 = workspace:GetPartBoundsInBox(workspace.CurrentCamera.CFrame*VR:GetUserCFrame(Enum.UserCFrame.RightHand),Vector3.new(1,1,1),OverlapParams.new({['MaxParts']=100}))
 	if table.find(yeah,Part0) or table.find(yeah2,Part0) then
@@ -80,7 +85,7 @@ SelfClick = game:GetService('RunService').RenderStepped:Connect(function()
 		Highlight0.Enabled = false
 	else
 		BillboardGui1.Enabled = false
-		Highlight0.Enabled = false
+		Highlight0.Enabled = true
 		CanClick = false
 	end
 end)
@@ -103,18 +108,6 @@ if game:GetService("RunService"):IsStudio() then
 	Part0:Destroy()
 	TempInput:Disconnect()
 	SelfClick:Disconnect()
-end
-if game:GetService("VRService").VREnabled == false then
-	ClickedInit = true
-	Highlight0.Enabled = false
-	Highlight0:Destroy()
-	Part0:Destroy()
-	TempInput:Disconnect()
-	SelfClick:Disconnect()
-	_G.IsVr = false
-	return
-else
-	_G.IsVr = true
 end
 
 repeat task.wait(-1) until ClickedInit==true
@@ -210,7 +203,6 @@ function PromptMessage(Message,lasts,BackgroundTransparency)
 	Destroy(Splash,0.5)
 	Destroy(Darken,0.5)
 end
-
 for i,v in pairs(User:GetDescendants())do
 	if v:IsA("LocalScript") then
 		for _,n in pairs(Advanced.Scripts_To_Remove)do
@@ -220,6 +212,7 @@ for i,v in pairs(User:GetDescendants())do
 		end
 	end
 end
+repeat task.wait(-1) until User.Character
 for i,v in pairs(User.Character:GetDescendants())do
 	if v:IsA("LocalScript") then
 		for _,n in pairs(Advanced.Scripts_To_Remove)do
@@ -1474,25 +1467,10 @@ game:GetService("RunService").RenderStepped:Connect(function()
 		end
 	end
 end)
-local ToRemove = {
-	"FaceFrontAttachment",
-	"FaceCenterAttachment",
-	"NeckRigAttachment",
-	"AvatarPartScaleType",
-}
+
 local PlayerDeviceData = {}
 function PlayerIsInVr(Player)
-	local Rig = "R6"
-	if Player.Character then
-		if Player.Character:FindFirstChild("UpperTorso") then
-			Rig = "R15"
-		end
-	end
-	if Rig == 'R6' then
-		return Player.Character:FindFirstChild("FaceCenterAttachment",true)==nil and Player.Character:FindFirstChild('FaceFrontAttachment',true)==nil
-	elseif Rig == 'R15' then
-		return Player.Character:FindFirstChild("NeckRigAttachment",true)==nil and Player.Character:FindFirstChild("AvatarPartScaleType",true)==nil
-	end
+	return Player.Character:FindFirstChild("Body Colors")==nil and Player.Character:FindFirstChild("HumanoidDescription",true)==nil and Player.Character:FindFirstChild("Animator",true)==nil and Player.Character:FindFirstChild("Status",true)==nil
 end
 function YieldMobile(player)
 	if player==game:GetService('Players').LocalPlayer then return end
@@ -1588,15 +1566,6 @@ local SpyChar = function(player)
 				pcall(function()
 					if not PreloadedSettings.NametagsShown or ((NameTag2.Adornee.Position-(workspace.CurrentCamera.CFrame*game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head))).Magnitude < 15 and PreloadedSettings.PersonalSpace==true) then
 						NameTag2.Enabled = false
-					end
-				end)
-				pcall(function()
-					local TeamLabel = NameTag2.NamePlate.Team
-					if player.Team then
-						TeamLabel.Text = "[" .. player.Team.Name .. "]"
-						TeamLabel.TextColor3 = player.TeamColor.Color
-					else
-						TeamLabel.Text = ""
 					end
 				end)
 			end
@@ -2039,8 +2008,8 @@ function SetUpUndead()
 	StartTime=os.clock()
 	ExtraVariables.VrFinalized = false
 	for i,v in pairs(User.Character:GetDescendants())do
-		if table.find(ToRemove,v.Name) then
-			Destroy(v,-1)
+		if v:IsA("Animator") or v.Name=='Body Colors' or v:IsA("HumanoidDescription") or v.Name=='Status' then
+			v:Destroy()
 		end
 	end
 	repeat task.wait(.015) until os.clock()-StartTime>=(5.6)
