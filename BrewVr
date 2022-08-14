@@ -1,7 +1,7 @@
 if 	_G.IsVr == true then
 	 return
 end
-_G.BrewVersion = "v1.33"
+_G.BrewVersion = "v1.331"
 local Advanced = {
 	Scripts_To_Remove = {
 		"NexusVRCharacterModelClientLoader",
@@ -1588,6 +1588,15 @@ local SpyChar = function(player)
 				pcall(function()
 					if not PreloadedSettings.NametagsShown or ((NameTag2.Adornee.Position-(workspace.CurrentCamera.CFrame*game:GetService('VRService'):GetUserCFrame(Enum.UserCFrame.Head))).Magnitude < 15 and PreloadedSettings.PersonalSpace==true) then
 						NameTag2.Enabled = false
+					end
+				end)
+				pcall(function()
+					local TeamLabel = NameTag2.NamePlate.Team
+					if player.Team then
+						TeamLabel.Text = "[" .. player.Team.Name .. "]"
+						TeamLabel.TextColor3 = player.TeamColor.Color
+					else
+						TeamLabel.Text = ""
 					end
 				end)
 			end
